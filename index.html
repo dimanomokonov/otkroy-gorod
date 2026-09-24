@@ -299,7 +299,7 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
       <button class="chip" data-l="local" aria-pressed="true"><i style="background:var(--local)"></i>Локальное</button>
       <button class="chip" data-l="food" aria-pressed="true"><i style="background:var(--food)"></i>Поесть</button>
     </div>
-    <hr><button class="opt" id="gpsBtn">GPS</button>
+    <hr><button class="opt" id="gpsBtn">GPS</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © Esri, OpenStreetMap · маршруты © OSRM / FOSSGIS</p>
   </div>
   <button id="nearPill" style="display:none" hidden></button>
   <div class="rt" id="rt" aria-live="polite"></div>
@@ -428,7 +428,7 @@ const fromM=ll=>base==='amap'?g2w(ll.lat,ll.lng):[ll.lat,ll.lng];
 const map=L.map('map',{zoomControl:false,zoomAnimation:false,attributionControl:false,preferCanvas:true,minZoom:10,maxZoom:19});
 
 const DARKM=matchMedia('(prefers-color-scheme: dark)').matches;
-const TILES={carto:L.tileLayer(`https://{s}.basemaps.cartocdn.com/${DARKM?'dark':'light'}_nolabels/{z}/{x}/{y}{r}.png`,{subdomains:'abcd',maxZoom:20}),
+const TILES={carto:L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${DARKM?'Dark':'Light'}_Gray_Base/MapServer/tile/{z}/{y}/{x}`,{maxNativeZoom:16,maxZoom:19}),
  amap:L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',{subdomains:'1234',maxZoom:18})};
 const BN={vector:'Схема',carto:'Улицы',amap:'Amap 高德'};
 if(TILES[base])TILES[base].addTo(map);
