@@ -920,13 +920,13 @@ function dynAdd(list,persist){let n=0;for(const r of list){if(POIS.find(p=>p.id=
   if(POIS.some(q=>q.cur&&dist(q,p)<80))continue;p.d=distAt(p.lat,p.lon);POIS.push(p);n++}
  if(persist){try{localStorage.setItem(DYN_KEY,JSON.stringify(POIS.filter(p=>p.dyn).slice(-600).map(({x,y,d,sx,...r})=>r)))}catch(e){}}if(n){dirty=true;updateHUD();renderSheet()}return n}
 try{dynAdd(JSON.parse(localStorage.getItem(DYN_KEY)||'[]'),false)}catch(e){}
-try{dynCenters=JSON.parse(localStorage.getItem('og-dync')||'[]')}catch(e){}
+try{dynCenters=JSON.parse(localStorage.getItem('og-dync2')||'[]')}catch(e){}
 let dynFailAt=0;function dynMaybe(){if(dynBusy||Date.now()-dynFailAt<60000)return;if(dynCenters.some(c=>dist(c,me)<1200))return;dynFetch(me)}
 async function dynFetch(at){dynBusy=true;const [la,lo]=U(at),A=`(around:1500,${la.toFixed(5)},${lo.toFixed(5)})`,Ac=`(around:900,${la.toFixed(5)},${lo.toFixed(5)})`;
  const q1=`[out:json][timeout:18];(nwr["leisure"~"^(park|garden)$"]["name"]${A};nwr["tourism"~"^(attraction|viewpoint|museum|artwork|gallery)$"]${A};nwr["historic"~"^(monument|memorial|temple|archaeological_site|castle|ruins)$"]["name"]${A};);out center tags 150;`;
  const q2=`[out:json][timeout:15];(nwr["amenity"="cafe"]["name"]${Ac};nwr["amenity"="place_of_worship"]["name"]${A};);out center tags 80;`;
- let j=await ovpFetch(q1,20000);const j2=await ovpFetch(q2,18000);if(j&&j2)j.elements=j.elements.concat(j2.elements);else if(!j&&j2)j=j2;
- dynBusy=false;if(!j){dynFailAt=Date.now();return}dynCenters.push({x:at.x,y:at.y});dynCenters=dynCenters.slice(-40);try{localStorage.setItem('og-dync',JSON.stringify(dynCenters))}catch(e){}
+ const j=await ovpFetch(q1,35000);if(!j){dynBusy=false;dynFailAt=Date.now();return}const j2=await ovpFetch(q2,20000);if(j2)j.elements=j.elements.concat(j2.elements);
+ dynBusy=false;if(!j){dynFailAt=Date.now();return}dynCenters.push({x:at.x,y:at.y});dynCenters=dynCenters.slice(-40);try{localStorage.setItem('og-dync2',JSON.stringify(dynCenters))}catch(e){}
  const out=[];for(const el of j.elements){const t=el.tags||{},ty=dynTypeOf(t);if(!ty)continue;const la2=el.lat!=null?el.lat:el.center&&el.center.lat,lo2=el.lon!=null?el.lon:el.center&&el.center.lon;if(la2==null)continue;
   const nm=t['name:ru']||t['name:en']||t.name;if(!nm&&ty[0]==='food')continue;const wk=t.wikipedia||'';
   out.push({id:'osm:'+el.type+'/'+el.id,dyn:true,cat:ty[0],ic:ty[1],pts:ty[2],rad:ty[3],name:nm||ty[4],zh:t.name&&t.name!==nm?t.name:'',lat:+la2.toFixed(6),lon:+lo2.toFixed(6),wk,
