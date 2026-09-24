@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Открой город">
+<meta name="theme-color" content="#4b2fd6">
+<title>Открой город</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --land:#e2e6df;--water:#b9d4dc;--park:#cfe0c2;--road:#fbfcf8;--roadEdge:#cfd6cb;
+  --ink:#16202a;--muted:#5f6b72;--panel:#ffffff;--line:#e3e8e2;--soft:#f2f5f1;
+  --fog:#1e2433;--mine:#7a4cf0;--main:#d6334b;--local:#1e9e8a;--food:#e8931a;--me:#2f6feb;
+  --shadow:0 6px 24px rgba(22,32,42,.16);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --land:#20262d;--water:#172f39;--park:#1f2c24;--road:#2c343b;--roadEdge:#151a1f;
+  --ink:#eef2ee;--muted:#98a4a8;--panel:#141a20;--line:#27303a;--soft:#1c232a;--fog:#05070b;--mine:#9b78ff;
+  --shadow:0 6px 24px rgba(0,0,0,.5);}}
+:root[data-theme="dark"]{
+  --land:#20262d;--water:#172f39;--park:#1f2c24;--road:#2c343b;--roadEdge:#151a1f;
+  --ink:#eef2ee;--muted:#98a4a8;--panel:#141a20;--line:#27303a;--soft:#1c232a;--fog:#05070b;--mine:#9b78ff;
+  --shadow:0 6px 24px rgba(0,0,0,.5);}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{height:100%;margin:0;background:var(--panel);color:var(--ink);font:15px/1.45 Rubik,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible{outline:2px solid var(--me);outline-offset:2px}
+#app{position:relative;height:100%;max-width:560px;margin:0 auto;overflow:hidden;background:var(--land)}
+#map{position:absolute;inset:0;background:var(--land);z-index:0}
+#fog{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:500}
+
+.dpick.on{display:block}
+.prow{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:14px}
+.prow.on{background:var(--soft)}
+.prow .l{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.prow b{font-weight:800}
+.prow small{color:var(--muted);font-size:12.5px;display:block}
+.prow .pp{font:800 14px Rubik,sans-serif;flex:none}
+.prow .bar{display:block;margin:7px 0 0}
+
+
+
+
+
+.item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 6px;border-bottom:1px solid var(--line)}
+.dot{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:20px;flex:none;background:var(--soft)}
+.item .t{flex:1;min-width:0}
+.item .t b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .t span{font-size:13px;color:var(--muted)}
+.tag{font-weight:800;font-size:12.5px;padding:4px 8px;border-radius:9px;background:var(--soft);flex:none}
+.tag.ok{background:var(--local);color:#fff}
+
+.dist{padding:12px 4px;border-bottom:1px solid var(--line)}
+.dist h3{margin:0;display:flex;justify-content:space-between;align-items:baseline;font:800 15px Rubik,sans-serif}
+.dist h3 span{font:700 13px Rubik,sans-serif;color:var(--muted)}
+.bar{height:8px;border-radius:9px;background:var(--soft);margin:8px 0;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--local);border-radius:9px}
+.dist p{margin:4px 0 0;font-size:13.5px;color:var(--muted)}
+.dist p b{color:var(--ink)}
+
+.seg{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin:4px 0 8px}
+.seg button{flex:1;padding:7px;border-radius:9px;font-weight:700;font-size:13.5px;color:var(--muted)}
+.seg button.on{background:var(--panel);color:var(--ink)}
+.row{display:flex;align-items:center;gap:12px;padding:9px 6px;border-bottom:1px solid var(--line)}
+.row .n{width:24px;font:800 13px Rubik,sans-serif;color:var(--muted)}
+.row .nm{flex:1}
+.row.me{background:var(--soft);border-radius:12px}
+.row .sc{font-weight:800}
+.ghost{width:100%;margin-top:14px;padding:12px;border-radius:14px;background:var(--soft);font-weight:700}
+.note{font-size:12.5px;color:var(--muted);margin:12px 4px 0}
+
+.scrim{position:fixed;inset:0;z-index:900;background:rgba(10,14,20,.45);opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.card{position:fixed;z-index:1000;left:50%;bottom:0;width:100%;max-width:560px;max-height:82%;overflow-y:auto;transform:translate(-50%,105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);background:var(--panel);border-radius:24px 24px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px))}
+.card.on{transform:translate(-50%,0)}
+.card .hd{display:flex;gap:14px;align-items:center}
+.card .big{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:30px;flex:none}
+.card h2{margin:0;font:800 20px/1.15 Rubik,sans-serif;letter-spacing:-.02em}
+.card .zh{color:var(--muted);font-size:14px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.meta span{font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:var(--soft)}
+.story{font-size:15.5px;line-height:1.6;margin:0}
+.lock{padding:14px;border-radius:16px;background:var(--soft);font-size:14px;color:var(--muted)}
+.lock b{color:var(--ink)}
+.cta{width:100%;margin-top:14px;padding:14px;border-radius:16px;background:var(--me);color:#fff;font-weight:800;font-size:15px}
+.close{position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:12px;background:var(--soft);font-size:18px}
+
+.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast b{font-weight:800}
+.toast button{margin-left:auto;padding:8px 12px;border-radius:12px;background:var(--me);color:#fff;font-weight:700;font-size:13px;flex:none}
+.fl{display:block;font-weight:700;font-size:13px;color:var(--muted);margin-top:14px}
+.fl input,.fl textarea{display:block;width:100%;margin-top:6px;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-size:16px;resize:vertical}
+.types{display:flex;gap:6px;margin-top:14px}
+.types button{flex:1;padding:10px 4px;border-radius:14px;background:var(--soft);font-weight:700;font-size:14px}
+.types button.on{background:var(--mine);color:#fff}
+.photo{display:block;margin-top:14px;padding:14px;border-radius:14px;border:1.5px dashed var(--line);text-align:center;font-weight:700;cursor:pointer;color:var(--muted)}
+.photo img{width:100%;border-radius:12px;display:block}
+.mimg{width:100%;border-radius:16px;margin:14px 0 6px;display:block}
+.thumb{width:40px;height:40px;border-radius:14px;object-fit:cover;flex:none}
+.acts{display:flex;gap:8px}
+.acts .ghost{margin-top:4px}
+.danger{color:var(--main)}
+.cta.mine{background:var(--mine)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.leaflet-bottom.leaflet-left{bottom:0}
+.leaflet-control-attribution{font-size:9px;opacity:.55;background:transparent!important}
+.leaflet-tile-pane{filter:saturate(.4)}
+#app.amap .leaflet-tile-pane{filter:grayscale(1) contrast(.85) brightness(1.08)}
+.glass{background:var(--panel);background:color-mix(in srgb,var(--panel) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid color-mix(in srgb,var(--ink) 8%,transparent);box-shadow:0 2px 14px rgba(0,0,0,.12)}
+.top{position:absolute;z-index:600;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:5px 14px 5px 5px;border-radius:99px;max-width:calc(100% - 20px);cursor:pointer}
+.ring{position:relative;width:36px;height:36px;flex:none}
+.ring svg{transform:rotate(-90deg);display:block}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:800 9.5px Rubik,sans-serif}
+.city{min-width:0}
+#cityLine{display:none}
+#dName{display:block;font:800 14px/1.2 Rubik,sans-serif;letter-spacing:-.01em}
+#dName::after{content:' ▾';font-size:10px;color:var(--muted)}
+#area{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pts{flex:none;padding-left:10px;border-left:1px solid var(--line);text-align:center}
+.pts b{display:block;font:800 12px/1.2 Rubik,sans-serif}
+.pts span{font-size:10px;color:var(--muted)}
+.dpick{position:absolute;z-index:650;top:62px;left:10px;right:10px;border-radius:18px;padding:6px;display:none;max-height:62%;overflow-y:auto}
+.dpick.on{display:block}
+.rail{position:absolute;z-index:600;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px}
+.ib{width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
+.ib svg,.add svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib.on{color:var(--me)}
+.add{position:absolute;z-index:600;right:10px;bottom:18px;width:46px;height:46px;border-radius:50%;background:var(--mine);color:#fff;display:grid;place-items:center;box-shadow:0 4px 14px rgba(122,76,240,.35)}
+.add svg{width:22px;height:22px;stroke-width:2.4}
+.pill{position:absolute;z-index:600;left:10px;bottom:22px;max-width:calc(100% - 76px);display:flex;align-items:center;gap:8px;padding:7px 14px 7px 10px;border-radius:99px;font-size:13px;text-align:left}
+.pill .e{font-size:15px}
+.pill b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill span{color:var(--muted);flex:none}
+.pop{position:absolute;z-index:650;right:58px;top:50%;transform:translateY(-50%);width:236px;border-radius:18px;padding:10px;display:none}
+.pop.on{display:block}
+.pop h4{margin:2px 8px 4px;font-size:11.5px;color:var(--muted);font-weight:700}
+.pop hr{border:0;border-top:1px solid var(--line);margin:8px 4px}
+.opt,.chip{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:10px;font-weight:600;font-size:13.5px;text-align:left}
+.opt.on{background:var(--soft)}
+.opt.on::after{content:'✓';margin-left:auto;color:var(--me);font-weight:800}
+.chip i{width:9px;height:9px;border-radius:50%;display:block;flex:none}
+.chip[aria-pressed="false"]{opacity:.35}
+.hint{position:absolute;z-index:600;top:62px;left:10px;right:10px;padding:10px 38px 10px 12px;border-radius:14px;background:var(--ink);color:var(--panel);font-size:12.5px;line-height:1.4}
+.hint button{position:absolute;right:4px;top:4px;width:30px;height:30px;color:var(--panel);font-size:18px}
+.toast{position:absolute;z-index:700;left:50%;top:62px;transform:translate(-50%,-14px);opacity:0;pointer-events:none;transition:all .25s;border-radius:16px;padding:9px 10px 9px 14px;display:flex;gap:10px;align-items:center;width:calc(100% - 20px);max-width:420px;font-size:13.5px}
+.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast b{font-weight:800}
+.toast button{margin-left:auto;padding:7px 12px;border-radius:12px;background:var(--me);color:#fff;font-weight:700;font-size:13px;flex:none}
+.sheet{position:fixed;z-index:950;left:50%;bottom:0;width:100%;max-width:560px;height:80%;transform:translate(-50%,105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);background:var(--panel);border-radius:22px 22px 0 0;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet.open{transform:translate(-50%,0)}
+.phd{display:flex;align-items:center;gap:8px;padding:12px 12px 8px;flex:none}
+.tabs{flex:1;display:flex;gap:2px}
+.tabs button{flex:1;padding:7px 0;border-radius:10px;font-weight:700;font-size:13.5px;color:var(--muted)}
+.tabs button.on{background:var(--soft);color:var(--ink)}
+.x{width:32px;height:32px;border-radius:10px;background:var(--soft);font-size:17px;flex:none}
+.body{flex:1;overflow-y:auto;padding:0 12px 16px;-webkit-overflow-scrolling:touch}
+
+#map{background:var(--soft)}
+.dlabel span{position:absolute;transform:translate(-50%,-50%);font:800 10.5px Rubik,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.55;white-space:nowrap}
+.btn{background:var(--panel);border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.2);color:var(--ink)}
+.corner{position:absolute;z-index:600}
+.btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sq{width:52px;height:52px;display:grid;place-items:center}
+#meBtn{top:10px;left:10px;width:52px;height:52px;display:grid;place-items:center}
+#meBtn .av{width:40px;height:40px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--muted)}
+#meBtn .badge{position:absolute;left:30px;top:-7px;display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:99px;background:var(--panel);box-shadow:0 1px 8px rgba(0,0,0,.3);font:800 11px/1 Rubik,sans-serif;white-space:nowrap}
+#meBtn .badge i{font-style:normal;color:var(--food)}
+.top{left:70px;right:70px;transform:none;height:52px;border-radius:16px;padding:0 14px 0 8px;max-width:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+#layersBtn{top:10px;right:10px}
+.zoom{right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;overflow:hidden}
+.zoom button{width:52px;height:52px;display:grid;place-items:center}
+.zoom button+button{border-top:1px solid var(--line)}
+#centerBtn{right:10px;bottom:84px;color:var(--me)}
+#centerBtn svg{fill:currentColor;stroke:none}
+.pill{left:10px;bottom:84px;height:52px;border-radius:16px;max-width:calc(100% - 84px);border:0;-webkit-backdrop-filter:none;backdrop-filter:none;padding:0 14px 0 12px}
+.quick{position:absolute;z-index:600;left:0;right:0;bottom:18px;display:flex;gap:8px;padding:0 10px 4px;overflow-x:auto;scrollbar-width:none}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;height:52px;display:flex;align-items:center;gap:8px;padding:0 16px 0 14px;font-weight:700;font-size:15px}
+.quick svg{width:20px;height:20px}
+.quick .accent{background:var(--mine);color:#fff}
+.pop{top:70px;right:10px;transform:none}
+.dpick,.hint,.toast{top:70px}
+.leaflet-bottom.leaflet-left{bottom:74px}
+.ring circle:first-child{stroke:var(--line)}
+
+.dpill{position:absolute;z-index:600;top:12px;left:12px;height:36px;display:flex;align-items:center;gap:7px;padding:0 13px 0 7px;border-radius:99px;background:var(--panel);box-shadow:0 1px 10px rgba(0,0,0,.1);color:var(--ink)}
+.dpill svg{transform:rotate(-90deg);flex:none}
+.dpill #dName{display:inline;font:700 13px/1 Rubik,sans-serif;letter-spacing:0}
+.dpill #dName::after{content:''}
+.dpill #pct{font:600 12.5px/1 Rubik,sans-serif;color:var(--muted)}
+#area,#cityLine{display:none!important}
+.ib{position:absolute;z-index:600;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:var(--panel);box-shadow:0 1px 10px rgba(0,0,0,.1);display:grid;place-items:center;color:var(--ink)}
+.dock{position:absolute;z-index:600;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:2px;padding:4px;border-radius:99px;background:var(--panel);box-shadow:0 2px 16px rgba(0,0,0,.12)}
+.dock button{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.dock button:active{background:var(--soft)}
+.dock .plus{background:var(--mine);color:#fff;margin:0 2px}
+.dpick{top:56px;left:12px;right:auto;width:min(320px,calc(100% - 24px))}
+.hint{top:56px;left:12px;right:auto;max-width:250px;padding:8px 32px 8px 12px;font-size:12px;border-radius:12px}
+.hint button{top:1px;right:1px}
+.toast{top:56px;font-size:13px;padding:8px 10px 8px 12px;max-width:340px;border-radius:14px}
+.pop{top:56px;right:12px;left:auto;width:220px;transform:none}
+.ptsb{font:700 13px Rubik,sans-serif;color:var(--muted);flex:none;padding:0 4px}
+.ptsb b{color:var(--ink)}
+
+:root{--land:#e9e6f5;--water:#a9dcf2;--park:#d4ecc9;--ink:#1b1238;--muted:#6b6490;--panel:#ffffff;--line:#e7e2fb;--soft:#f1eeff;
+ --mine:#4b2fd6;--main:#ff5a5f;--local:#18c29c;--food:#ffa826;--me:#4b2fd6;--vio:#4b2fd6;--lime:#c8f43c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--land:#231d40;--water:#1d3a55;--park:#1f3528;--ink:#f3f0ff;--muted:#a59fc6;--panel:#1c1535;--line:#2e2654;--soft:#281f4b;--mine:#8f7bff;--me:#8f7bff;--vio:#6a4ff0}}
+:root[data-theme="dark"]{--land:#231d40;--water:#1d3a55;--park:#1f3528;--ink:#f3f0ff;--muted:#a59fc6;--panel:#1c1535;--line:#2e2654;--soft:#281f4b;--mine:#8f7bff;--me:#8f7bff;--vio:#6a4ff0}
+body{font-family:Rubik,system-ui,-apple-system,sans-serif}
+#ringArc{stroke:var(--vio)}
+.dpill #dName{font:600 13.5px/1 Rubik,sans-serif}
+.dpill #pct{font:700 13px/1 Rubik,sans-serif;color:var(--vio)}
+.dock .plus{background:var(--vio);color:#fff}
+#centerBtn{color:var(--vio)}
+.tabs button.on{background:var(--soft);color:var(--vio)}
+.cta{background:var(--vio)}
+.bar i{background:var(--vio)}
+.opt.on::after{color:var(--vio)}
+.scrim{background:rgba(27,18,56,.45)}
+.dot{border-radius:14px;background:var(--soft)}
+.tic{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:#fff;flex:none}
+.toast button{background:var(--vio)}
+.card.place{background:var(--vio);padding:0;max-height:92%;border-radius:30px 30px 0 0}
+.pc-top{position:relative;padding:18px 20px 24px;color:#fff;overflow:hidden}
+.pc-top .rings{position:absolute;right:-110px;top:-130px;fill:none;stroke:rgba(255,255,255,.13);stroke-width:2}
+.pc-bar{position:relative;display:flex;justify-content:space-between;align-items:center}
+.pc-x{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.15);color:#fff;display:grid;place-items:center}
+.pc-tag{display:flex;align-items:center;gap:6px;border-radius:11px;padding:7px 11px;font:700 12.5px Rubik,sans-serif;color:#fff}
+.pc-top h2{position:relative;margin:20px 0 6px;font:900 30px/1.05 Rubik,sans-serif;letter-spacing:-.01em;color:#fff}
+.pc-sub{position:relative;font-size:14px;font-weight:500;color:#d9d2ff}
+.pc-body{background:var(--panel);border-radius:30px 30px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.pc-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pc-stats div{background:var(--soft);border-radius:16px;padding:10px 12px;min-width:0}
+.pc-stats b{display:block;font:800 18px/1.2 Rubik,sans-serif;color:var(--vio);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-stats span{display:block;font-size:11.5px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-story{margin:0;font-size:15.5px;line-height:1.6;color:var(--ink)}
+.pc-hint{margin:-4px 0 0;font-size:12.5px;color:var(--muted)}
+.pc-cta{width:100%;height:58px;border-radius:18px;background:var(--lime);color:#1b1238;font:800 16px Rubik,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 0 #8fb21c;text-decoration:none;margin-bottom:4px}
+.pc-cta:active{transform:translateY(2px);box-shadow:0 2px 0 #8fb21c}
+.pc-done{height:54px;border-radius:18px;background:var(--soft);color:var(--vio);font:700 15px Rubik,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px}
+@media (prefers-color-scheme:dark){.pc-stats b{color:var(--lime)}}
+
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--line);display:inline-block;margin-left:2px}
+.sdot.ok{background:var(--local)}.sdot.sync{background:var(--vio);animation:sp 1s ease-in-out infinite}.sdot.err{background:var(--main)}
+@keyframes sp{50%{opacity:.3}}
+.pf{display:flex;align-items:center;gap:12px;padding:8px 4px}
+.pf-av{width:46px;height:46px;border-radius:16px;background:var(--vio);color:#fff;display:grid;place-items:center;font:800 18px Rubik,sans-serif;flex:none}
+.pf-t{display:flex;flex-direction:column;min-width:0}.pf-t b{font-weight:700;overflow:hidden;text-overflow:ellipsis}.pf-t span{font-size:12.5px;color:var(--muted)}
+.card h2{font-family:Rubik,sans-serif}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="map"></div><canvas id="fog"></canvas>
+  <button class="dpill" id="top" aria-expanded="false" aria-label="Выбрать район">
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8.5" fill="none" stroke="var(--line)" stroke-width="3"></circle><circle id="ringArc" cx="11" cy="11" r="8.5" fill="none" stroke="var(--local)" stroke-width="3" stroke-linecap="round" stroke-dasharray="53.41" stroke-dashoffset="53.41"></circle></svg>
+    <b id="dName">Гуанчжоу</b><span id="pct">0%</span><i class="sdot" id="sdot" title="Облако"></i><small id="cityLine"></small><small id="area"></small>
+  </button>
+  <button class="ib" id="layersBtn" aria-label="Фильтры и GPS"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg></button>
+  <div class="dpick glass" id="dpick" role="listbox" aria-label="Районы"></div>
+  <div class="hint" id="hint">Нажмите на карту, чтобы идти<button id="hintX" aria-label="Закрыть подсказку">×</button></div>
+  <div class="toast glass" id="toast"></div>
+  <input type="file" id="impFile" multiple accept=".gpx,.kml,.json,.xml,application/json,application/gpx+xml" hidden>
+  <div class="pop glass" id="pop">
+    <h4>Карта</h4><button class="opt" data-base="carto">Улицы</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><hr><h4>Точки</h4>
+    <div id="chips">
+      <button class="chip" data-l="main" aria-pressed="true"><i style="background:var(--main)"></i>Главное</button>
+      <button class="chip" data-l="local" aria-pressed="true"><i style="background:var(--local)"></i>Локальное</button>
+      <button class="chip" data-l="food" aria-pressed="true"><i style="background:var(--food)"></i>Поесть</button>
+    </div>
+    <hr><button class="opt" id="gpsBtn">GPS</button>
+  </div>
+  <button id="nearPill" style="display:none" hidden></button>
+  <nav class="dock" aria-label="Действия">
+    <button id="listBtn" aria-label="Все места"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"></path></svg></button>
+    <button data-tabopen="mine" aria-label="Мои отметки"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v16l-5-3.5L7 20z"></path></svg></button>
+    <button id="addBtn" class="plus" aria-label="Новая отметка"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v12M6 12h12"></path></svg></button>
+    <button id="centerBtn" aria-label="Где я"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5 5 11l6 2 2 6z"></path></svg></button>
+  </nav>
+</div>
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" aria-label="Места">
+  <div class="phd">
+    <nav class="tabs" id="tabs"><button data-t="near" class="on">Рядом</button><button data-t="mine">Мои</button><button data-t="dist">Районы</button><button data-t="rank">Профиль</button></nav>
+    <span class="ptsb"><b id="pts">0</b> ★</span><button class="x" id="sheetX" aria-label="Закрыть">×</button>
+  </div>
+  <div class="body" id="body"></div>
+</section>
+<article class="card" id="card" role="dialog" aria-modal="true"></article>
+
+<script>
+window.addEventListener('error',function(e){try{var t=document.getElementById('toast');if(!t)return;
+ t.innerHTML='<div><b>Ошибка:</b> '+String(e.message||'неизвестная').replace(/</g,'&lt;')+(e.lineno?' (строка '+e.lineno+')':'')+'</div>';t.classList.add('on')}catch(_){}});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>window.L||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>')</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+<script>window.supabase||document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"><\/script>')</script>
+<script>(()=>{'use strict';
+const LAT0=23.122,LON0=113.28,KX=Math.cos(LAT0*Math.PI/180)*111320,KY=110540,PI=Math.PI;
+const P=(lat,lon)=>({x:(lon-LON0)*KX,y:-(lat-LAT0)*KY});
+const U=p=>[LAT0-p.y/KY,LON0+p.x/KX];
+const REVEAL=140,CELL=30,ACELL=50,DISCOVER=60,SPEED=38;
+const STORE='otkroy-gorod-gz-v1';
+const CAT={main:{c:'--main',n:'Главное'},local:{c:'--local',n:'Локальное'},food:{c:'--food',n:'Поесть'}};
+const DIST={
+ py:{n:'Паньюй',zh:'番禺',about:'Южный пригород: Чимелонг, деревни у воды, университетский городок.',stay:'далеко от центра, для поездок в парки развлечений.'},
+ by:{n:'Байюнь',zh:'白云',about:'Север города: гора Байюнь и аэропорт.',stay:'удобно рядом с аэропортом, от центра далеко.'},
+ hp:{n:'Хуанпу',zh:'黄埔',about:'Восток: военная академия Вампу, порт, технопарки.',stay:'для деловых поездок в восточную часть.'},
+ ns:{n:'Наньша',zh:'南沙',about:'Самый юг у устья Жемчужной реки: морское побережье, паромы.',stay:'отдельная поездка, не для прогулок по центру.'},
+ hd:{n:'Хуаду',zh:'花都',about:'Северный пригород, старые деревни и храмы.',stay:'далеко от центра.'},
+ ch:{n:'Цунхуа',zh:'从化',about:'Горы, горячие источники и сады личи.',stay:'загородный отдых.'},
+ zc:{n:'Цзэнчэн',zh:'增城',about:'Восточный пригород: сельские пейзажи, горячие источники Байшуйчжай.',stay:'загородный отдых.'},
+ ly:{n:'Лиуань',zh:'荔湾',about:'Старый Кантон: квартал Сигуань, аркады-цилоу, утренний чай, остров Шамянь.',stay:'атмосферно и дешевле, для тех, кто едет за колоритом.'},
+ yx:{n:'Юэсю',zh:'越秀',about:'Исторический центр: храмы, улица Бэйцзинлу, парк Юэсю, метро на каждом шагу.',stay:'лучший баланс для первой поездки, всё в пешей доступности.'},
+ th:{n:'Тяньхэ',zh:'天河',about:'Новый город: небоскрёбы, оперный театр, торговые центры, вечерние виды на башню.',stay:'современные отели, дороже, удобно для деловых поездок.'},
+ hz:{n:'Хайчжу',zh:'海珠',about:'Южный берег Жемчужной реки: Кантон-Тауэр, набережные, спокойнее центра.',stay:'виды на реку и тишина, до центра — метро.'}
+};
+
+const POIS=[
+ {id:'canton',cat:'main',e:'🗼',name:'Кантон-Тауэр',zh:'广州塔',lat:23.1066,lon:113.3245,d:'hz',pts:100,s:'Телебашня высотой 600 метров, открытая в 2010 году к Азиатским играм. Её «талию» образует перекрученная сетчатая оболочка, а по краю крыши ходит колесо обозрения с прозрачными кабинками.'},
+ {id:'chen',cat:'main',e:'🏯',name:'Храм предков семьи Чэнь',zh:'陈家祠',lat:23.1256,lon:113.2455,d:'ly',pts:80,s:'Построен в 1890-х годах на средства рода Чэнь со всей провинции как родовой храм и школа для молодёжи, готовившейся к экзаменам. Главное здесь — резьба по дереву и камню и керамические фигурки на коньках крыш. Сейчас это Музей народного искусства Гуандуна.'},
+ {id:'shamian',cat:'main',e:'🌳',name:'Остров Шамянь',zh:'沙面',lat:23.1075,lon:113.2418,d:'ly',pts:80,s:'После Опиумных войн остров стал британской и французской концессией. Отсюда колониальные особняки, церкви и тенистые аллеи вековых баньянов — одно из самых спокойных мест в городе.'},
+ {id:'zhenhai',cat:'main',e:'🏮',name:'Башня Чжэньхай',zh:'镇海楼',lat:23.1419,lon:113.2637,d:'yx',pts:70,s:'Пятиэтажная башня 1380 года, эпоха Мин. Название переводится как «Башня, усмиряющая море». Сейчас внутри Музей Гуанчжоу.'},
+ {id:'rams',cat:'main',e:'🐐',name:'Статуя Пяти козлов',zh:'五羊石像',lat:23.1398,lon:113.2612,d:'yx',pts:70,s:'Символ города, установлен в 1959 году. По легенде, пять небожителей спустились на козлах с колосьями риса и избавили край от голода. Поэтому Гуанчжоу называют «Городом козлов» — 羊城.'},
+ {id:'sys',cat:'main',e:'🏛️',name:'Мемориальный зал Сунь Ятсена',zh:'中山纪念堂',lat:23.1335,lon:113.2645,d:'yx',pts:60,s:'Восьмиугольный зал 1931 года в память об основателе Китайской Республики. Огромное пространство внутри перекрыто без единой колонны.'},
+ {id:'cathedral',cat:'main',e:'⛪',name:'Собор Святейшего Сердца',zh:'石室圣心大教堂',lat:23.1190,lon:113.2725,d:'yx',pts:70,s:'Неоготический собор, целиком сложенный из гранита во второй половине XIX века. Местные зовут его просто «Каменный дом».'},
+ {id:'beijing',cat:'main',e:'🛍️',name:'Улица Бэйцзинлу',zh:'北京路',lat:23.1245,lon:113.2690,d:'yx',pts:50,s:'Главная торговая улица города, которая остаётся ею уже больше двух тысяч лет. Днём — магазины, вечером — уличная еда и толпы.'},
+ {id:'liurong',cat:'main',e:'🛕',name:'Храм Шести баньянов',zh:'六榕寺',lat:23.1290,lon:113.2600,d:'yx',pts:60,s:'Буддийский храм с полуторатысячелетней историей. Название ему дал поэт Су Ши, увидевший во дворе шесть баньянов. Над храмом поднимается многоярусная Цветочная пагода.'},
+ {id:'yongqing',cat:'main',e:'🏘️',name:'Квартал Юнцинфан',zh:'永庆坊',lat:23.1225,lon:113.2435,d:'ly',pts:60,s:'Отреставрированный кусок старого Сигуаня: переулки, мастерские, кофейни и родовой дом семьи Брюса Ли.'},
+ {id:'huacheng',cat:'main',e:'🌆',name:'Площадь Хуачэн',zh:'花城广场',lat:23.1195,lon:113.3240,d:'th',pts:50,s:'Зелёная ось нового делового района Чжуцзян. С неё открывается лучший вид на Кантон-Тауэр за рекой, особенно вечером.'},
+ {id:'opera',cat:'main',e:'🎭',name:'Оперный театр',zh:'广州大剧院',lat:23.1155,lon:113.3255,d:'th',pts:60,s:'Проект Захи Хадид, открыт в 2010 году. Архитектор описывала два здания как гальку, оставленную рекой на берегу.'},
+ {id:'bridge',cat:'main',e:'🌉',name:'Мост Хайчжу',zh:'海珠桥',lat:23.1162,lon:113.2715,d:'yx',pts:40,s:'Первый мост через Жемчужную реку в городе, открыт в 1933 году. Раньше на другой берег переправлялись только лодками.'},
+
+ {id:'road',cat:'local',e:'🔍',name:'Древняя мостовая под стеклом',zh:'千年古道遗址',lat:23.1250,lon:113.2687,d:'yx',pts:30,s:'Прямо посреди Бэйцзинлу под стеклянным полом видны слои дорожного покрытия разных эпох, уложенные один на другой за тысячу лет. Большинство прохожих идут по ним, не глядя вниз.'},
+ {id:'qilou',cat:'local',e:'🏚️',name:'Аркады Эньнинлу',zh:'恩宁路骑楼',lat:23.1218,lon:113.2410,d:'ly',pts:25,s:'Одна из самых длинных улиц с цилоу — домами, у которых второй этаж нависает над тротуаром и защищает прохожих от дождя и солнца.'},
+ {id:'statues',cat:'local',e:'🗿',name:'Бронзовые фигуры Шамяня',zh:'沙面雕塑',lat:23.1080,lon:113.2398,d:'ly',pts:20,s:'По острову расставлены бронзовые скульптуры сценок из прошлого: фотограф со старой камерой, дамы на прогулке. Попробуйте найти их все.'},
+ {id:'dafo',cat:'local',e:'🪷',name:'Храм Большого Будды',zh:'大佛寺',lat:23.1232,lon:113.2705,d:'yx',pts:30,s:'Прячется в двух шагах от торговой суеты Бэйцзинлу. Внутри — огромные бронзовые статуи Будды и неожиданная тишина.'},
+ {id:'wanmu',cat:'local',e:'📜',name:'Школа «Ваньму Цаотан»',zh:'万木草堂',lat:23.1288,lon:113.2745,d:'yx',pts:25,s:'Частная школа реформатора Кан Ювэя конца XIX века, где учился Лян Цичао. Маленький дворик, о котором знают немногие.'},
+ {id:'liwan',cat:'local',e:'🛶',name:'Парк у озера Лиуань',zh:'荔湾湖公园',lat:23.1300,lon:113.2375,d:'ly',pts:25,s:'Каналы, мостики и лодки в самом сердце старого города. Утром здесь занимаются тайцзи и поют кантонскую оперу.'},
+ {id:'tianzi',cat:'local',e:'⚓',name:'Причал Тяньцзы',zh:'天字码头',lat:23.1180,lon:113.2740,d:'yx',pts:25,s:'Исторический причал, откуда отправляются вечерние круизы по Жемчужной реке с видом на подсвеченные берега.'},
+
+ {id:'taotao',cat:'food',e:'🥟',name:'Таотаоцзюй',zh:'陶陶居',lat:23.1206,lon:113.2482,d:'ly',pts:30,s:'Чайный дом с конца XIX века. Место для классического утреннего чая с димсамами — приходите до обеда.'},
+ {id:'panxi',cat:'food',e:'🍵',name:'Паньси',zh:'泮溪酒家',lat:23.1283,lon:113.2394,d:'ly',pts:30,s:'Ресторан-сад на берегу озера Лиуань: павильоны, пруды и кантонская кухня.'},
+ {id:'nanxin',cat:'food',e:'🍮',name:'Наньсинь',zh:'南信牛奶甜品',lat:23.1200,lon:113.2468,d:'ly',pts:20,s:'Знаменитая десертная. Закажите двойной молочный пудинг 双皮奶 — главный десерт Гуанчжоу.'},
+ {id:'gzjj',cat:'food',e:'🦆',name:'Гуанчжоу Цзюцзя',zh:'广州酒家',lat:23.1198,lon:113.2522,d:'ly',pts:30,s:'Классический ресторан кантонской кухни с 1930-х годов. Жареный гусь, димсамы, большие шумные залы.'}
+];
+POIS.forEach(p=>Object.assign(p,P(p.lat,p.lon)));
+const IC={"temple": "M4 9h16M6 9l6-5 6 5M7 9v10M17 9v10M5 19h14M10 19v-5h4v5", "tower": "M12 2v4M9 22l2-16h2l2 16M8.5 12h7M9.8 17h4.4", "columns": "M3 9l9-5 9 5M5 9v9M9.5 9v9M14.5 9v9M19 9v9M3 20h18", "church": "M12 2v5M10 4h4M6 21V11l6-4 6 4v10M10 21v-4h4v4", "tree": "M12 21v-5M6 16h12L12 4z", "bag": "M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0", "bridge": "M2 16h20M4 16c2-6 14-6 16 0M7.5 16v-3M12 16v-4.5M16.5 16v-3", "star": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z", "houses": "M3 21V10l5-4 5 4v11M13 21v-8l4-3 4 3v8M2 21h20", "opera": "M3 18c3-8 7-10 9-10s6 3 9 10zM2 18h20", "skyline": "M4 21V11h4v10M10 21V4h5v17M17 21V9h4v12M2 21h20", "search": "M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8", "arcade": "M3 20V9l9-5 9 5v11M7 20v-5a2 2 0 0 1 4 0v5M13 20v-5a2 2 0 0 1 4 0v5", "person": "M12 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM8 22l1-8-2-3 5-3 5 3-2 3 1 8", "lotus": "M12 20c-4 0-7-3-7-6 3 0 5 1 7 3 2-2 4-3 7-3 0 3-3 6-7 6zM12 17c-2-3-2-6 0-10 2 4 2 7 0 10z", "scroll": "M8 4h11v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-1h11v1a3 3 0 0 0 3 3M8 4a2 2 0 0 0-2 2v9M11 8h5M11 12h5", "boat": "M3 15h18l-3 5H6zM12 4v11M12 4l6 8h-6", "anchor": "M12 8v13M5 13a7 7 0 0 0 14 0M9 11h6M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "bowl": "M4 11h16a8 8 0 0 1-16 0zM9 7l1-3M13 7l1-3", "cup": "M6 8h12l-1.5 12h-9zM5 8h14M10 8V5a2 2 0 0 1 4 0v3", "mark": "M7 4h10v16l-5-3.5L7 20z", "check": "m5 12 5 5 9-10", "walk": "M13 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9 21l2.5-7L9 11l3-3 3 3 3 1M11.5 14 14 17v4", "x": "M6 6l12 12M18 6 6 18"};const ICM={"canton": "tower", "chen": "temple", "shamian": "tree", "zhenhai": "temple", "rams": "star", "sys": "columns", "cathedral": "church", "beijing": "bag", "liurong": "temple", "yongqing": "houses", "huacheng": "skyline", "opera": "opera", "bridge": "bridge", "road": "search", "qilou": "arcade", "statues": "person", "dafo": "lotus", "wanmu": "scroll", "liwan": "boat", "tianzi": "anchor", "taotao": "bowl", "panxi": "bowl", "nanxin": "cup", "gzjj": "bowl"};POIS.forEach(p=>p.ic=ICM[p.id]||'star');
+const ICP={};for(const k in IC)ICP[k]=new Path2D(IC[k]);
+const isvg=(k,sz=18,sw=2)=>`<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[k]}"></path></svg>`;
+function drawIcon(k,x,y,sz,col){ctx.save();ctx.translate(x-sz/2,y-sz/2);ctx.scale(sz/24,sz/24);ctx.lineWidth=2.3;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=col;ctx.stroke(ICP[k]);ctx.restore()}
+
+// WGS-84 -> GCJ-02 (китайские карты смещены)
+const EA=6378245.0,EE=0.00669342162296594323;
+const outCN=(la,lo)=>lo<72.004||lo>137.8347||la<0.8293||la>55.8271;
+function tLat(x,y){let r=-100+2*x+3*y+.2*y*y+.1*x*y+.2*Math.sqrt(Math.abs(x));r+=(20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))*2/3;r+=(20*Math.sin(y*PI)+40*Math.sin(y/3*PI))*2/3;r+=(160*Math.sin(y/12*PI)+320*Math.sin(y*PI/30))*2/3;return r}
+function tLon(x,y){let r=300+x+2*y+.1*x*x+.1*x*y+.1*Math.sqrt(Math.abs(x));r+=(20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))*2/3;r+=(20*Math.sin(x*PI)+40*Math.sin(x/3*PI))*2/3;r+=(150*Math.sin(x/12*PI)+300*Math.sin(x/30*PI))*2/3;return r}
+function w2g(la,lo){if(outCN(la,lo))return[la,lo];let dLa=tLat(lo-105,la-35),dLo=tLon(lo-105,la-35);const rad=la/180*PI;let m=Math.sin(rad);m=1-EE*m*m;const sm=Math.sqrt(m);
+ dLa=dLa*180/((EA*(1-EE))/(m*sm)*PI);dLo=dLo*180/(EA/sm*Math.cos(rad)*PI);return[la+dLa,lo+dLo]}
+function g2w(la,lo){const g=w2g(la,lo);return[la*2-g[0],lo*2-g[1]]}
+
+// ---------- state ----------
+let me=P(23.1262,113.2628),target=null,follow=true,mode='sim',watchId=null,acc=0,base='carto';
+const reveal=new Set(),area=new Set(),visited=new Set();let pts=0;
+const layers={main:true,local:true,food:true};
+let tab='near',rankSeg='p',dirty=true,changed=false;
+const MSTORE='otkroy-gorod-gz-marks';let marks=[];try{marks=JSON.parse(localStorage.getItem(MSTORE)||'[]')}catch(e){}
+marks.forEach(m=>Object.assign(m,P(m.lat,m.lon)));
+const MT={place:{e:'📍',n:'Место'},egg:{e:'✨',n:'Пасхалка'},food:{e:'🍜',n:'Еда'}};
+const QK='og-sync-v1';let Q={cells:[],visits:[],marks:[],del:[],owner:null};try{Q=Object.assign(Q,JSON.parse(localStorage.getItem(QK)||'{}'))}catch(e){}
+const pendCells=new Set(Q.cells),pendVisits=new Set(Q.visits),pendMarks=new Set(Q.marks),pendDel=new Set(Q.del);
+function saveQ(){try{localStorage.setItem(QK,JSON.stringify({cells:[...pendCells],visits:[...pendVisits],marks:[...pendMarks],del:[...pendDel],owner:Q.owner}))}catch(e){}}
+function qCell(k){pendCells.add(k)}function qVisit(id){pendVisits.add(id);saveQ()}function qMark(id){pendMarks.add(id);pendDel.delete(id);saveQ()}function qDel(id){pendMarks.delete(id);pendDel.add(id);saveQ()}
+
+function saveMarks(){try{localStorage.setItem(MSTORE,JSON.stringify(marks.map(({x,y,photoUrl,...m})=>m)));return true}catch(e){toast('<div>Память браузера заполнена. Выгрузите отметки во вкладке «Мои» и удалите старые фото.</div>');return false}}
+try{const s=JSON.parse(localStorage.getItem(STORE)||'null');
+ if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['carto','vector','amap'].includes(s.b))base=s.b;if(s.h)document.getElementById('hint').remove();}}catch(e){}
+function save(){try{localStorage.setItem(STORE,JSON.stringify({r:[...reveal],v:[...visited],p:pts,me,b:base,h:!document.getElementById('hint')}))}catch(e){}changed=false}
+const CH=32,chunks=new Map(),born=new Map();let quiet=false;
+function addCell(k,t){if(reveal.has(k))return false;reveal.add(k);const[i,j]=k.split(',').map(Number);const cx=(i+.5)*CELL,cy=(j+.5)*CELL;
+ const ck=Math.floor(i/CH)+','+Math.floor(j/CH);let a0=chunks.get(ck);if(!a0)chunks.set(ck,a0=[]);a0.push(i,j);if(t!==undefined)born.set(k,t);
+ for(let a=Math.floor((cx-REVEAL)/ACELL);a<=Math.floor((cx+REVEAL)/ACELL);a++)for(let b=Math.floor((cy-REVEAL)/ACELL);b<=Math.floor((cy+REVEAL)/ACELL);b++){
+  if(Math.hypot((a+.5)*ACELL-cx,(b+.5)*ACELL-cy)<=REVEAL)area.add(a+','+b);}return true}
+function revealAt(p,t){const k=Math.floor(p.x/CELL)+','+Math.floor(p.y/CELL);if(!reveal.has(k)){addCell(k,t===undefined?performance.now():t);qCell(k);changed=true;if(!quiet)updateHUD();}}
+function isRevealed(p){const R=REVEAL*.85;for(let i=Math.floor((p.x-R)/CELL);i<=Math.floor((p.x+R)/CELL);i++)for(let j=Math.floor((p.y-R)/CELL);j<=Math.floor((p.y+R)/CELL);j++){
+  if(reveal.has(i+','+j)&&Math.hypot((i+.5)*CELL-p.x,(j+.5)*CELL-p.y)<=R)return true;}return false}
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+
+// ---------- map ----------
+const GEO=[{"k":"ly","g":{"type":"Polygon","coordinates":["@@@@AEAB@@A@GAE@C@M@IAOAIBE@G@@@@BE@CBGH@@CDGFGFA@@@GDE@ABCBA@CBCDAFADAD@BBB@BBB@B@@@@CD@B@@B@F@B@B@BBB@B@FD@BFB@BD@BBRAD@@@@@@@B@D@B@@@@@@@@BBB@@A@@@@@@B@@BBDB@@BB@@AB@@@BBB@@@@@@@@@@@@@B@@@BA@@BB@@@@BD@B@@@@B@D@@@B@@AB@A@@C@AAA@EB@@@@AF@FAD@@@@@@@BA@@@@@A@CB@BBBBAB@@B@BABAB@B@@@B@@B@@@@B@@@DAD@@H@D@BDBJ@DBF@B@D@JBBDH@FBB@@@@B@@@BCDGBADAB@@AB@@A@@FC@BBB@BB@@@@@@@@@@@@@@@@@DBBB@BB@BB@BBB@@@@B@@@@B@B@B@@@BBD@@@B@@@@@@@@@@@@@@@D@BHB@BB@@B@C@A@@@@AA@@@@@@B@@ABABC@@@C@@@@@AB@@@@@@AD@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@BB@@@@B@@@@@@@@@@@@@@@@A@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@BA@@B@AA@@@@AAA@@ABB@@@@B@@@@@@@@@@A@A@@B@@@@A@@@A@@@@@A@@@@@@@@@@@@A@AAA@A@C@EA@@AA@@A@@@@@@@@@@@FA@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@@@@A@@B@@@@A@@@@@@@@B@@A@@@@B@@@@@@@B@@A@@B@@@@@BA@@B@@@BA@@@@@@@@B@@@@@@E@@@@@@@@@@@@@A@@AC@@@A@@@@@@@A@@@@@A@@AA@@@@@@@A@@@A@@@@BA@@@@A@@A@@@@@@@AB@@A@@@A@@@@@@@@@A@@@@@@@C@@@@@@@@@@@@BA@@@@@@@AC@@@AAA@@@@@@@@@@@@@@@@@AAA@A@CAA@EAB@BCBA@ABADE@@BABE@ABC@ABC@CBA@A@@@@@AB@@@@A@@DE@@@@@AB@@@@@@A@@BC@@BA@@B@@@@ABABA@@@@BA@@@@@@BA@A@@B@@AB@@AB@@@BA@@@@@@DA@@@AB@@@BA@@@@B@@A@@DA@A@@B@BA@@@AB@@A@@@@C@CAC@CACACACACACACA"],"encodeOffsets":[[115976,23600]]}},{"k":"yx","g":{"type":"Polygon","coordinates":["@@@@@@D@BAB@@B@ABAD@BA@@@A@@C@C@@AA@CA@@@@@@@@IAE@@@EAA@C@CBA@IBCBGBAB@@@@A@@@A@ID@@AB@@@@A@@@CB@@A@A@@@A@A@A@@@@@E@@AC@@@@@@@@@@@EA@@@@@@@@EC@@A@AAA@@@@@@@AA@@A@A@@@AA@B@@@@@@AB@@@@@@@@@@@@@D@@@@@@@B@@@@@@@@@B@@@BA@@B@@@@@@@BB@@@@@AB@@@@@B@@@B@@@@@@BB@@@B@@@@@B@@@@@@@B@@BD@@@B@@@@@@@@@@@@@F@@@@A@@@@@@@@@AB@@A@@@AB@@@@A@@@@BA@@@@@@@A@@@@@@BA@@@@@@@@@@B@@A@@@@B@@@@@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@EB@@@@@@@@@@B@@@BB@@FBD@B@B@BBB@@@@@@@@@@@@@@B@@@@@B@@@B@@A@@@@B@B@@@@@@@@A@@@@@AA@BB@BB@@@@BBA@@@AB@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@B@@@@@@@@@@@@@@A@@@@@AA@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@C@@B@@@@A@@B@@@@@D@@ADAB@BA@@@@@@@BB@@@@@B@D@B@@@@@@CB@@@B@BB@@@@@@@@@@B@@@@@@@@@@@B@@@@B@A@@B@@@@@@@@@@@@@BA@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@B@@@@@@@@@@@B@@@D@BA@@@@@@B@B@FA@@BAB@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@A@@@@@@@@@@@@B@@@@@@@@A@@@@@@@A@@@@B@@@@@@@@@@@BA@@@@@@@@@@@@@@@@@@BA@@@@@@@@@@@@@@@@@@@@@@@@BA@@@@@@@AB@BA@A@@@@@@@@@@@AA@AA@@@@A@@@A@@@AC@@@@@@@@@@@@@@@@DADA@@B@@@D@@@@@@@@@@@@@B@@@@@D@@@@@@@B@@@@@@@@@@@@@@@@@@A@@@A@@B@@@@@@@@@@@@@@@B@@@@@@@B@B@@@@B@@@BBD@@BB@@@@@@@@@@B@BBD@@@@@D@D@BB@BB@B@BB@@@@@@@@@@@@BABAB@B@@@@@B@B@B@@@B@B@@@@@@@B@@@@@@@DD@@@B@@@@BB@@@@@@@B@@@@@@@B@@B@B@@@@@@@BC@@@@@@@@@@@@@@@@@@@@@@BAB@DB@@B@@@BBB@@@@@@@@@@@@@@AB@@@@@@@@@BC@@B@@@@@@@@@@@@A@@@@@@@@@@@@A@@@@@A@@@@@@@AA@@@@A@@@@@@@@@@@@@AAA@@@@@@@@@@A@@@@A@@@AC@@@@@A@@@@@@@@@AB@B@@@@@@@@@@@BA@@@@@@BA@@@@@A@@@@@@@@@@@@@@@@BA@@@@@@@@@@@@BCBE@@@@@@@@@@@@B@@@@@@@B@BD@@BB@@@@@@@@@BB@BA@@@AB@@@@@@A@@@@@@@@@A@@@@@@@@@@@A@@@@@@@A@@@C@C@@@@@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@C@@@A@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@E@@@@@@@A@@@@@@@@@@@A@@@C@@@@@A@@@A@@@A@@@@@@@@@@@@@@@@@E@@@@@@@@@@@@@A@A@@@A@@@@@A@@@@"],"encodeOffsets":[[116035,23668]]}},{"k":"hz","g":{"type":"Polygon","coordinates":["@@A@CBGDGBEBGBA@@@A@C@A@E@A@A@EAE@G@ABE@E@EBA@E@AFCCC@ABA@C@ABC@A@C@C@AA@@@BA@@B@@ABA@@@@BCB@@@BA@@@@@AB@@A@@B@@CB@@@@@@AB@@A@@BA@@BA@@@@BAB@@@@@@AB@@@@ABAB@B@@A@@@AB@@AD@@@B@@@@A@@B@@@@CF@@@B@@A@@B@@@@@BAB@DAD@BAD@BAFAB@@CFAB@BABADA@FBB@DBB@B@BB@@@@@@@@@@@@@@@@B@BB@@D@BB@@B@B@@@BB@@@@@@B@BBB@@@FD@@@@@@@@FB@@@@@@@@@@D@@BF@@@@@B@B@B@@@B@B@@@DA@@B@@@@@BA@@JCB@@@B@@@@@BAHADAJAB@DAD@B@FB@@F@JB@@@@@@@@DBB@@BD@D@@@J@@@F@FB@@B@@@D@D@@@D@DAB@@@DAF@F@@@@@B@HAH@D@N@D@D@B@B@@@@BL@@@B@@@@@@@B@D@BAD@D@BAD@@@B@DAB@B@B@@@BA@@B@@@@AB@@@B@@A@@@@B@@@@@BAFADAF@FAB@BAAC@ACEBADADABA@@@@A@ECEACA@@A@AA@@A@@@A@CAC@A@AA@@@@@@A@@@AAA@OIMKAEAAACCAA@KIA@@A@@A@@AA@@@@A@AACAAACAACACAEAC@A@AAC@A@CB@@@@C@A@AB"],"encodeOffsets":[[116066,23599]]}},{"k":"th","g":{"type":"Polygon","coordinates":["@@@@A@A@C@C@M@C@G@GBA@@@@@E@E@CB@@A@CBC@@@C@C@@@A@@@EAE@@@I@@B@@ABC@AB@B@AA@ABC@@@@@@@@@@B@@@@@B@@@B@B@@@@@@@@@@@@@F@@@@@@@@@@@@@@@@@B@@@B@@@B@@@@@D@@@B@@@@@@@@@@@B@@@@@@@F@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@B@@@D@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@@@@@D@D@@@B@@@@@@@B@@@@@@@@@@@B@@@@@@@@@B@@@@A@@B@@ABA@@A@@@@@@@@AA@@ACA@@@@@@@A@@@@@@@@@@@@@AFAD@@@@@@@@@@@@AB@@@@@@@@@@@@@@@@@B@@@@AB@@@@@@AB@@@@@@@@@@A@A@@B@@@@@@@@@B@@@@BD@@B@@@@@@B@@@@@@@@B@BB@@@@@@@@@@@@B@@@@@BB@@@@@@B@@@@@B@@@@@@@@@@@@@@B@@@@@@@@@@A@@@AD@@@@@@@@A@@B@@@@@@D@D@@@@@@C@@B@BA@@@B@@B@AB@@@B@@@@AB@@@B@@@@@@@@@@@@@@BB@@@BA@@@@@@B@@A@@@A@@F@B@BB@@@@@@@@B@@@@@@@@@@@@D@B@B@BBBB@@@@@@@@@@@@@B@@B@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@B@@@@@@B@@@@@@BB@@@@@@@@@@@@@AB@@B@@AB@@@@@@@@@B@BA@AB@@@B@@@@@@@@@@@@@B@@@@B@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@B@@@@@@@@A@@@@@@@@@@@@B@@@@@@A@@@@B@@@B@@@B@D@@@@@@@@@@@@B@@@@B@ABB@@B@@@B@@@B@@B@@@BB@B@@BB@@@B@@B@@B@@@@@B@@@@@@@@@@B@@@@B@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@BBBBB@@B@@@@BF@@BD@@@@@@@@@@@@DD@@@@@@B@@@@B@@@@@@@@@@@@@B@@@@@@@@@@B@@@@@@@@@BL@B@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@@@B@@@@@@@B@@@@@@@@@@@B@@@@@BBF@@@@@B@@@@@@@@@B@@@@AB@B@@@B@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@B@@@@@@@@B@@@@@DJ@@@@@@@@@@@@B@@@@@@B@@@@@@@@@@@@@@BBJF@@@@@@@@@@B@@@@@@@@@@@@@@A@@@@B@@@@@@@@@@@@@B@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@@@@@@@B@@@@B@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@B@@@@@@@@@JA@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@B@@@@@@@@@@@B@@@@@@@DDB@BDDDB@@B@@BB@BBBJDDDB@HFB@B@@@B@@@B@B@DG@A@A@@@A@@@A@@@@@ABIEG@AA@@A@@@A@A@A@@@@@A@AAE@AAA@@@AA@@AA@@@BAB@@AHCHE@A@@@@@A@@@A@@BARMHCBABABA@@@@@@@@@@@@AA@@@@@@@@@@@@@@@@A@@@CA@@@A@@@AAA@A@@@@DCB@A@@A@CAA@@CC@@@@@@@@@A@@A@@@@@C@@C@@@@B@BA@@@@B@BB@@@@@@@B@@@@B@@@@B@@@@@@@@@@@@@@@@@@DA@@@@@A@@@@@@@@@@BD@@@@@@@@@@BB@@@@@@@@@@@@@@@@@@B@@@@@@@B@@A@@@B@@BB@@BABB@A@A@@BA@@CCAAAACAAAAC@AAAK@@@HA@GGE@A@@TDBCJEDCBAD@DFAU@AB@L@HA@@@@@A@@AA@A@@BA@@@A@AAA@@C@@AAE@@@@A@@@@@@ACC@@@@@A@AAA@@@@@A@@@@@@@@@A@@@@@@A@@@@@A@@@@@A@@BCAA@@@AB@@@@@@AAAAAAAC@A@@@AA@@A@A@AA@@A@A@@@@ACAEA@EE@@GC@@@@@@@@A@AE@@@@@A@@AAEBE@CBEBAB@@@@A@@@@@@BA@@@A@@B@@A@@@AB@@A@A@A@CBA@@@C@ABC@C@ABC@A@@@@@@@A@@@K@@A"],"encodeOffsets":[[116096,23662]]}},{"k":"py","g":{"type":"Polygon","coordinates":["@@CAECCAC@@@CAMCCA@@GACAAAA@CAOAQEEAIAGCGAC@I@UNABABKHEBCH@F@BBBBBD@D@D@BB@D@BAD@D@D@F@LAF@BAH@B@@@@B@@@@@@@BB@@@@DBB@@ABABBBDJBFD@@CHADCFABAB@BCBCDADC@CB@BA@EBCBA@@@@@ABCDA@CACC@@A@BHABAB@@@@CDEDEBA@@BCBEFA@CF@F@D@BBBBD@B@B@D@D@DDDBBB@BBBBB@@@@BADA@IBABAF@D@D@B@@BDBB@BB@B@BB@BABAH@DJABAB@DA@BBDBBABA@CAAB@BAPCJAF@DDFBF@@DBDBDBDBDBDBDBD@DBD@@@BBD@D@B@D@BAD@B@BAD@DDBEF@B@FAF@F@BAH@F@FBB@B@F@B@D@B@@@B@HAFAHAHCDAB@BAB@D@@@@@DAB@D@BBB@D@FBDBDBBBBDBBBD@B@B@@B@@BB@@@@BB@LJB@DBBDBBBFNLPJB@BBBC@ABCBA@A@AAAACAA@ABA@ABAB@DA@@@@DAD@FBR@D@@@B@FDFBFDB@BBDBB@@@BBFBFDDBD@HBD@D@HAH@DAFADAB@DAHC@@@@DADALENGDAB@BABAJEFEBAHKHKNS@A@E@IBM@EBK@AB@@@BQBIDK@CJWHKFIBABEHUHSBAJWPaNOHM@G@G@ECMCQ@O@ASJYN_NA@ABGDKHUHAAABKHMDQHA@SHEDMFA@E@UBGBQ@O@OBEBA@A@EAGEGCGAA@@@CAM@I@I@E@A@GAIAA@CA"],"encodeOffsets":[[116090,23448]]}},{"k":"hp","g":{"type":"Polygon","coordinates":["@@ECA@@@C@Q@EAC@CB@@@@CBA@AB@BAB@BBBBDBB@B@BABAD@BAD@@B@@@@@@@BBB@D@DBB@@@B@@@BBB@@@DBFBFDB@@@@@ABCBCBABDF@BBDABA@BB@@@B@@@@BFB@@@@@@@@@HD@@FFB@BFBD@@@@@B@BB@@B@B@BB@@B@@@BBDBBBBBB@@@@@@BA@@B@DB@AB@@@@@B@@@@@B@@@@@@@@B@@@@@@@@@B@@@@BB@B@B@@@@DD@B@@@@B@@@@@BF@BD@@@BB@B@B@@AB@@@BBB@@@B@@@@GBK@A@@BBVCEC@ABCDIFADSC@@@BHF@HGB@@L@BB@BBDBBDBBBBBDD@@AB@@@B@BAAAB@@AA@@@A@@@BA@@@@@@@A@@@@@@@@@@@@@@@@@@@AA@@@@@@@@@@AC@@@@@@@@@@@B@@@@CB@@@@@@@@@@@@@@@@@@@A@@A@@@@@@A@@@@@@AAA@@@@@ABA@@@@@@DD@@@@@B@@@@B@@@@@@@@DD@@BB@D@BB@A@CD@@@@@BBB@B@@@B@@DB@@B@@@@@@@@@@@@@@@@@BB@@@@@@@@@@@@ABABABGDQNAB@@@B@@@B@@@@@BGFGD@BA@AB@@B@@BB@@B@@BB@BBF@B@B@@@@@B@B@B@@@BB@@BFHB@@DB@BBDDBBAD@@@D@BAB@B@B@@B@BBB@@@AB@@@@@B@@B@@A@@@@DA@@BBBB@@BBBAB@@A@@AED@BCBA@@@@B@@@@@BBB@@CBAB@B@BB@@@BB@AFBDA@A@@@A@A@@@AB@@@D@BBBBAFAB@@@BB@@@@@@@@BBB@BD@@@BA@@BCD@BA@AB@@@BAB@@AD@@AD@@@@BBD@F@@@B@B@B@@@@@B@BBBB@@DAB@DCB@BEB@@AB@@@@A@@BA@@@@B@@AAA@@A@@@A@BC@A@@BA@C@@C@C@A@@ACABAD@BABB@@@@BAA@@A@@A@C@C@@@@@@@@@@@@@@@@@@@CADCBBB@@@@@@@@@@@@@B@@BB@B@@BB@@@D@@A@ABA@@B@B@HBD@B@@@B@DBBA@BBABA@@@AD@@BB@@@BC@AB@@@B@@B@@@B@@A@@@@B@BABB@@@@@B@@@H@@@@@@A@@@A@@BBBBBBB@@@BB@@@@@BAAA@@B@@@@@B@@DB@@@BBB@@@@D@B@B@JB@@B@B@@@BB@FBDB@@BB@@@@B@B@BB@B@@@FBDBB@@B@@@@B@B@@@BB@@@@@B@@@@@@@@@D@@B@@@@@@B@@@@@@@B@@@BB@B@@BB@@BA@A@@@@B@@AB@@A@@@@A@@@@AA@@@@@A@A@@@@B@@@@@@A@@@@@A@@@@@@@@@@A@@@@@@@A@@@@@AB@B@@@@@B@B@@@D@BBBB@@@@@@@@@B@@@@@@@@B@@@@@@@@A@@@@@@@@B@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@AB@@A@ABMF@@@@@BBBDDBHBD@@DB@B@@B@BBBBHD@@@B@@@@@@@@@@@@@@@@@@BJAB@@@FAB@@AD@@@BAB@@@@@@@@@@@@AB@@@@@@@@ABA@KDCBABAAA@@@AAA@@B@@ABAB@DABA@C@GA@AA@@@IB@@CB@@A@A@@B@@AB@@BD@@@@@B@B@@@@@@@B@@@@@@@@@@@@@B@@@@@@@@@B@@@@@@@B@@@@A@@@@@@@@@@@A@@@@@@A@@@@@@A@@@@@A@@@@@@@@B@@@@A@@@@@@@@@@@A@@@@@@@@@AB@@@@A@@@@@@@@@BD@@BB@@B@@@@B@@@@@@@@@@@@B@@@@@@@@@@@@@B@@@@@@B@@B@@@@@@@@@@@@@B@@@@@@B@@@@@@@B@@@@@@@@@B@@@@@@AB@B@D@BABB@D@B@D@BB@@@BDD@BA@@BABADA@@@ADCDCDBH@@@@@B@@@@@@@@A@@@@B@@@@@@@@@@@DABA@@@@B@@@B@@@@@@@B@@B@@D@BBB@B@B@H@DA@CAA@AACAAB@B@B@BBDB@B@B@D@B@DB@@@@@BABAB@D@B@DDBBBB@@AB@@AFAB@F@DD@@B@@@@B@FH@@@@@@@@@B@@@@@@@@@@@@@@@@@BB@@@@@@B@@@@@@BB@@@@@@@@B@@@@@@@B@@@@@@BB@@@@BB@@D@@@D@B@@B@@@@@AB@B@@@JCF@HAFADEAG@E@E@@B@D@B@@@DCDABCB@BAFAB@BAB@BADAB@@@@@B@BBDB@@BGHE@@BCBABADA@@BCB@@AB@DCBA@C@@H@LF@@@@@@@@BA@@@@@@@@@@@@@@@@BAB@BAB@B@BABADC@A@A@A@@@@@@@@@@@A@@HE@@@@FABADCBA@@DC@@B@@@@@@@@@@@@@@AB@@@@@BCAC@@@@@@B@@@@@@@@@@@@@B@@@@AB@@@@@@A@@@@@@@@@@@@@@@@@@@@AA@@@@@@@@EC@@@@@@@@@AA@@@@@@@@@@@@@A@@@@@@@@A@@AC@A@@@A@@@@@@B@@ABA@@@A@@B@@@@A@@@@@@@@@@@@@@@@B@@@@@@@@B@@@@@@@@@@B@@@@@@A@A@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@AA@@@@@@@@@@A@@@@@@B@@@@@@@@@@A@@@@@@@@@@@@@@@@@ABA@@@A@A@@@@@@@@@@@A@@@@@@@@@@@@@@@@B@B@BCB@B@@@DC@@@@@@DABAB@@@DA@@@@@@@@B@@@@@@@@@@@@@B@@@@@@@@@@@B@@@@@@@@B@@@A@@B@@@B@@C@@@CCA@@A@@@@@AAEAA@@@@@AA@@@@@@@@@@@@A@@@@B@BBBBB@B@@@@@@@@@@@B@@@@@@@@A@@@@@@@@@@@@@A@@@@@@@@DABCB@@EB@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@@@@@@@A@@@@@@@@@CB@@A@@A@@@@@B@@@@A@@@@@@@@@@@ABC@ABC@@@@CC@@@@@A@@BC@@@AAE@@@@@@@@BA@@@@D@@@@@@B@@@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@B@@@@@@@@@@@@@B@@@@@@@@@@A@C@A@@@A@@@@@@@@@@@@A@@@@A@@@@@@@@@@@@A@@@@@@@@@@@@@A@@@@@@@@@C@@@EB@@@@@@@@@@A@@A@@@@@@@@@@@@@@@A@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@A@@@@@@@@@@@B@@@@@@B@DA@@B@D@@@@@B@B@BBB@@@BBB@@AB@BB@A@@@AA@@A@@@@@@@@@@@A@@@AB@@@@A@@AA@@@A@@@A@@@AB@@A@@@A@A@@@A@@@A@@@AB@@A@@@A@@@A@@A@AA@@A@@@A@AA@@AA@A@@@A@@BA@@BA@A@AB@@A@@@A@@@A@@BA@A@@@A@A@@@AA@A@@BA@A@@@@AA@@A@@@@BAB@B@B@@@BBB@@@BA@@A@@A@@AAA@@A@A@@@A@@A@@@AAA@B@@@BAB@B@B@@@B@@A@A@@AA@@@@AAA@AAA@A@A@@@AAA@@@AA@@@A@@AAA@@AAA@@AAA@@AAA@@@@AA@@@A@AA@@A@A@@@AAA@@@A@@AA@A@@@A@@AA@@@AAA@@@AA@@A@@AA@A@@AA@A@@@AAA@@@A@@AA@@@A@AA@@A@@AA@A@@@A@@@A@A@@@A@@AAB@@@@A@@@@@A@@BAB@@@@@B@BAB@@A@A@@@A@@@ABA@@@@@A@A@@@A@@@A@A@@@A@@@A@@@@@@@A@@@AB@@A@AA@@A@@@A@A@@@A@A@@@A@@@A@A@@@A@@@@@A@@@@AA@@@A@AA@@A@@A@@@ABA@@BABA@@@AB@B@@@BA@A@AAABA@@B@@AB@@A@A@A@A@@@ABA@A@A@@@A@A@@@A@A@A@A@A@@@A@AA@@@@AA@@@AAA@@@A@@@AA@@@@A@@BA@@@A@@@@BA@@BA@@@ABA@@@A@AB@@A@@@A@AB@@A@A@@BA@A@@@A@@BA@@@A@A@@AA@@@@@AAA@@@AA@@AAA@@@AA@@A@@@AB@@@@AB@@@@AB@@ABAB@@AB@@AB@@AB@@@A@@A@@@A@@@@@@@ABA@@@A@@@A@@@A@@@A@A@@@A@@B@@@@@@@AA@@@@@@ACACA@AAA@@@@A@@@@@@AA@A@@A@@@@@@@@@A@@@@@@@@@AC@E@@@@B@@@@@@@@@B@@@@@@@@@@@B@@@@@@@@A@@B@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@AA@@@@@@@@@@A@@@@B@@@@@@@@@@@@@@A@@B@@@@@@@@@@@@@@@@A@@BABA@@DA@A@@B@@@@@@@@@@@B@@@@@@@@@@@B@@@@@@A@@@@B@@@B@@@@@@@@@B@@@@@@@@@@@@@@@@@@@@A@@B@@@@@@A@@@@@A@A@@@@B@BA@@@@@@DA@ABA@C@@@@@@@A@@@@@@@@@@@A@@@@@@@AB@AAC@@@KCE@E@GE@@CAACEMAA@CAAAC@ACEAACC@@MICGGGEKAG@GMTGLGLABEFIFABABA@CBMHKFCBCB@@@@GDCBA@CBEBCBG@GBC@C@GAC@CAECEAAA@@A@CAAAA@ECEA"],"encodeOffsets":[[116149,23620]]}},{"k":"by","g":{"type":"Polygon","coordinates":["@@@@A@@B@@E@@@@@@@A@@@C@@@C@@@@@A@@@@@@@G@@@@@@@A@@@@@@@@@@@A@@@@@A@@@@@A@@@C@@@A@ED@@@@CD@@@@@@@B@@@@@@@B@@@F@@@@@@@H@@@D@@BBDFBDDDDB@BBBBBB@@@HDLD@B@@BDBB@B@@AF@D@B@B@D@B@BBB@DADADAD@@ADAB@BA@ADABCBCBABABABADA@ABAD@BG@@@@@E@ABED@BEDBH@FAH@@@@@@@@@@AF@B@BD@@BB@@FBDBF@B@@@DBF@B@DAB@DAF@D@BAF@BAD@D@@CFABCDABC@A@C@A@ABA@AB@B@DAB@D@@A@@BA@A@C@C@A@A@ABABA@@BAD@B@D@BB@@B@D@@ABLBBDAF@@AD@DBF@@@DBD@FBD@B@DAB@@AHEH@DBDHLHLBD@BBDDDBFJDFBFCD@BCDCB@DBFBDBDBDBDCRBBBNEFI@CCGBGAIB@BADA@@HG@@H@LBHAD@BD@BBJJBFBB@FDTBBB@@@B@@AF@BED@J@@BDBDBDB@BCAC@A@@@@@CD@B@FBHD@@@@BBDLFB@BBB@@L@DDDDAF@@@B@@BBB@B@BBB@@BB@BB@BBB@BBB@@BB@@BB@AB@@@BA@@BA@A@@B@@@B@@@B@@@@@@BB@@BB@BBBHDJR@BEB@B@B@D@B@BAB@D@BADAB@BAB@B@@@B@B@@@@BBB@B@FBB@DDBBDDBBBB@B@D@B@D@@@B@B@@@BBBBBDBBBB@D@@@BBBBDB@B@B@B@B@B@B@B@B@D@@@F@HDFHBDDADCBEHAB@B@D@BCBA@CAQ@GBC@ABABAD@BBDB@@DBHDFD@@HHDBB@@@JCDAB@D@BDDFDBB@B@DAD@@@BDB@BBBB@@B@@DBD@BAB@D@B@BB@D@D@F@FBB@DBD@BBBBBBDDDBDBHB@@BABAF@BABAB@@@FAFAHCB@BCHGDEA@A@@B@@@@@AA@C@@@C@@@AA@@@@AA@@@@@@@A@@@@@@@A@@@@@@A@@A@@@@A@@@@@@@AA@@@@@@@@@@@@@@@@A@@@@@@@@@G@@E@A@@A@@@CCE@A@EB@BA@@BA@AACA@C@A@CBABA@A@@@@CAA@C@A@A@A@AC@A@A@ABADBBBB@DBB@@C@G@A@AAA@A@CA@@@@A@@@@@@@A@@@A@@B@BA@C@@@@@@@@@@@A@@B@@@@@@@@@@A@@@@AGDCDCBC@@B@BCBA@AB@@ACC@A@@AAC@A@C@A@BA@A@C@ABA@@@@@@@A@@@@@@@@@A@@@@@@@A@@@@A@@@@@@@@@@@@@A@@@@A@@@@A@@@@@@@@@@@@@A@@@@@@@@@@@@@@A@@A@@@AA@@AC@@@@@@@@B@@@@@BA@@@@@@@@B@@@@@@@@@@@B@@@@@@A@@@@@@B@@@@@B@@@@@@@@B@@@@B@@@@@@@@@@@B@@@@@@A@@@@@@@A@@@@@@@@@A@@@@@@@@@@@@@A@@@@@@@A@A@@@@AC@@BA@@@AB@B@@@DA@@JA@@B@@BHBD@B@BA@CBABA@@@AB@BB@@B@BBBADALCB@BA@@@@@@@@BA@@@@@@@@@@@@BA@A@@BC@@BA@E@@BAAI@@@@@@@@@@@@@@@@@@@A@@GCAAAAA@@@@ACA@@ACAGCCAA@A@@@@NEBAB@@@BA@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@A@@@@@@B@@@@@@@@@@A@@@@@@A@@@@@@@@@A@AA@A@C@@@A@A@@@@@ABA@@@@B@@@@@@@B@@@@@@@@@@@@B@@@@@B@@@@A@@@@@@B@B@@@@BB@@@@@B@@B@@@BA@@@A@@B@B@@AA@@AA@A@@A@@@A@@@@@@@A@@@@A@@@@C@@@@@@@@@A@@@@AA@@A@A@@@@@@AA@CAEA@@A@A@@A@A@A@@A@@AA@AC@EAA@@A@A@@@IAA@A@C@@@@@AA@A@@CA@@@A@@@@@AB@BB@A@@@@AA@@A@AAAAAA@@@B@@@B@@@@G@@@A@@@@@A@BA@A@A@@B@@@@A@@@AA@@@A@@BAD@@A@@AC@@B@@ABAB@AABCAA@@@A@C@GAA@A@@@AB@B@BC@@@A@@AA@A@@AA@@@@@@@@@@@@@A@AACDDB@@@@@@@@@@@@@@@@@@D@D@B@@@@BB@AB@@@@AAABC@ABDB@BB@D@D@@@@DAB@@@BADB@@@B@@@BB@BA@@@@@AB@@@B@@A@@BA@AFA@CDA@CB@@AAAAA@@@@@A@A@A@@@E@C@AA@@@@BC@@BC@@BA@A@@BAB@@ADC@AB@@A@@ACA@AA@@@@@@@@AA@@A@EBABAA@A@C@@BA@@B@B@@@B@B@ACBEA@@A@@AAA@A@AB@DA@AA@@@@A@@@@@ABADC@BF@@@BA@ABAA@@AAAA@@CB@@@@@BA@@@@A@@@@BA@@A@AAA@@@@A@ABA@A@C@@BCAACCAAA@@CA@AJ@B@@@@@B@@@B@@@B@BCHA@A@@@A@@@A@A@GEA@CCICAA@AAA@@@AA@CCACA@CC@@@@@@A@@@@@@@@@@@A@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@IB@@@@@@@@A@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@A@@A@@@@@@@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@A@@@@@@@@@@@@@A@@@@@@B@@@@@@@@@@@@A@@@@@@@@@@@IEAA@@@@@@@@@@@@@@@A@@@@A@@@@@@@@@@@@@CI@@@@A@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@A@@@ABA@@@@@A@@@@@@@@@A@@@@AE@A@@@@@A@@@@@@@@@@@A@@@@@@@A@@@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@AAK@@@@@@@@A@@@@@@@@@@@@A@@@@@@@@@@@@@A@@A@@@@@@@CC@@@@@@@@@@@@AC@@AE@@@@@AA@AAAA@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@A@@A@@@@@@@@@@@@A@@@@@AA@@@@A@@AA@@@AAA@@A@@@@A@@@A@@@AA@BAA@@@@@@A@@@@@@@@@@C@A@@@A@@@A@@@@@@B@@@@A@@@@@@@@@@@@@@B@@@@@@A@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@A@@@@@@@@@@@@@@@@A@@A@@@@@@@@@@@@@A@@@A@@BABA@@@@@@@@@A@@BA@@@BA@@@@@@@@@@@@A@@A@@@@A@@@@@@@@A@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@A@@@@A@@@@@@@@@@@@AAAAA@A@C@@@@@@@@@@@@@@A@@@@@@A@@A@A@EB@@@B@@@@A@@@@B@@A@@AA@@@@@@@@@@@@@@@A@@BA@@@@@A@@BAA@@@@A@@ABA@@@@D@@@@C@C@@@@@@@@@@@A@AA@@A@@@CAA@AB@@@@@@@@@@@@@@@@@@@@@@AD@@@@@@A@A@@@@A@@@@@@@A@@@@@@AA@@@@@A@@CC@@@@@@A@@@@@@@A@A@@@A@A@A@@@@@A@A@ABAB@@@@@@@@@@@@AAA@A@@AAAC@C@@@@@C@AAA@@@@@@@@@@@AA@@AC@A@@@A@@A@A@@@@@@@A@@@@@@@@@@@@@@@A@@@@B@@@B@@@@@@@@@@@@@@@@A@@@@@@@C@@@@@A@@@@@@@@@@@@@C@@@A@@@CBCB@@@@@@@@@@@@@@@@BD@@B@@@B@@@@@BBB@@B@@@@@@@@@@@BABA@@B@@@@@@AB@@@@@@@@@@@@@@@@@@@@@@@@AB@@@@@@@@@@@@@@@@@@AB@@@@@@@@@@A@@@@@@B@@@@@@@B@@@@@@A@@@@@@@@@@@@@@B@@@@@@@@@@@B@@@@@@@@@@@@@@@@A@AB@@EBA@A@@@@@@@ABC@@@A@@@@@@@@@@@A@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@@@A@@@@@@@@@@@@B@@A@@@@@@@@@@@@@AB@A@@@@@@A@@@@@@@@@@@A@@@@@@@@A@@A@A@@DA@@@@@@@A@AA@@AGA@A@C@@@@@@@@@@@@@@@A@@AC@A@@@A@A@A@@A@@@@@AA@AAAA@@AAACA@@@@@@@@@@@@@@@@A@@AAA@AED@@@BA@@BA@CBABCHAD@@A@@@@@AA@ECGAA@B"],"encodeOffsets":[[115930,23698]]}},{"k":"ns","g":{"type":"Polygon","coordinates":["@@H_EMSKmK[ASAiBSBCLUveKLIFOJCBK@A@EBEDCBIHCFAAEDEEGFEE@BEHGLADCBEL@BKRCFEJIPGN@B@@@BD@D@FBBRUPMJKHGFKHIFABEBMJQNABKHGF@@ABMLBB@@@@FN@@eLCBMBCBG@E@K@EBKDIDMHCBA@ED@BGDIF@@@@SLCDIFCBGHGDABCF@BCHCJAJ@@@DB@DAHBFBBBDBDBDCBABBBBFBB@@@DDB@JJBBBBDB@@BD@B@@CBEBABABABAB@BEDCBCDC@ABA@A@CAC@@@A@A@ABABC@KCC@A@AA@CEAA@@AEAAF@BA@A@CAE@AAA@EFABEDG@CBKDGDCDAD@DAJ@XI@ABAB@BCDAFGA@DB@AFJFCHAHDBB@@DABJ@D@HBHDJBFBRFPBDBB@BBDBHB@@DBNDDB@@D@DBFDDBDBB@JBHBB@F@J@J@N@DB@@B@HBHDHFFBB@B@FAPAP@R@HAVAF@B@NEFCTGB@RGNCLGBABBVGLGHCBAB@`MZMTI@GHKFKNSZ[TUDCFEBAFERUDABABCJIVYHGHI@@TWHGNQLMNQDGVsTmTiV§R"],"encodeOffsets":[[116467,23092]]}},{"k":"hd","g":{"type":"Polygon","coordinates":["@@BA@ABABC@@@@BA@ABC@CAA@C@A@A@CAAA@AAA@A@C@AAA@C@A@@BA@A@ABABC@ABAAA@C@A@A@@@A@@@@@C@A@CBA@AAA@AA@@E@@DFFFHBHB@DB@DAB@BA@AB@BBH@FADCDABE@EDGHCDBBB@@BABAFADA@A@A@@B@@@F@FBDBH@@@FBB@BFB@@@DADCBCBE@@@@CA@CBEFABBF@@@@DHBDDDDDFDBFFDDFFH@B@BABABABABC@A@C@@@A@AAAAA@CEA@AEEEEACAAEA@CB@DABAD@D@F@BA@AB@@A@A@AA@@AAA@@@ABA@ABA@ABA@A@A@ABA@AAC@A@C@A@A@ABAB@@@B@@@@@B@B@D@D@D@B@BA@@BAB@@@BA@@BA@A@CDBB@@DBDDA@ABCB@DBBDBD@@B@@@B@@@B@@A@A@@@AB@@B@BD@BB@D@B@@@@@@B@@@BABADAB@B@@@B@BB@DBB@@B@@BB@B@@B@@@BA@@B@@BB@@B@@BB@BB@@@B@B@B@@@@@B@BBABA@AB@BABC@CH@B@@ADC@@@AB@@ABAD@B@BAB@DAB@DA@@BA@@BA@AB@B@B@@@BB@@BLD@D@FABABCCC@EAA@AECECCC@C@CCCCCCACE@A@@BAF@FBDBFBF@HDBDBDAB@B@DDDD@FB@BD@@BJAD@D@@D@DB@BB@B@HAB@DADBDBDB@BBCDABAHAF@F@BBHB@@FEBABBEF@BJ@@BBBCB@BPHDCBARB@BBDH@LGB@B@@@FB@@@@FBHHBD@B@@BB@BBBBB@@B@@@B@@BB@@@B@B@@BB@BAB@@B@@H@BHHHFDHADAHHH@DA@@D@DDHBDANHDFEHABBBB@BBFIHDFFDBHALCF@LAACFA@AJCFDDB@D@B@BFBB@FAHHDCALDF@A@I@CHBLBTBDBBB@BABEHDDFBBJB@DBBBB@HHBDHADF@FCDGFBDBB@@B@@BBBABADCBCBABABABABBHBFBHAF@B@@DBDDDBDBDDDBB@D@DAB@BBD@@BB@F@@J@FBBF@DAFCDAF@DEBAB@BD@@@D@D@BCF@BBBGPDBLI@@DBBBDDB@BBB@BBD@B@D@B@B@DBB@BB@BBB@@BBDBFBDBBCBCBEB@@AB@@B@@@BBAFGHEB@L@BAB@@A@AB@DAD@B@F@B@D@D@DABABABADABABABABAB@D@D@D@@@B@@@B@B@B@@AB@LIFCEE_CGGBCFENBBAB@D@DCFCFCBADABAB@BAB@@C@ABC@A@C@ABA@CBKBABAFBDBF@@BBBBBDBFADAB@@@D@@@HAF@DC@@DAB@BB@B@DPDFADAF@F@F@DDB@BBB@DB@@@@B@@@B@BAB@BADAB@DAD@@AB@@@B@@A@@BA@A@A@@BA@@@A@A@@@A@@BAFGF@DB@@DAAC@CA@DAB@BBD@B@@AACAA@AA@CBABA@@@CA@@DC@AAEDCFABABCBCCACCACEEACACCC@EDM@@BABAD@B@D@B@DAD@B@FFDA@@DADADEACBIFC@@@AF@BAAGCC@@ACA@AAAAAAAAAAA@@@@ACGDCDAH@DAFCFEBABADCBA@A@ABC@@AAAA@AAA@@GACACACCAAAAAAC@CAA@EAE@C@C@A@@A@A@CBA@AAC@CA@@@AAAAA@AC@@C@CBA@A@CACEACC@A@CBID@@A@CAGG@@ECGCCA@@CAAAC@ABAB@BAD@HBR@DABADC@A@A@GBAFCDCBACEGGCE@@@C@A@A@A@A@A@A@A@A@A@ACAA@A@@@CAAAAACAAAA@@A@A@@@C@A@C@A@A@AACAACCA@CAA@E@AAA@A@@A@A@@@A@A@ABA@CBABC@A@ABA@C@A@A@A@AFQ@CIAGAAA@@AA@@A@@@@A@@@A@@@A@@@@BAB@@AB@@A@@BAA@@AA@@AA@AAA@AAAA@@AA@AAA@A@AA@@@A@@BECCCCK@@@AA@AEACKAA@@@@GCEAA@C@@D@@@@@BBDADA@ACACAC@@@IFC@ABE@@@A@@AASAECA@EAIAAI@AACC@GBKAG@@@GH@@CBABA@BJAHDH@DEJMFAAQACDCACACAEACAA@CDADC@EDEAICAECCAC@AACGKGKAC@CFGBG@@BA@C@AAC@EAC@C@@AE@CBC@@BEACKAABEFC@EBA@KHKNEMACS@AB@@@@AFKMAA@AF@@A@ABA@A@A@@ACEGMBC@A@@@C@A@AACA@@AA@@@@@@@AA@AAA@@AA@A@@@C@@AC@E@@@C@C@A@A@@A@@@A@@@A@@BCBABABC@@@A@A@CBA@ABA"],"encodeOffsets":[[115792,23828]]}},{"k":"ch","g":{"type":"Polygon","coordinates":["@@@A@ECCIC@CEEIGGB@@CA@@AA@A@@CEACCCAACAAAAAA@A@AAAAA@@AAA@@@A@@@AAA@C@A@AA@@@@@ECCCACCCAC@AAC@C@@BA@@@ABA@A@ABAAA@@KDEA@EACAC@G@A@C@CAA@AACKEG@@@@DABCDA@@BA@AD@@CBABABAD@@GFAH@@CAAAA@@@@@A@CBABA@ABA@EBABA@ADCBCD@@A@C@A@@@@F@FBHCFEBGBE@ID@@CFGHADA@GDEBEB@@A@ABABE@ABABBB@BBBBB@@AD@B@BABCDABABEFEDCBG@CBCDDH@B@@B@BBBBBBBBBBB@BD@@DDBHABE@@B@@EDAJBDCFCBCB@@CBEEA@C@CBA@C@A@C@ABAB@@CN@FDDBDBDFFBDDDDBADADABEBCDBF@BCD@@DB@@B@BADAB@@BBBBD@BA@C@AAA@CBB@@DBDCB@@CAE@EHAB@@@B@@@B@B@@AB@@@B@BAB@@@BA@@@A@@BC@CBA@CBABA@ABA@@@A@@@@@CAA@AAA@CCE@E@E@CBEBOC@C@AAAA@CB@@CDE@GB@@C@@@A@CBEBCAAAAA@AE@CAEAABABAL@DAB@B@D@BAD@B@DA@ABA@ABCBABEDEDCDC@A@ABMAEFADHH`DFFEDKJA@@BA@A@A@@@A@@@C@C@C@A@ABABABABCBABABABCBC@C@A@E@A@C@CBA@@B@BA@ABK@A@GFEHAB@B@@BBBBDBBBB@BBBBB@BBBDBB@BBF@FBDBF@BB@@BBB@BB@@B@@@BA@A@ABC@CBA@CBA@@B@B@@@B@@B@BBB@D@D@D@B@DBB@D@DAD@BAB@DAB@D@B@FBH@DA@@B@DBB@BB@B@B@B@B@DAD@B@DB@B@B@B@B@B@BBB@BBBD@F@DB@@BBBB@B@BBD@B@B@B@B@BB@@BB@B@B@D@@BB@B@@@BBBBBBDBB@B@B@B@B@@@B@@BBBDBFDDBF@BBF@DBD@BBDBBBBBBFAF@DFB@@B@B@@@B@B@@@H@FBFBHBDBAB@BAB@@@B@B@D@@@JAHBHC@@@@@ABA@ABAB@FADBF@F@@@@@@@@@D@B@D@D@BBB@BBBBB@B@@@B@@@BA@ABABAB@@@@@FDB@FDB@F@B@BADA@CIAFCB@BEAAFAB@DCBAHCB@B@B@FABAFADC@@CEBA@ADABCBA@@@GACHC@@BAHEHAFF@@DAFAB@B@B@HED@HBDBH@FCH@DBDDFBB@@@B@BABBB@B@DBDBDDFBDBFDFBBBBBCDI@HFJBDA@@D@B@D@B@B@FAJI@A@GD@DABABA@A@@@AAA@@CCBGJD@@B@BADABABABAB@@@@AF@D@D@@I@AHCBAB@BAB@B@BA@ABA@@B@@B@DBBDFB@BBDD@BRLBB@@@@@@@@ABCDAFBBBBBBJDBBFF@DAFFDFBB@B@B@D@@@BAD@DFA@ADEDE@CF@JBBB@DB@DAD@D@HFFD@@BABABGJHLDJ@BCBED@BAFAD@B@BAB@BADAB@B@@ABA@@BA@ABABC@GLAFHDDDCDE@@DB@HANLLJ@BADBDBF@@FB@DBFBD@@@BB@@@DDDBFB@BJBDA@A@ABBFBDAF@@ADCDA@@HBRABABAFB@@@JFPF@FEBCB@F@FABCBCHAHFFDDBF@DD@DCBADCJAFBBDDBLCHELGDBFDDBDLGBDB@D@DEAGB@FB@FB@D@BCDAF@FDFDB@DADCDC@B@@D@HD@B@@F@BDFHBDDBDJB@BBBBD@@@FHFL@BFN@B@HDBDBDBBF@BHBHAD@F@@@D@DBBADC@ABBB@D@BBDB@BBBBBB@DBDBFBDBB@BBB@BBBBBBBBBBDBDBDBD@FBD@F@DBDBFBDBDD@BB@BB@@BBDBR@DBD@D@BC@CDADADABBDD@DDDBB@BDCBCH@DBD@D@DEBCFAHBHDFBJDFA@@B@B@DBD@B@@C@ADABA@@@AD@DDH@LHNBDADADBHFDACEHBL@FBBCDCFDD@HDHAJ@FFB@B@BBB@@ABCBABBDCB@@A@@BAB@BA@CB@@BB@D@B@DAB@B@B@BA@@BAD@@AB@@ABA@AAABA@ACC@C@C@CBEDADA@G@A@A@AB@BC@AB@BCB@B@BCAA@CB@@C@C@A@AACCC@CBCB@FABA@ABA@CBCBCAA@CDC@@BAAABADEBAB@BA@@DCACC@@AAGC@@E@A@@@G@A@CGAECICCECE@CAGDIJAJGGEKCAEBCDADCJEPADEFK@ABACBUCEAGACCAA@@CC@EIEECCIAEC@CHCD@DAFCAC@EBA@@B@BBJJDBFBFCBEAECAEGG@@CAACAAAA@@CAAAA@CAA@A@CAA@C@C@A@C@C@CACAAA@A@@@C@@@C@C@C@A@CAA@AAAAGC@A@GBICA@CEECEBGF@@ABA@A@C@C@@@A@A@@@A@@A@@@AA@@@@ECAEBAAIAECG@A@@AA@AEACACEIEAK@C@A@CG@G@CAKA@@@EEEKAAAACACACA@@AAC@CAA@CAA@C@C@A@C@EACA[AAAGGBAPG@EQDACAE@GCIKAQBK@A@@@@@@@@CBA@CDCB@B@B@BAB@B@@AB@@@@AAA@@AA@@@A@AAA@AAA@AA@A@AAA@A@A@A@AA@@AA@A@@@A@@AAAC@A@@@A@@B@BA@A@ABA@@BA@@B@@@B@B@BBD@B@F@D@F@@AB@@@@A@A@@AA@AEAACKAEAAEEBEAOACAEDCBABA@EACAGBC@KBK@ECKEQECAGEAABCAC@@@C@CEGAGACCE@A@A@AAA@AAAAA@AA@A@AAA@C@AAAA@@AGBK@ABA@@@A@A@A@A@@BA@A@@@AB@@@@A@A@A@@@A@A@A@A@A@AA@A@A@A@A@A@ABA@@@A@AA@@AAACACAEACCCAAAA@AAA@AAA@@@AFEDEAAEC@@CAA@AAEACEAEEEGCA@A@A@@@A@A@@@@@@AAAAAACAAA@A@@@A@A@AA@@AA@@BEAAAACEG@C@AE@@@AAA@A@C@A@C@AAA@AA@AAA@AAAAA@AC@AEEE@IAA@C@ABC@C@C@A@CAAACAAAACAAAAAAIE@@IAA@"],"encodeOffsets":[[116351,24014]]}},{"k":"zc","g":{"type":"Polygon","coordinates":["@@AACCCAECGC@@EA@@EC]EA@@@A@@B@@@@@@@B@@@@@@@@@@@B@@@@@@@DAB@BCB@@@@@@ABA@@@@@@B@B@@@@@B@@@@A@@@@B@@@@@@@@@@@@@@@@@@A@@@@@@@@@A@@@A@@@@@@B@@@@A@@@@@@@@@@@A@@@@@@@@@@@A@@@@BCB@@ABAB@@@B@@@@@@@@@@@@@@A@@@@B@@@@@@@@@@@@A@@@@@@B@@@@@@@@B@@B@@@@@@@@@@@@@B@@@@@@@@@@@@@@A@@@@B@@@@@@A@@@@@@@@@@@A@@@@@@@@@A@@@@@@FBD@@@@@@@@B@@@@@@@@@B@@@@BBB@@@@@@@B@@B@BBB@BDBD@@@@@@BB@@@@@@A@@@@B@@@B@B@@@B@@@B@@@B@@AB@B@@@@@@@B@@@BB@@@A@@BA@@BA@@BA@AB@BA@@B@@A@@B@@A@@B@@@BB@@B@@BB@BB@@B@@BB@B@@@@BB@@@B@B@@AB@@@B@@@BAB@@@B@BA@@B@B@@@BA@@B@B@@AB@B@@AB@@AB@@@@@B@@AB@@@B@@B@@B@@@B@@BB@B@@BB@@@@BBB@@@B@B@B@B@B@@@B@B@@@B@B@B@BA@@B@B@B@B@@@BA@@@AB@BABBB@B@@A@@@ABA@@B@BA@AB@BA@@B@@@@BB@@B@B@@BB@@@@@B@@@@@B@@@B@B@@@B@@@B@B@@@B@B@@@BB@@B@BA@@B@@@B@@@@@@@B@@@B@@@B@B@@@B@@@B@B@@@@AB@B@@@B@@@B@BA@ABA@@@@@A@AB@@@B@@@@@B@@A@BB@@@B@@@B@B@@@B@@@BBB@@@BB@@B@B@@BB@@@B@@BB@B@@@BBB@@@BBB@@@BB@@B@@BB@B@@BB@@@B@@@BBB@@@B@@BB@B@@@B@BB@@B@B@@BB@@@@BB@BB@BB@@BB@BB@BB@@@B@@BB@@B@BB@@B@B@B@BBB@BB@@@@BB@@@B@BA@@@A@A@A@AB@@A@B@BB@@B@@@@B@@@B@BB@BB@@@BB@@@AB@@A@AA@@A@A@A@AB@@@@@BB@@B@@B@B@@AB@B@@B@@@B@B@@@BAB@@@B@@@B@@@BA@@B@BAB@@AB@@@B@@@BBB@@BBB@@@B@@@BBB@@@@B@@@B@@@BA@@B@@@B@@@B@@@B@B@@@BA@@B@@@B@@@B@@BB@@@B@@A@@B@@@B@@@@@@@@@@@BB@@B@@@BAAA@@BA@AA@@A@AAA@A@@@@@C@A@@@CBA@@@@@@@@A@@@@@@@@@@@B@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@B@@@@@@@@@@@@@@@BB@@@@@@@@@@@FA@@D@@@@@@@@@B@@@@@@@@@@@@@B@@@@@@@@@@@@@@B@@B@@@@@@@@@@@@@@B@@@B@D@B@@@@@@@@A@@@@@@@@@@@@@A@@@@@@@@@@@@A@@@@@@@@@@@@@@@@@@@@@@@A@@@@C@@@@@AB@@@@@@@@BF@B@@AD@@@B@@@@DD@@@@AD@BAD@B@@@@@@@@@@@B@@A@@@@@B@@@@BA@@D@@@@@@@@@B@@@@@@@@@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@@@FA@@DABA@C@@@@@@B@@@@@@@@@@@@@B@@@@@@@@@@A@@@@@@@@@@@AAAAA@A@A@@B@@@@@@@@@@@@@BB@@@@B@FBBB@@@@B@@@DB@D@@@DA@@@A@@@@B@@@A@@@@@@A@@@@@@@@@@@A@@@@@@@@@@@@@A@@@@@@@@@CB@@A@ABCB@@@@@@CD@@A@A@ADA@A@@@@@@@@@@@@@@@@@@B@@@@@@@@@@@B@B@@AB@B@@@@@@@@@@@@@@@@@B@@@@@@@@A@@@@@@@@B@@@@@@@@B@@B@@@@@@@@@@@@@B@@@@@@@@@@@@@@@@@B@@@@@@@@@@@@@B@B@@@@A@@@@@@@@@@@@A@@@@@@A@@@@@@@@@@@@@@@@@@B@@A@@@@B@@AB@BA@@@@@@@@B@@@BBD@@@B@@@@@@B@@@@@@@@@@@@@B@@B@@@@@@@@FD@@@@@@@@BB@@@@@@@@@@@@@@@@@@@@@B@@@@A@@B@@A@@@@@@@@@@@@@A@@@@@@@BDAD@@@@A@@B@@@@@@@@@@@@A@@@CD@@ABCDABEB@@@@GF@@@B@@@@@@@@@@@B@B@BCDABABA@A@ABA@AB@@@@@@@@@@@@@@@@AB@@@@@@@@BD@BBB@D@D@B@HBDBD@FFBLC@@BBAB@B@BAB@B@@AB@@@DBD@BBDDDBDDDFD@@@@B@@B@B@DBB@B@@@B@@BB@BB@BBBBB@B@BBBBDBBBDDBDDF@@@BBB@@DB@@HAJHFF@DJDDD@F@BB@JB@@JFBBBBBBBDBBDBBBDBB@D@D@D@BAD@B@JBF@FF@BBDB@BBBBB@BBB@@BBB@B@D@B@D@BBB@B@@BFD@H@DFBBBBAF@@BB@@BBB@B@@@B@B@BBBDBBBB@B@@@@B@B@@@B@B@B@HDFFBFDFFBBBB@DB@@FDBBCFEF@B@@BB@BBB@BBBBBDDBDBFBDBDBB@@BBB@@@B@BAB@B@B@B@B@B@@B@B@B@B@B@B@@@B@B@B@@A@@B@@@BAB@@@B@B@B@B@@AB@BALBH@@BBBBD@B@BBB@B@@BBBBB@BBB@B@B@BDFBDBHFH@D@D@@BDADBBHFDBRFLFFDL@LAD@HADBFBB@BADAFCDBPBFBFABFFBLBBDFB@AB@BAB@@AD@B@B@BBB@B@B@FAFABABAB@DABAD@BADABA@C@CBA@A@AAAACAA@CAEBA@ABABAD@@AB@@A@@@AA@AA@@CAAAA@AA@AAAAA@CAC@@AA@A@A@A@@@A@AB@B@BAD@B@BABADA@ABA@ABA@A@A@@@A@AB@@AB@@AB@@A@@@A@A@A@A@ABA@ABA@A@A@A@@BA@A@@BABABABAD@DAB@D@B@DAB@DABABABCAC@A@A@A@@@A@@BA@ABABCBAJABCBCB@DABAB@BAB@@ABABA@A@ABA@AB@BABAB@D@B@B@B@D@D@B@@AFCDGDCF@N@@@LA@@@@@AB@@@AACIEEAAAAA@A@A@CBAB@@A@AB@A@ABCBADCDAD@D@B@DBB@B@DBF@DAD@B@D@DDD@B@B@B@BADAD@B@D@DB@@@@BAB@BA@@BAHGCAEGAACAGAK@E@KD@@A@@@@AAA@@@A@A@CAC@CBA@A@A@AB@@A@A@A@@CMBEBADCBABABABA@ABAD@B@D@D@D@JCJBJF@@BAB@BA@C@@@A@AAA@AAAA@@AAA@ABA@@@ABA@A@@@AB@AA@@@AA@@A@@AA@A@@@@@A@@@A@A@@BABABABABAD@BCDADADA@@BABA@@BA@A@A@A@AAA@AA@@AA@@AAAA@@AA@A@A@CCEACCEAAAACBEDEDCBGDEBEBIDELGDCB@@C@@@@@A@@AAAA@@CEAAACCCG@@A@@AAA@@@A@A@AB@@A@@@@A@@@ABAB@BABAB@@C@A@IFE@ABEHGAG@@@C@C@ABEA@ABA@A@C@C@GDEBG@AB@FCBMHKDCDCBBHDLAD@HA@@B@BA@ABCBC@ABCBA@C@A@IHEFGAIA@@EAGBKBKB@@A@A@@BC@ABABABC@A@CAC@AAA@@@AAAA@AAA@CAAAA@AAAAA@@@A@A@@@A@A@ABA@ADABC@A@CB@@@@AB@B@@@@@B@@@B@@@@@@A@@A@@A@AAAAA@A@I@ACEACAI@A@AAGCA@CFE@AAGAAAA@AAA@AAA@AAA@ACA@AAAA@AAAAA@@AAA@@AA@A@@@AB@@@B@@AB@B@B@BABAB@BA@AB@BAB@BAD@BAB@BABA@AAGACCAAIFGDM@@B@@CFIDEFABEAC@EAAI@GB@@AIAEGC@@@AAA@@AA@AAA@@@A@A@@@A@AA@@A@@@A@@@A@@@A@@B@@@@A@C@ADGDGHAJBHC@ECICAACKCC@EBG@ABI@C@CAAAAA@@ACCCA@I@EACEAEEAECAA@@@AAA@A@ABE@@AAAEACAABCCE@A@EA@@EC@@MAB@@EDIBCBGDABEBA@ABKDGBMBIAOAGBC@IDEBE@IAC@KAI@E@GFEFKHEDCBC@E@E@IACAA@GACAIEECCAGC@@GEAAAAGEGEKCG@@@GAG@GEIC@@A@@FBD@B@@ABC@A@@@@@A@AAA@A@@@AB@@A@@@@@@@@@@@@@AB@A@@@@@@A@@@@@@@AA@@AAA@@@AAEC@@AA@@@A@@BABA@@B@AA@AAAACCAG@E@IAIBM@K@IEAA@@AC"],"encodeOffsets":[[116331,23653]]}}];
+const CP={"ly": [23.125863, 113.244258], "yx": [23.128537, 113.266835], "hz": [23.083788, 113.317443], "th": [23.124807, 113.361575], "py": [22.937556, 113.384152], "hp": [23.181706, 113.480541], "by": [23.157367, 113.273238], "ns": [22.801624, 113.525165], "hd": [23.403744, 113.220463], "ch": [23.548748, 113.586679], "zc": [23.261465, 113.810627]};
+const toM=(la,lo)=>{const c=base==='amap'?w2g(la,lo):[la,lo];return L.latLng(c[0],c[1])};
+const fromM=ll=>base==='amap'?g2w(ll.lat,ll.lng):[ll.lat,ll.lng];
+const map=L.map('map',{zoomControl:false,zoomAnimation:false,attributionControl:false,preferCanvas:true,minZoom:10,maxZoom:19});
+
+const DARKM=matchMedia('(prefers-color-scheme: dark)').matches;
+const TILES={carto:L.tileLayer(`https://{s}.basemaps.cartocdn.com/${DARKM?'dark':'light'}_nolabels/{z}/{x}/{y}{r}.png`,{subdomains:'abcd',maxZoom:20}),
+ amap:L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',{subdomains:'1234',maxZoom:18})};
+const BN={vector:'Схема',carto:'Улицы',amap:'Amap 高德'};
+if(TILES[base])TILES[base].addTo(map);
+map.setView(toM(...U(me)),16);
+['carto','amap'].forEach(k=>{let n=0;TILES[k].on('tileerror',()=>{if(++n===8&&base===k){const nx=k==='carto'?'amap':'vector';toast(`<div>Карта «${BN[k]}» грузится плохо. Переключить на «${BN[nx]}»?</div><button data-base="${nx}">Да</button>`)}})});
+function decR(c,o){const r=[];let px=o[0],py=o[1];for(let i=0;i<c.length;i+=2){let x=c.charCodeAt(i)-64,y=c.charCodeAt(i+1)-64;x=(x>>1)^(-(x&1));y=(y>>1)^(-(y&1));x+=px;y+=py;px=x;py=y;r.push([y/1024,x/1024])}return r}
+GEO.forEach(d=>{const g=d.g;d.rings=(g.type==='Polygon'?[[g.coordinates,g.encodeOffsets]]:g.coordinates.map((c,i)=>[c,g.encodeOffsets[i]])).map(([cs,os])=>decR(cs[0],os[0]))});
+function inRing(la,lo,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i],b=r[j];if((a[0]>la)!=(b[0]>la)&&lo<(b[1]-a[1])*(la-a[0])/(b[0]-a[0])+a[1])c=!c}return c}
+const RV=[[[[23.152,113.228],[23.136,113.2305],[23.121,113.232],[23.109,113.2335],[23.1025,113.2405],[23.1035,113.250],[23.108,113.258],[23.113,113.265],[23.1155,113.272],[23.116,113.281],[23.114,113.290],[23.112,113.300],[23.111,113.312],[23.111,113.325],[23.110,113.340],[23.107,113.36],[23.103,113.39],[23.097,113.42],[23.09,113.45]],300],[[[23.1025,113.2405],[23.091,113.2365],[23.075,113.235],[23.05,113.24]],240]];
+function buffer(line,w){const pts=line.map(a=>P(a[0],a[1])),L1=[],R1=[];for(let i=0;i<pts.length;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy)||1,nx=-dy/l*w/2,ny=dx/l*w/2;
+ L1.push(U({x:pts[i].x+nx,y:pts[i].y+ny}));R1.push(U({x:pts[i].x-nx,y:pts[i].y-ny}))}return L1.concat(R1.reverse())}
+const PK=[[23.1405,113.2645,520],[23.1297,113.2378,270],[23.183,113.297,1700],[23.104,113.32,230]];
+let baseLayer=null;
+function buildBase(){if(baseLayer)map.removeLayer(baseLayer);const g=L.layerGroup(),full=base==='vector',T=r=>r.map(a=>toM(a[0],a[1]));
+ GEO.forEach(d=>d.rings.forEach(r=>L.polygon(T(r),full?{stroke:true,color:C.line,weight:1,opacity:.9,fillColor:C.land,fillOpacity:1,interactive:false}:{stroke:true,color:'#6a55e0',weight:1.2,opacity:.35,dashArray:'4 6',fill:false,interactive:false}).addTo(g)));
+ if(full){PK.forEach(p=>L.circle(toM(p[0],p[1]),{radius:p[2],stroke:false,fillColor:C.park,fillOpacity:1,interactive:false}).addTo(g));
+  RV.forEach(([l,w])=>L.polygon(T(buffer(l,w)),{stroke:false,fillColor:C.water,fillOpacity:1,interactive:false,smoothFactor:0}).addTo(g))}
+ GEO.forEach(d=>{if(CP[d.k])L.marker(toM(...CP[d.k]),{interactive:false,icon:L.divIcon({className:'dlabel',iconSize:[0,0],html:`<span>${DIST[d.k].n}</span>`})}).addTo(g)});
+ baseLayer=g.addTo(map)}
+function setBase(b){if(b===base)return;const c=fromM(map.getCenter()),z=map.getZoom();if(TILES[base])map.removeLayer(TILES[base]);base=b;if(TILES[b])TILES[b].addTo(map);
+ map.setView(toM(c[0],c[1]),Math.min(z,18),{animate:false});buildBase();changed=true;save();renderPop();toast(`<div>Карта: <b>${BN[b]}</b></div>`);dirty=true}
+function centerMe(){map.setView(toM(...U(me)),map.getZoom(),{animate:false})}
+map.on('move zoom resize viewreset',()=>dirty=true);
+map.on('dragstart',()=>{follow=false});
+map.on('click',e=>tap(e.containerPoint.x,e.containerPoint.y));
+
+const cv=document.getElementById('fog'),ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1,C={};
+function loadColors(){const cs=getComputedStyle(document.documentElement);['ink','panel','fog','main','local','food','me','mine','land','water','park','line','lime','vio'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim());dirty=true}
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);map.invalidateSize();dirty=true}
+const S=p=>map.latLngToContainerPoint(toM(...U(p)));
+const mpp=()=>156543.03392*Math.cos(map.getCenter().lat*PI/180)/Math.pow(2,map.getZoom());
+
+const brush=document.createElement('canvas');brush.width=brush.height=128;
+{const b=brush.getContext('2d'),g=b.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.3,'rgba(0,0,0,.92)');g.addColorStop(.6,'rgba(0,0,0,.5)');g.addColorStop(.82,'rgba(0,0,0,.15)');g.addColorStop(1,'rgba(0,0,0,0)');b.fillStyle=g;b.fillRect(0,0,128,128)}
+const noise=document.createElement('canvas');noise.width=noise.height=256;
+{const n=noise.getContext('2d');for(let i=0;i<70;i++){const x=Math.random()*256,y=Math.random()*256,r=20+Math.random()*50,g=n.createRadialGradient(x,y,0,x,y,r);const a=.05+Math.random()*.08;g.addColorStop(0,`rgba(150,160,175,${a*.35})`);g.addColorStop(1,'rgba(150,160,175,0)');n.fillStyle=g;
+ for(const dx of[-256,0,256])for(const dy of[-256,0,256]){n.save();n.translate(dx,dy);n.fillRect(x-r,y-r,2*r,2*r);n.restore()}}}
+let noisePat=null;
+
+function draw(){
+ ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalCompositeOperation='source-over';ctx.clearRect(0,0,W,H);
+ ctx.globalAlpha=.93;ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
+ if(!noisePat)noisePat=ctx.createPattern(noise,'repeat');
+ const c0=S({x:0,y:0}),cx1=S({x:1000,y:0}),cy1=S({x:0,y:1000}),ax=(cx1.x-c0.x)/1000,ay=(cy1.y-c0.y)/1000;
+ ctx.save();ctx.globalAlpha=1;ctx.translate(((c0.x%256)+256)%256-256,((c0.y%256)+256)%256-256);ctx.fillStyle=noisePat;ctx.fillRect(0,0,W+512,H+512);ctx.restore();
+ ctx.globalAlpha=1;ctx.globalCompositeOperation='destination-out';
+ const R=REVEAL*ax*1.35,now=performance.now(),x0=(-R-c0.x)/ax,x1=(W+R-c0.x)/ax,y0=(-R-c0.y)/ay,y1=(H+R-c0.y)/ay,cw=CELL*CH;
+ for(let ci=Math.floor(x0/cw);ci<=Math.floor(x1/cw);ci++)for(let cj=Math.floor(y0/cw);cj<=Math.floor(y1/cw);cj++){const arr=chunks.get(ci+','+cj);if(!arr)continue;
+  for(let n=0;n<arr.length;n+=2){const i=arr[n],j=arr[n+1],sx=c0.x+(i+.5)*CELL*ax,sy=c0.y+(j+.5)*CELL*ay;if(sx<-R||sy<-R||sx>W+R||sy>H+R)continue;
+   let r=R;if(born.size){const b=born.get(i+','+j);if(b!==undefined){const t=(now-b)/1600;if(t<0)continue;if(t>=1)born.delete(i+','+j);else{const e=1-Math.pow(1-t,3);ctx.globalAlpha=e;r=R*(.35+.65*e)}}}
+   ctx.drawImage(brush,sx-r,sy-r,2*r,2*r);ctx.globalAlpha=1}}
+ if(born.size)dirty=true;
+ ctx.globalCompositeOperation='source-over';ctx.lineCap=ctx.lineJoin='round';ctx.textAlign='center';ctx.textBaseline='middle';
+ if(target){const a=S(me),b=S(target);ctx.setLineDash([2,8]);ctx.lineWidth=3;ctx.strokeStyle=C.me;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=C.me;ctx.beginPath();ctx.arc(b.x,b.y,5,0,7);ctx.fill()}
+ const z=map.getZoom();
+ ctx.textAlign='left';
+ for(const p of POIS){if(!layers[p.cat])continue;const s=S(p);if(s.x<-30||s.y<-30||s.x>W+30||s.y>H+30)continue;
+  const v=visited.has(p.id),col=C[p.cat],r=p.cat==='main'?13:11;
+  ctx.shadowColor='rgba(27,18,56,.22)';ctx.shadowBlur=6;ctx.shadowOffsetY=2;ctx.beginPath();ctx.arc(s.x,s.y,r,0,7);ctx.fillStyle=v?col:'#ffffff';ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+  ctx.lineWidth=2;ctx.strokeStyle=v?'#ffffff':col;ctx.stroke();drawIcon(p.ic,s.x,s.y,r*1.12,v?'#ffffff':col);
+  if(v){ctx.beginPath();ctx.arc(s.x+r*.78,s.y-r*.78,4.5,0,7);ctx.fillStyle=C.lime;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle='#ffffff';ctx.stroke()}
+  if(z>=16||(p.cat==='main'&&z>=15)){ctx.font='500 11.5px Rubik,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(p.name,s.x+r+5,s.y);ctx.fillStyle='#2e2650';ctx.fillText(p.name,s.x+r+5,s.y)}}
+ for(const q of marks){const s=S(q);if(s.x<-30||s.y<-30||s.x>W+30||s.y>H+30)continue;
+  ctx.shadowColor='rgba(27,18,56,.22)';ctx.shadowBlur=6;ctx.beginPath();ctx.arc(s.x,s.y,10,0,7);ctx.fillStyle=C.mine;ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();drawIcon('mark',s.x,s.y,11,'#ffffff');
+  if(z>=16){ctx.font='500 11.5px Rubik,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(q.name,s.x+15,s.y);ctx.fillStyle='#2e2650';ctx.fillText(q.name,s.x+15,s.y)}}
+ ctx.textAlign='center';
+ const m=S(me),k=1/mpp();
+ if(acc>DISCOVER){ctx.beginPath();ctx.arc(m.x,m.y,acc*k,0,7);ctx.fillStyle='rgba(75,47,214,.06)';ctx.fill()}
+ ctx.beginPath();ctx.arc(m.x,m.y,Math.max(14,DISCOVER*k),0,7);ctx.fillStyle='rgba(75,47,214,.12)';ctx.fill();
+ ctx.shadowColor='rgba(75,47,214,.5)';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(m.x,m.y,6.5,0,7);ctx.fillStyle=C.me;ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=2.5;ctx.strokeStyle='#fff';ctx.stroke();
+}
+
+// ---------- movement ----------
+function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,SPEED*dt);
+ if(d<.5){target=null;changed=true;dirty=true;return}
+ me={x:me.x+(target.x-me.x)/d*mv,y:me.y+(target.y-me.y)/d*mv};revealAt(me);checkDiscover();
+ if(follow)centerMe();dirty=true}
+function checkDiscover(){for(const p of POIS){if(!visited.has(p.id)&&dist(me,p)<=DISCOVER){visited.add(p.id);qVisit(p.id);pts+=p.pts;changed=true;updateHUD();renderSheet();
+ toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков</div><button data-open="${p.id}">Читать</button>`);save()}}}
+function tap(x,y){if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat])continue;const s=S(p),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
+ for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
+ if(best){best.type&&best.t?openMark(best):openCard(best);return}
+ if(mode==='sim'){const ll=fromM(map.containerPointToLatLng([x,y]));target=P(ll[0],ll[1]);follow=true;dirty=true;hideHint()}}
+
+// ---------- UI ----------
+const $=id=>document.getElementById(id);
+const totalPts=POIS.reduce((a,p)=>a+p.pts,0);
+const DC=CP;
+function distAt(la,lo){for(const d of GEO)for(const r of d.rings)if(inRing(la,lo,r))return d.k;return null}
+function areaBy(){const r={};for(const k in DIST)r[k]=0;for(const k of area){const c=k.indexOf(','),ll=U({x:(+k.slice(0,c)+.5)*ACELL,y:(+k.slice(c+1)+.5)*ACELL}),d=distAt(ll[0],ll[1]);if(d)r[d]++}return r}
+function stats(list){const t=list.reduce((a,p)=>a+p.pts,0),vs=list.filter(p=>visited.has(p.id));return{pc:t?Math.round(vs.reduce((a,p)=>a+p.pts,0)/t*100):0,v:vs.length,n:list.length}}
+const km=n=>(n*ACELL*ACELL/1e6).toFixed(2).replace('.',',');
+let selDist='auto',lastDist=null;
+function updateHUD(){const here=distAt(...U(me)),cur=selDist==='auto'?(here||'city'):selDist;let st,name,top,line;
+ if(cur==='city'){st=stats(POIS);name='Гуанчжоу';top=selDist==='auto'?'Где вы сейчас ▾':'Весь город ▾';line='广州 · открыто '+km(area.size)+' км²'}
+ else{st=stats(POIS.filter(p=>p.d===cur));name=DIST[cur].n;top='Гуанчжоу · '+(selDist==='auto'?'вы здесь':'выбранный район')+' ▾';line=`места ${st.v} из ${st.n} · открыто ${km(areaBy()[cur])} км²`}
+ $('pct').textContent=st.pc+'%';$('ringArc').style.strokeDashoffset=53.41*(1-st.pc/100);$('pts').textContent=pts;
+ $('dName').textContent=name;$('cityLine').textContent=top;$('area').textContent=line;
+ if(selDist==='auto'){if(lastDist&&here&&here!==lastDist)toast(`<div>Вы в районе <b>${name}</b>, изучено ${st.pc}%</div>`);if(here)lastDist=here}
+ if($('dpick').classList.contains('on'))renderPick();renderNear()}
+function renderPick(){const ab=areaBy(),row=(k,n,sub,pc)=>`<button class="prow${selDist===k?' on':''}" data-pick="${k}" role="option" aria-selected="${selDist===k}"><span class="l"><span><b>${n}</b><small>${sub}</small></span><span class="pp">${pc}%</span></span><span class="bar"><i style="width:${pc}%"></i></span></button>`;
+ const here=distAt(...U(me));let h=`<button class="prow${selDist==='auto'?' on':''}" data-pick="auto" role="option"><span class="l"><span><b>📍 Где я сейчас</b><small>${here?'Сейчас: '+DIST[here].n:'Вы вне районов демо-карты'}</small></span></span></button>`;
+ const c=stats(POIS);h+=row('city','Весь Гуанчжоу',`места ${c.v} из ${c.n} · открыто ${km(area.size)} км²`,c.pc);
+ for(const k in DIST){const d=stats(POIS.filter(p=>p.d===k));h+=row(k,DIST[k].n+' '+DIST[k].zh,`места ${d.v} из ${d.n} · открыто ${km(ab[k])} км²`,d.pc)}
+ $('dpick').innerHTML=h}
+function togglePick(open){if(open!==false)$('pop').classList.remove('on');const on=open??!$('dpick').classList.contains('on');$('dpick').classList.toggle('on',on);$('top').setAttribute('aria-expanded',on);if(on)renderPick()}
+$('top').onclick=()=>togglePick();
+$('top').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();togglePick()}if(e.key==='Escape')togglePick(false)};
+const fmtD=m=>m<1000?Math.round(m/10)*10+' м':(m/1000).toFixed(1).replace('.',',')+' км';
+const walk=m=>Math.max(1,Math.round(m/80))+' мин';
+
+function renderSheet(){const b=$('body');let h='';
+ if(tab==='mine'){h=mineHTML()}
+ else if(tab==='near'){const list=POIS.filter(p=>layers[p.cat]).map(p=>({p,d:dist(me,p)})).sort((a,c)=>a.d-c.d).slice(0,14);
+  list.forEach(({p,d})=>{const v=visited.has(p.id),hidden=false;
+   h+=`<button class="item" data-open="${p.id}"><span class="dot" style="color:var(${CAT[p.cat].c})">${isvg(p.ic,20,2)}</span><span class="t"><b>${hidden?'Неизвестная находка':p.name}</b><span>${fmtD(d)}, ${walk(d)} пешком · ${DIST[p.d].n}</span></span>${v?'<span class="tag ok">✓</span>':`<span class="tag">+${p.pts}</span>`}</button>`});
+  if(!list.length)h='<p class="note">Все слои скрыты. Включите «Главное», «Локальное» или «Поесть» над картой.</p>'}
+ else if(tab==='dist'){Object.entries(DIST).forEach(([k,d])=>{const all=POIS.filter(p=>p.d===k),v=all.filter(p=>visited.has(p.id)).length,pc=Math.round(v/all.length*100);
+   h+=`<div class="dist"><h3>${d.n} <span>${d.zh} · ${v} из ${all.length}</span></h3><div class="bar"><i style="width:${pc}%"></i></div><p>${d.about}</p><p><b>Жильё:</b> ${d.stay}</p></div>`})}
+ else{h+=profileHTML()}
+ b.innerHTML=h}
+
+let nearTimer=0;
+function openCard(p){const v=visited.has(p.id),d=dist(me,p),dl=DIST[p.d],col=`var(${CAT[p.cat].c})`;
+ const inD=POIS.filter(q=>q.d===p.d),tot=inD.reduce((a,q)=>a+q.pts,0),got=inD.filter(q=>visited.has(q.id)).reduce((a,q)=>a+q.pts,0),after=Math.round((got+(v?0:p.pts))/tot*100);
+ const cta=v?`<div class="pc-done">${isvg('check',20,2.6)}Вы здесь были, +${p.pts} получено</div>`:
+  (mode==='sim'?`<button class="pc-cta" data-go="${p.id}">${isvg('walk',22,2.4)}Погнали · ${walk(d)}</button>`:`<a class="pc-cta" href="https://maps.apple.com/?daddr=${p.lat},${p.lon}&dirflg=w" target="_blank" rel="noopener">${isvg('walk',22,2.4)}Погнали · ${walk(d)}</a>`);
+ $('card').innerHTML=`<div class="pc-top"><svg class="rings" width="340" height="340" viewBox="0 0 340 340" aria-hidden="true"><circle cx="170" cy="170" r="70"></circle><circle cx="170" cy="170" r="110"></circle><circle cx="170" cy="170" r="150"></circle></svg>
+ <div class="pc-bar"><button class="pc-x" data-close aria-label="Закрыть">${isvg('x',20,2.4)}</button><span class="pc-tag" style="background:${col}">${isvg(p.ic,14,2.4)}${CAT[p.cat].n}</span></div>
+ <h2>${p.name}</h2><div class="pc-sub">${p.zh} · ${dl.n} · ${walk(d)} пешком</div></div>
+ <div class="pc-body"><div class="pc-stats"><div><b>${v?'✓':'+'+p.pts}</b><span>${v?'посещено':'за визит'}</span></div><div><b>${fmtD(d)}</b><span>до места</span></div><div><b>${after}%</b><span>${dl.n} ${v?'сейчас':'после'}</span></div></div>
+ <p class="pc-story">${p.s}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м</p>`}${cta}</div>`;
+ $('card').classList.add('place','on');$('scrim').classList.add('on')}
+function closeCard(){$('card').classList.remove('on');$('scrim').classList.toggle('on',$('sheet').classList.contains('open'))}
+function openPanel(){closePops();$('sheet').classList.add('open');$('scrim').classList.add('on');renderSheet()}
+function closePanel(){$('sheet').classList.remove('open');if(!$('card').classList.contains('on'))$('scrim').classList.remove('on')}
+function closePops(){$('pop').classList.remove('on');if($('dpick').classList.contains('on'))togglePick(false)}
+function renderPop(){$('pop').querySelectorAll('[data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===base))}
+function renderNear(){return;const el=$('nearPill'),c=POIS.filter(p=>layers[p.cat]&&!visited.has(p.id)).map(p=>({p,d:dist(me,p)})).sort((a,b)=>a.d-b.d)[0];
+ if(!c){el.style.display='none';return}el.style.display='';el.dataset.open=c.p.id;el.innerHTML=`<span class="e">${c.p.e}</span><b>${c.p.name}</b><span>${walk(c.d)}</span>`}
+let tt=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),4200)}
+function hideHint(){const h=$('hint');if(h){h.remove();changed=true}}
+
+document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[data-go],[data-close],[data-seg],[data-soon],[data-amap],[data-add],[data-mt],[data-savemark],[data-mark],[data-delmark],[data-export],[data-import],[data-pick],[data-base],#reset');if(!t)return;if(handleMine(t))return;
+ if(t.dataset.open){const p=POIS.find(q=>q.id===t.dataset.open);closePanel();closePops();$('toast').classList.remove('on');follow=false;map.setView(toM(p.lat,p.lon),Math.max(map.getZoom(),16),{animate:false});map.panBy([0,120],{animate:false});openCard(p)}
+ else if('amap' in t.dataset){setBase('amap')}
+ else if(t.dataset.go){const p=POIS.find(q=>q.id===t.dataset.go);target={x:p.x,y:p.y};follow=true;closeCard();hideHint();closePanel()}
+ else if('close' in t.dataset)closeCard();
+ else if(t.dataset.seg){rankSeg=t.dataset.seg;renderSheet()}
+ else if('soon' in t.dataset)toast('<div>Команды появятся в следующей версии.</div>');
+ else if(t.id==='reset'&&confirm('Сбросить весь прогресс и туман'+(user?' (и в облаке)':'')+'?')){reveal.clear();area.clear();chunks.clear();born.clear();visited.clear();pendCells.clear();pendVisits.clear();pts=marks.length*15;serverReset();me=P(23.1262,113.2628);target=null;revealAt(me);save();updateHUD();renderSheet();centerMe();dirty=true}});
+$('scrim').onclick=()=>{$('card').classList.contains('on')?closeCard():closePanel()};
+$('hintX').onclick=()=>{hideHint();save()};
+function openTab(t){tab=t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t===t));openPanel()}
+$('listBtn').onclick=()=>openTab('near');
+document.querySelectorAll('[data-tabopen]').forEach(b=>b.onclick=()=>openTab(b.dataset.tabopen));
+$('sheetX').onclick=closePanel;
+$('layersBtn').onclick=()=>{const on=!$('pop').classList.contains('on');closePops();$('pop').classList.toggle('on',on);renderPop()};
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x===b));renderSheet()};
+$('chips').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;layers[b.dataset.l]=!layers[b.dataset.l];b.setAttribute('aria-pressed',layers[b.dataset.l]);dirty=true;renderSheet();renderNear()};
+$('centerBtn').onclick=()=>{follow=true;centerMe()};
+
+$('gpsBtn').onclick=()=>{mode==='gps'?stopGps():startGps(true)};
+function startGps(user){
+ if(!navigator.geolocation){if(user)toast('<div>Браузер не даёт доступ к геолокации. Работает режим прогулки по нажатию.</div>');return}
+ if(!window.isSecureContext){toast('<div>GPS работает только на странице с адресом https://. Разместите файл на хостинге.</div>');return}
+ mode='gps';target=null;$('gpsBtn').classList.add('on');let first=true;
+ watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;me=P(c.latitude,c.longitude);acc=c.accuracy||0;
+  if(first){first=false;follow=true;map.setView(toM(c.latitude,c.longitude),17,{animate:false});toast('<div>GPS включён. Идите — туман рассеивается за вами.</div>');
+   if(Math.hypot(me.x,me.y)>25000)toast('<div>Туман работает везде, но точки интереса пока есть только в центре Гуанчжоу.</div>')}
+  revealAt(me);checkDiscover();if(follow)centerMe();dirty=true;if(tab==='near')renderSheet()},
+  err=>{toast(`<div>GPS недоступен: ${err.code===1?'это окно не получило доступ к геолокации':'не удалось определить место'}. Включён режим прогулки по нажатию.</div>`);stopGps()},
+  {enableHighAccuracy:true,maximumAge:3000,timeout:20000})}
+function stopGps(){if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;mode='sim';acc=0;$('gpsBtn').classList.remove('on');dirty=true}
+
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fdate=t=>new Date(t).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+let draft=null;
+function mineHTML(){let h=`<div class="acts"><button class="ghost" data-add>＋ Отметить это место</button><button class="ghost" data-export>Выгрузить</button></div><button class="ghost" data-import style="margin-top:8px">Импорт пройденных маршрутов</button><p class="note">Файлы GPX (Здоровье, Strava и др.), KML или JSON из Хронологии Google Карт. Туман откроется везде, где вы уже ходили.</p>`;
+ if(!marks.length)return h+'<p class="note">Здесь будут ваши находки: вкусная лапшичная, необычный двор, красивый вид. Отметка ставится там, где вы стоите, с фото и заметкой, и приносит 15 очков.</p>';
+ [...marks].sort((a,b)=>b.t-a.t).forEach(q=>{const d=dist(me,q);h+=`<button class="item" data-mark="${q.id}">${(q.photo||q.photoUrl)?`<img class="thumb" src="${q.photo||q.photoUrl}" alt="">`:`<span class="dot" style="box-shadow:inset 0 0 0 2px var(--mine)">${MT[q.type].e}</span>`}<span class="t"><b>${esc(q.name)}</b><span>${MT[q.type].n} · ${fmtD(d)} · ${fdate(q.t)}</span></span></button>`});
+ return h+`<p class="note">Отметки хранятся только в этом браузере. Выгружайте их время от времени, чтобы не потерять.</p>`}
+function openAdd(){draft={type:'place',photo:null};const hereGps=mode==='gps';
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><h2>Новая отметка</h2><div class="zh">${hereGps?'Там, где вы стоите сейчас (GPS)':'В точке, где стоит ваш человечек'}</div>
+ <label class="fl">Название<input id="mName" maxlength="60" placeholder="Например, лапшичная у моста"></label>
+ <div class="types">${Object.entries(MT).map(([k,v])=>`<button data-mt="${k}" class="${k==='place'?'on':''}">${v.e} ${v.n}</button>`).join('')}</div>
+ <label class="fl">Заметка<textarea id="mNote" rows="3" placeholder="Что здесь интересного, цены, часы работы"></textarea></label>
+ <label class="photo" id="mPhotoBox"><input type="file" accept="image/*" id="mPhoto" hidden><span>📷 Добавить фото</span></label>
+ <button class="cta mine" data-savemark>Сохранить отметку</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on');setTimeout(()=>$('mName')&&$('mName').focus(),300)}
+function shrink(file){return new Promise((res,rej)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,720/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',.65))};img.onerror=()=>{URL.revokeObjectURL(url);rej()};img.src=url})}
+document.addEventListener('change',async e=>{if(e.target.id!=='mPhoto'||!e.target.files[0]||!draft)return;
+ try{draft.photo=await shrink(e.target.files[0]);$('mPhotoBox').innerHTML=`<img src="${draft.photo}" alt="Фото отметки">`}catch(err){toast('<div>Не удалось прочитать фото. Попробуйте другой снимок.</div>')}});
+function openMark(q){const d=dist(me,q);
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:var(--mine)">${MT[q.type].e}</span><div><h2>${esc(q.name)}</h2><div class="zh">Ваша отметка</div></div></div>
+ ${(q.photo||q.photoUrl)?`<img class="mimg" src="${q.photo||q.photoUrl}" alt="">`:''}<div class="meta"><span style="color:var(--mine)">${MT[q.type].n}</span><span>${fmtD(d)}, ${walk(d)}</span><span>${fdate(q.t)}</span></div>
+ ${q.note?`<p class="story">${esc(q.note).replace(/\n/g,'<br>')}</p>`:''}<button class="ghost danger" data-delmark="${q.id}">Удалить отметку</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on')}
+async function exportMarks(){try{const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;if(dl){const data=JSON.stringify({city:'Guangzhou',exported:new Date().toISOString(),coords:'WGS-84',marks:marks.map(({x,y,...m})=>m)},null,2);await dl.save({filename:'guangzhou-otmetki-'+new Date().toISOString().slice(0,10)+'.json',data});return}}catch(e){if(e&&e.code==='declined')return;if(e&&e.code&&e.code!=='unavailable'){toast('<div>Не удалось сохранить файл.</div>');return}}const data=JSON.stringify({city:'Guangzhou',exported:new Date().toISOString(),coords:'WGS-84',marks:marks.map(({x,y,...m})=>m)},null,2);
+ const name='guangzhou-otmetki-'+new Date().toISOString().slice(0,10)+'.json',file=new File([data],name,{type:'application/json'});
+ try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Мои отметки: Гуанчжоу'});return}}catch(e){if(e&&e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+function handleMine(t){
+ if('import' in t.dataset){$('impFile').value='';$('impFile').click();return true}
+ if(t.dataset.base){setBase(t.dataset.base);return true}
+ if(t.dataset.pick){const k=t.dataset.pick;selDist=k;togglePick(false);
+  if(DC[k]){follow=false;map.setView(toM(...DC[k]),15,{animate:false})}else if(k==='auto'){follow=true;centerMe()}
+  updateHUD();dirty=true;return true}
+ if('add' in t.dataset){openAdd();return true}
+ if(t.dataset.mt){draft.type=t.dataset.mt;[...t.parentNode.children].forEach(b=>b.classList.toggle('on',b===t));return true}
+ if('savemark' in t.dataset){const name=$('mName').value.trim();if(!name){$('mName').focus();$('mName').placeholder='Введите название';return true}
+  const[lat,lon]=U(me),q={id:'m'+Date.now(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),name,note:$('mNote').value.trim(),type:draft.type,photo:draft.photo,t:Date.now()};
+  Object.assign(q,P(q.lat,q.lon));marks.push(q);if(!saveMarks()){marks.pop();return true}qMark(q.id);flushSoon();
+  pts+=15;changed=true;save();updateHUD();closeCard();draft=null;tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
+  toast(`<span style="font-size:22px">${MT[q.type].e}</span><div><b>Отметка сохранена</b><br>+15 очков</div>`);return true}
+ if(t.dataset.mark){const q=marks.find(m=>m.id===t.dataset.mark);if(q){follow=false;map.setView(toM(q.lat,q.lon),Math.max(map.getZoom(),16),{animate:false});map.panBy([0,120],{animate:false});openMark(q)}return true}
+ if(t.dataset.delmark){if(confirm('Удалить эту отметку?')){qDel(t.dataset.delmark);marks=marks.filter(m=>m.id!==t.dataset.delmark);saveMarks();flushSoon();pts=Math.max(0,pts-15);changed=true;save();updateHUD();closeCard();renderSheet();dirty=true}return true}
+ if('export' in t.dataset){if(!marks.length){toast('<div>Пока нечего выгружать: поставьте первую отметку кнопкой ＋.</div>')}else exportMarks();return true}
+ return false}
+$('addBtn').onclick=openAdd;
+function parseTrack(text,name){const out=[];const t=text.trimStart();
+ if(t[0]==='<'){const doc=new DOMParser().parseFromString(text,'application/xml');
+  doc.querySelectorAll('trkpt,rtept,wpt').forEach(e=>{const la=+e.getAttribute('lat'),lo=+e.getAttribute('lon');if(isFinite(la)&&isFinite(lo))out.push([la,lo])});
+  doc.querySelectorAll('coordinates,coord').forEach(e=>{e.textContent.trim().split(/\s+/).forEach(c=>{const p=c.split(/[ ,]/).map(Number);if(p.length>=2&&isFinite(p[0])&&isFinite(p[1]))out.push([p[1],p[0]])})});
+  return out}
+ const re=/(-?\d{1,2}\.\d+)°?\s*,\s*(-?\d{1,3}\.\d+)°?/;
+ (function walk(v){if(!v)return;if(typeof v==='string'){const m=v.length<60&&v.match(re);if(m)out.push([+m[1],+m[2]]);return}
+  if(Array.isArray(v)){for(const x of v)walk(x);return}
+  if(typeof v==='object'){if(typeof v.latitudeE7==='number'&&typeof v.longitudeE7==='number'){out.push([v.latitudeE7/1e7,v.longitudeE7/1e7])}
+   else if(typeof v.lat==='number'&&(typeof v.lon==='number'||typeof v.lng==='number')){out.push([v.lat,v.lon??v.lng])}
+   for(const k in v)if(k!=='latitudeE7'&&k!=='longitudeE7')walk(v[k])}})(JSON.parse(text));
+ return out}
+$('impFile').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;toast('<div>Читаю файлы…</div>');
+ let track=[];for(const f of files){try{const txt=await f.text();if(importMarks(txt))continue;track=track.concat(parseTrack(txt,f.name))}catch(err){toast(`<div>Не удалось прочитать ${esc(f.name)}</div>`)}}
+ track=track.filter(p=>Math.abs(p[0])<=90&&Math.abs(p[1])<=180&&!(p[0]===0&&p[1]===0));
+ if(!track.length){toast('<div>В файлах не нашлось координат.</div>');return}
+ const before=area.size,t0=performance.now()+300;let prev=null,got=0,n=0,mnLa=90,mxLa=-90,mnLo=180,mxLo=-180;quiet=true;
+ const total=track.length;let gain=0;
+ track.forEach((ll,idx)=>{const p=P(ll[0],ll[1]),t=t0+idx/total*2200;
+  if(prev){const d=dist(prev,p);if(d>25&&d<400){const k=Math.ceil(d/20);for(let s2=1;s2<k;s2++)revealAt({x:prev.x+(p.x-prev.x)*s2/k,y:prev.y+(p.y-prev.y)*s2/k},t)}}
+  revealAt(p,t);prev=p;n++;
+  for(const q of POIS)if(!visited.has(q.id)&&Math.abs(q.x-p.x)<DISCOVER&&Math.abs(q.y-p.y)<DISCOVER&&dist(q,p)<=DISCOVER){visited.add(q.id);qVisit(q.id);got++;gain+=q.pts}
+  if(ll[0]<mnLa)mnLa=ll[0];if(ll[0]>mxLa)mxLa=ll[0];if(ll[1]<mnLo)mnLo=ll[1];if(ll[1]>mxLo)mxLo=ll[1]});
+ quiet=false;pts+=gain;
+ changed=true;save();updateHUD();renderSheet();follow=false;
+ try{map.fitBounds([toM(mnLa,mnLo),toM(mxLa,mxLo)],{padding:[60,60],maxZoom:16,animate:false})}catch(err){}
+ dirty=true;toast(`<div><b>Импорт готов.</b> Точек: ${n.toLocaleString('ru-RU')}, открыто ${km(area.size-before)} км²${got?`, засчитано мест: ${got}`:''}.</div>`)};
+setInterval(()=>{if(changed){save();saveQ()}if(tab==='near'&&target)renderSheet()},1500);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{loadColors();buildBase()});
+window.addEventListener('resize',resize);
+if(document.fonts)document.fonts.ready.then(()=>dirty=true);
+
+// ================= ОБЛАКО (Supabase) =================
+const SB_URL='https://vylcfcdghrbywrqmlcpj.supabase.co',SB_KEY='sb_publishable_MF676thjTnqRkoFNy_uDYQ_ak72rThU';
+let sb=null,user=null,syncing=false,syncState='off',syncMsg='',flushT=0;
+try{sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){}
+function setSync(st,msg){syncState=st;syncMsg=msg||'';const d=$('sdot');if(d)d.className='sdot '+st;if(tab==='rank'&&$('sheet').classList.contains('open'))renderSheet()}
+function syncText(){return !user?'Прогресс хранится только на этом телефоне':syncState==='ok'?'Всё сохранено в облаке':syncState==='sync'?'Синхронизация…':syncState==='err'?'Ошибка синхронизации: '+esc(syncMsg):'Подключаюсь к облаку…'}
+function flushSoon(){clearTimeout(flushT);flushT=setTimeout(flush,1500)}
+function recomputePts(){pts=POIS.filter(p=>visited.has(p.id)).reduce((a,p)=>a+p.pts,0)+marks.length*15}
+function wipeLocal(){reveal.clear();area.clear();chunks.clear();born.clear();visited.clear();marks=[];pendCells.clear();pendVisits.clear();pendMarks.clear();pendDel.clear();pts=0;save();saveMarks();saveQ()}
+async function flush(){if(!sb||!user||syncing||!navigator.onLine)return;if(!pendCells.size&&!pendVisits.size&&!pendMarks.size&&!pendDel.size&&syncState==='ok')return;
+ syncing=true;setSync('sync');const uid=user.id;
+ try{
+  if(pendCells.size){const all=[...pendCells];for(let i=0;i<all.length;i+=500){const part=all.slice(i,i+500);
+    const {error}=await sb.from('fog_cells').upsert(part.map(c=>({user_id:uid,cell:c})),{onConflict:'user_id,cell',ignoreDuplicates:true});if(error)throw error;part.forEach(c=>pendCells.delete(c));saveQ()}}
+  if(pendVisits.size){const all=[...pendVisits];const {error}=await sb.from('visits').upsert(all.map(v=>({user_id:uid,poi_id:v})),{onConflict:'user_id,poi_id',ignoreDuplicates:true});if(error)throw error;all.forEach(v=>pendVisits.delete(v));saveQ()}
+  for(const id of [...pendMarks]){const m=marks.find(x=>x.id===id);if(!m){pendMarks.delete(id);continue}
+   if(m.photo&&m.photo.startsWith('data:')&&!m.photo_path){const blob=await (await fetch(m.photo)).blob(),path=`${uid}/${m.id}.jpg`;
+    const {error:ue}=await sb.storage.from('photos').upload(path,blob,{contentType:'image/jpeg',upsert:true});if(ue)throw ue;m.photo_path=path;saveMarks()}
+   const {error}=await sb.from('marks').upsert({id:m.id,user_id:uid,name:m.name,note:m.note||null,type:m.type,lat:m.lat,lon:m.lon,photo_path:m.photo_path||null,created_at:new Date(m.t||Date.now()).toISOString()},{onConflict:'user_id,id'});
+   if(error)throw error;pendMarks.delete(id);saveQ()}
+  for(const id of [...pendDel]){try{await sb.storage.from('photos').remove([`${uid}/${id}.jpg`])}catch(e){}
+   const {error}=await sb.from('marks').delete().eq('id',id);if(error)throw error;pendDel.delete(id);saveQ()}
+  await sb.from('profiles').update({points:pts}).eq('id',uid);
+  setSync('ok')}catch(e){console.warn(e);setSync('err',e.message||String(e))}finally{syncing=false}}
+async function pull(){if(!sb||!user)return;const uid=user.id;setSync('sync');
+ try{
+  if(Q.owner&&Q.owner!==uid)wipeLocal();Q.owner=uid;saveQ();
+  const server=new Set();for(let from=0;;from+=1000){const {data,error}=await sb.from('fog_cells').select('cell').order('cell').range(from,from+999);if(error)throw error;data.forEach(r=>server.add(r.cell));if(data.length<1000)break}
+  quiet=true;for(const k of server)addCell(k);quiet=false;for(const k of reveal)if(!server.has(k))pendCells.add(k);
+  const {data:vs,error:ve}=await sb.from('visits').select('poi_id');if(ve)throw ve;const sv=new Set(vs.map(r=>r.poi_id));
+  sv.forEach(id=>visited.add(id));for(const id of visited)if(!sv.has(id))pendVisits.add(id);
+  const {data:ms,error:mse}=await sb.from('marks').select('*');if(mse)throw mse;const sm=new Set();
+  for(const r of ms){sm.add(r.id);let q=marks.find(m=>m.id===r.id);if(!q){q={id:r.id,lat:r.lat,lon:r.lon,name:r.name,note:r.note||'',type:MT[r.type]?r.type:'place',photo:null,t:Date.parse(r.created_at)};Object.assign(q,P(q.lat,q.lon));marks.push(q)}q.photo_path=r.photo_path}
+  for(const m of marks)if(!sm.has(m.id)&&!pendDel.has(m.id))pendMarks.add(m.id);
+  saveMarks();recomputePts();save();saveQ();updateHUD();renderSheet();dirty=true;
+  const need=marks.filter(m=>!m.photo&&m.photo_path);
+  if(need.length){const {data}=await sb.storage.from('photos').createSignedUrls(need.map(m=>m.photo_path),604800);(data||[]).forEach((d,i)=>{if(d&&d.signedUrl)need[i].photoUrl=d.signedUrl})}
+  setSync('ok');await flush()}catch(e){console.warn(e);setSync('err',e.message||String(e))}}
+async function serverReset(){if(!sb||!user)return;try{await sb.from('fog_cells').delete().eq('user_id',user.id);await sb.from('visits').delete().eq('user_id',user.id);for(const k of reveal)pendCells.add(k);saveQ();flushSoon()}catch(e){setSync('err',e.message)}}
+function importMarks(txt){let o;try{o=JSON.parse(txt)}catch(e){return false}if(!o||!Array.isArray(o.marks)||!o.marks.length||!o.marks[0].name)return false;
+ let n=0;for(const r of o.marks){if(!r.id||marks.find(m=>m.id===r.id)||!isFinite(r.lat)||!isFinite(r.lon))continue;const q={id:r.id,lat:+r.lat,lon:+r.lon,name:String(r.name).slice(0,60),note:r.note||'',type:MT[r.type]?r.type:'place',photo:r.photo||null,t:r.t||Date.now()};Object.assign(q,P(q.lat,q.lon));marks.push(q);qMark(q.id);n++}
+ saveMarks();recomputePts();save();updateHUD();renderSheet();dirty=true;flushSoon();toast(`<div>Загружено отметок: <b>${n}</b></div>`);return true}
+function profileHTML(){const vs=POIS.filter(p=>visited.has(p.id)).length;
+ let h=`<div class="pf"><span class="pf-av">${user&&user.email?esc(user.email[0].toUpperCase()):'?'}</span><span class="pf-t"><b>${user?esc(user.email||''):'Гость'}</b><span>${syncText()}</span></span></div>
+ <div class="pc-stats" style="margin:12px 0"><div><b>${pts}</b><span>очков</span></div><div><b>${vs}/${POIS.length}</b><span>мест</span></div><div><b>${km(area.size)}</b><span>км² открыто</span></div></div>`;
+ h+=user?`<button class="ghost" data-syncnow>Синхронизировать сейчас</button><button class="ghost" data-logout>Выйти из аккаунта</button>`:`<button class="cta" data-login>Войти и сохранять в облако</button>`;
+ return h+`<p class="note">Рейтинг игроков появится, когда подключатся друзья.</p><button class="ghost" id="reset">Сбросить прогресс</button>`}
+const SITE='https://dimanomokonov.github.io/otkroy-gorod/';
+const AUTHERR=m=>/invalid login/i.test(m)?'Неверная почта или пароль':/not confirmed/i.test(m)?'Сначала подтвердите почту по ссылке из письма':/already registered|already exists/i.test(m)?'Такой аккаунт уже есть — нажмите «Войти»':/password should be|at least/i.test(m)?'Пароль должен быть не короче 6 символов':/rate limit|too many/i.test(m)?'Слишком много попыток, подождите немного':m;
+function openLogin(step,email){$('card').classList.remove('place');const E=esc(email||'');
+ $('card').innerHTML=step==='sent'?`<button class="close" data-close aria-label="Закрыть">×</button><h2>Проверьте почту</h2><div class="zh">Отправили письмо на ${E}. Откройте ссылку из него, чтобы подтвердить почту, затем вернитесь сюда и войдите. Письмо может попасть в «Спам».</div><button class="cta" data-login-open="${E}">Войти</button>`
+ :step==='newpass'?`<h2>Новый пароль</h2><div class="zh">Придумайте новый пароль для входа.</div><label class="fl">Пароль<input id="lgPass" type="password" autocomplete="new-password" minlength="6" placeholder="Не короче 6 символов"></label><button class="cta" data-lnewpass>Сохранить пароль</button>`
+ :`<button class="close" data-close aria-label="Закрыть">×</button><h2>Вход</h2><div class="zh">Прогресс будет сохраняться в облаке и откроется на любом устройстве.</div>
+ <label class="fl">Почта<input id="lgEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@mail.com" value="${E}"></label>
+ <label class="fl">Пароль<input id="lgPass" type="password" autocomplete="current-password" minlength="6" placeholder="Не короче 6 символов"></label>
+ <button class="cta" data-lin>Войти</button><button class="ghost" data-lup>Создать аккаунт</button>
+ <div class="acts" style="margin-top:4px"><button class="ghost" data-lforgot>Забыли пароль?</button><button class="ghost" data-lskip>Пока без входа</button></div>`;
+ $('card').classList.add('on');$('scrim').classList.add('on');setTimeout(()=>{const i=$(step==='newpass'?'lgPass':'lgEmail');i&&!i.value&&i.focus()},300)}
+function creds(){const email=$('lgEmail').value.trim(),password=$('lgPass').value;if(!/^\S+@\S+\.\S+$/.test(email)){$('lgEmail').focus();return null}if(password.length<6){$('lgPass').focus();toast('<div>Пароль должен быть не короче 6 символов</div>');return null}return{email,password}}
+async function busy(t,label,fn){const old=t.textContent;t.disabled=true;t.textContent=label;try{await fn()}finally{if(document.body.contains(t)){t.disabled=false;t.textContent=old}}}
+async function handleAuth(t){
+ if('login' in t.dataset){closePanel();openLogin();return true}
+ if(t.dataset.loginOpen!==undefined){openLogin('form',t.dataset.loginOpen);return true}
+ if('lskip' in t.dataset){try{localStorage.setItem('og-skip','1')}catch(e){}closeCard();return true}
+ if('lin' in t.dataset){const c=creds();if(!c)return true;await busy(t,'Вхожу…',async()=>{const {error}=await sb.auth.signInWithPassword(c);
+  if(error)toast(`<div>${esc(AUTHERR(error.message))}</div>`);else{closeCard();toast('<div><b>Вы вошли.</b> Прогресс сохраняется в облаке.</div>')}});return true}
+ if('lup' in t.dataset){const c=creds();if(!c)return true;await busy(t,'Создаю…',async()=>{const {data,error}=await sb.auth.signUp({...c,options:{emailRedirectTo:SITE}});
+  if(error)toast(`<div>${esc(AUTHERR(error.message))}</div>`);else if(data.session){closeCard();toast('<div><b>Аккаунт создан.</b> Прогресс сохраняется в облаке.</div>')}else openLogin('sent',c.email)});return true}
+ if('lforgot' in t.dataset){const email=$('lgEmail').value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){$('lgEmail').focus();toast('<div>Введите почту, и мы пришлём ссылку для смены пароля</div>');return true}
+  await busy(t,'Отправляю…',async()=>{const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:SITE});toast(error?`<div>${esc(AUTHERR(error.message))}</div>`:'<div>Отправили ссылку для смены пароля. Откройте её на этом устройстве.</div>')});return true}
+ if('lnewpass' in t.dataset){const p=$('lgPass').value;if(p.length<6){$('lgPass').focus();return true}await busy(t,'Сохраняю…',async()=>{const {error}=await sb.auth.updateUser({password:p});if(error)toast(`<div>${esc(AUTHERR(error.message))}</div>`);else{closeCard();toast('<div>Пароль обновлён.</div>')}});return true}
+ if('logout' in t.dataset){if(confirm('Выйти из аккаунта? Прогресс останется в облаке.')){await sb.auth.signOut();user=null;setSync('off');renderSheet()}return true}
+ if('syncnow' in t.dataset){pull();return true}
+ return false}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-login],[data-login-open],[data-lskip],[data-lin],[data-lup],[data-lforgot],[data-lnewpass],[data-logout],[data-syncnow]');if(t&&sb)handleAuth(t)});
+document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(e.target.id==='lgEmail')$('lgPass')&&$('lgPass').focus();if(e.target.id==='lgPass'){const b=document.querySelector('[data-lin],[data-lnewpass]');b&&b.click()}});
+if(sb){sb.auth.onAuthStateChange((ev,sess)=>{if(ev==='PASSWORD_RECOVERY')setTimeout(()=>openLogin('newpass'),300);const nu=sess&&sess.user||null,chg=(nu&&nu.id)!==(user&&user.id);user=nu;
+  if(location.hash.includes('access_token')||location.hash.includes('error'))history.replaceState(null,'',location.pathname);
+  if(nu&&chg)setTimeout(pull,0);
+  if(!nu){setSync('off');if(ev==='INITIAL_SESSION'&&!localStorage.getItem('og-skip'))setTimeout(()=>openLogin(),600)}
+  if(tab==='rank'&&$('sheet').classList.contains('open'))renderSheet()})}
+setInterval(flush,10000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});
+window.addEventListener('online',flush);
+
+loadColors();try{buildBase()}catch(e){}revealAt(me);updateHUD();renderSheet();renderPop();
+try{resize()}catch(e){toast('<div>Карта не запустилась: '+esc(e.message)+'</div>')}
+try{startGps(false)}catch(e){}
+let last=performance.now();
+let drawFails=0;(function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;try{step(dt);if(dirty){dirty=false;draw()}}catch(e){if(++drawFails===1)toast('<div>Ошибка отрисовки: '+esc(e.message)+'</div>')}requestAnimationFrame(loop)})(last);
+})();
+</script>
+</body>
+</html>
