@@ -815,8 +815,9 @@ function openPin(pt){pin={x:pt.x,y:pt.y};dirty=true;const d=dist(me,pt),dd=distA
  $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:var(--vio);color:#fff">${isvg('pin',28,2)}</span><div><h2>Выбранная точка</h2><div class="zh">${fmtD(d)} от вас${dd?' · '+DIST[dd].n:''}</div></div></div>
  <button class="cta" data-pin="route">${isvg('navi',18,2.2)} Маршрут сюда</button><button class="ghost" data-pin="mark">Поставить метку здесь</button>${mode==='sim'?'<button class="ghost" data-pin="walk">Идти сюда (демо)</button>':''}`;
  $('card').classList.add('on');$('scrim').classList.add('on')}
-async function wikiPhoto(key,q){const ck='og-ph-'+key;try{const c=JSON.parse(localStorage.getItem(ck)||'null');if(c&&Date.now()-c.t<30*864e5)return c.v}catch(e){}
- let v=null;try{const j=await (await fetch(`https://zh.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=1&prop=pageimages&piprop=name&format=json&origin=*`)).json();
+const WK={beijing:'北京路步行街',bridge:'海珠桥',huacheng:'花城广场',shamian:'沙面',statues:'沙面'};
+async function wikiPhoto(key,q){const ck='og-ph2-'+key;try{const c=JSON.parse(localStorage.getItem(ck)||'null');if(c&&Date.now()-c.t<30*864e5)return c.v}catch(e){}
+ let v=null;try{const j=await (await fetch(WK[key]?`https://zh.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(WK[key])}&redirects=1&prop=pageimages&piprop=name&format=json&origin=*`:`https://zh.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=1&prop=pageimages&piprop=name&format=json&origin=*`)).json();
   const pg=j.query&&Object.values(j.query.pages)[0];
   if(pg&&pg.pageimage&&/\.(jpe?g|png|webp)$/i.test(pg.pageimage)){const c=await (await fetch(`https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent('File:'+pg.pageimage)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=900&format=json&origin=*`)).json();
    const cp=Object.values(c.query.pages)[0],ii=cp&&cp.imageinfo&&cp.imageinfo[0];
