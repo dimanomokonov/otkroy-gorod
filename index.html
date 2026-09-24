@@ -830,6 +830,8 @@ function handleRoute(t){
 const OLAY={"food": {"n": "Еда", "ic": "bowl", "col": "#ff8a3d", "q": ["[\"amenity\"~\"^(restaurant|fast_food|food_court)$\"]"]}, "coffee": {"n": "Кофейни", "ic": "cup", "col": "#8a5a3c", "q": ["[\"amenity\"=\"cafe\"]"]}, "malls": {"n": "ТЦ", "ic": "bag", "col": "#e0569b", "q": ["[\"shop\"~\"^(mall|department_store)$\"]"]}, "markets": {"n": "Рынки", "ic": "basket", "col": "#2fa84f", "q": ["[\"amenity\"=\"marketplace\"]"]}, "clothes": {"n": "Одежда", "ic": "shirt", "col": "#7a5cff", "q": ["[\"shop\"~\"^(clothes|shoes|boutique)$\"]"]}, "grocery": {"n": "Продукты", "ic": "cart", "col": "#1e9e8a", "q": ["[\"shop\"~\"^(supermarket|convenience)$\"]"]}, "metro": {"n": "Метро", "ic": "metro", "col": "#2f6feb", "q": ["[\"railway\"=\"station\"][\"station\"=\"subway\"]", "[\"public_transport\"=\"station\"][\"subway\"=\"yes\"]"]}, "pharmacy": {"n": "Аптеки", "ic": "pill", "col": "#18c29c", "q": ["[\"amenity\"=\"pharmacy\"]"]}, "atm": {"n": "Банкоматы", "ic": "card", "col": "#5f6b72", "q": ["[\"amenity\"~\"^(atm|bank)$\"]"]}, "exchange": {"n": "Обмен валют", "ic": "exchange", "col": "#b8860b", "q": ["[\"amenity\"=\"bureau_de_change\"]"]}, "toilets": {"n": "Туалеты", "ic": "wc", "col": "#3aa0c8", "q": ["[\"amenity\"=\"toilets\"]"]}, "hospital": {"n": "Больницы", "ic": "cross", "col": "#e5484d", "q": ["[\"amenity\"~\"^(hospital|clinic)$\"]"]}, "sim": {"n": "Связь и SIM", "ic": "phone", "col": "#6b6490", "q": ["[\"shop\"=\"mobile_phone\"]"]}};
 let OL={};try{OL=JSON.parse(localStorage.getItem('og-ol')||'{}')}catch(e){}
 const OVP=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+let ovpChain=Promise.resolve();
+function ovpFetch(ql,ms){const run=async()=>{for(const u of OVP){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms||20000);try{const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(ql),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctl.signal});clearTimeout(to);if(r.ok)return await r.json()}catch(e){clearTimeout(to)}}return null};const p=ovpChain.then(run,run);ovpChain=p.catch(()=>{});return p}
 const osmData={},osmBox={};let osmT=0,osmBusy=false,osmWarn=false,pin=null,rvDraft=null;
 function renderOL(){document.querySelectorAll('[data-ol]').forEach(b=>b.setAttribute('aria-pressed',!!OL[b.dataset.ol]))}
 function osmSchedule(){clearTimeout(osmT);osmT=setTimeout(osmRefresh,700)}
@@ -839,7 +841,7 @@ async function osmRefresh(){const act=Object.keys(OLAY).filter(k=>OL[k]);if(!act
  try{for(const k of act){const ob=osmBox[k];if(ob&&ob[0]<=box[0]&&ob[1]<=box[1]&&ob[2]>=box[2]&&ob[3]>=box[3])continue;
   const dy=(box[2]-box[0])*.5,dx=(box[3]-box[1])*.5,bb=[box[0]-dy,box[1]-dx,box[2]+dy,box[3]+dx],q=bb.map(v=>v.toFixed(5)).join(',');
   const ql=`[out:json][timeout:20];(${OLAY[k].q.map(f=>`nwr${f}(${q});`).join('')});out center tags 400;`;let j=null;
-  for(const u of OVP){try{const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(ql),headers:{'Content-Type':'application/x-www-form-urlencoded'}});if(r.ok){j=await r.json();break}}catch(e){}}
+  j=await ovpFetch(ql,20000);
   if(!j){toast(`<div>Не удалось загрузить раздел «${OLAY[k].n}». Попробуйте позже.</div>`);continue}
   osmData[k]=j.elements.map(el=>{const la=el.lat!=null?el.lat:el.center&&el.center.lat,lo=el.lon!=null?el.lon:el.center&&el.center.lon;if(la==null)return null;const t=el.tags||{};
    return Object.assign({id:el.type+'/'+el.id,lay:k,lat:la,lon:lo,tags:t,name:t['name:ru']||t['name:en']||t.name||OLAY[k].n,local:t.name||''},P(la,lo))}).filter(Boolean);
@@ -919,11 +921,12 @@ function dynAdd(list,persist){let n=0;for(const r of list){if(POIS.find(p=>p.id=
  if(persist){try{localStorage.setItem(DYN_KEY,JSON.stringify(POIS.filter(p=>p.dyn).slice(-600).map(({x,y,d,sx,...r})=>r)))}catch(e){}}if(n){dirty=true;updateHUD();renderSheet()}return n}
 try{dynAdd(JSON.parse(localStorage.getItem(DYN_KEY)||'[]'),false)}catch(e){}
 try{dynCenters=JSON.parse(localStorage.getItem('og-dync')||'[]')}catch(e){}
-function dynMaybe(){if(dynBusy)return;if(dynCenters.some(c=>dist(c,me)<1200))return;dynFetch(me)}
-async function dynFetch(at){dynBusy=true;const [la,lo]=U(at),A=`(around:2000,${la.toFixed(5)},${lo.toFixed(5)})`,Ac=`(around:1200,${la.toFixed(5)},${lo.toFixed(5)})`;
- const ql=`[out:json][timeout:25];(nwr["leisure"~"^(park|garden)$"]["name"]${A};nwr["tourism"~"^(attraction|viewpoint|museum|artwork|gallery)$"]${A};nwr["historic"~"^(monument|memorial|building|temple|archaeological_site|castle|ruins)$"]["name"]${A};nwr["amenity"="place_of_worship"]["name"]${A};nwr["amenity"="cafe"]["name"]${Ac};);out center tags 260;`;
- let j=null;for(const u of OVP){try{const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(ql),headers:{'Content-Type':'application/x-www-form-urlencoded'}});if(r.ok){j=await r.json();break}}catch(e){}}
- dynBusy=false;if(!j)return;dynCenters.push({x:at.x,y:at.y});dynCenters=dynCenters.slice(-40);try{localStorage.setItem('og-dync',JSON.stringify(dynCenters))}catch(e){}
+let dynFailAt=0;function dynMaybe(){if(dynBusy||Date.now()-dynFailAt<60000)return;if(dynCenters.some(c=>dist(c,me)<1200))return;dynFetch(me)}
+async function dynFetch(at){dynBusy=true;const [la,lo]=U(at),A=`(around:1500,${la.toFixed(5)},${lo.toFixed(5)})`,Ac=`(around:900,${la.toFixed(5)},${lo.toFixed(5)})`;
+ const q1=`[out:json][timeout:18];(nwr["leisure"~"^(park|garden)$"]["name"]${A};nwr["tourism"~"^(attraction|viewpoint|museum|artwork|gallery)$"]${A};nwr["historic"~"^(monument|memorial|temple|archaeological_site|castle|ruins)$"]["name"]${A};);out center tags 150;`;
+ const q2=`[out:json][timeout:15];(nwr["amenity"="cafe"]["name"]${Ac};nwr["amenity"="place_of_worship"]["name"]${A};);out center tags 80;`;
+ let j=await ovpFetch(q1,20000);const j2=await ovpFetch(q2,18000);if(j&&j2)j.elements=j.elements.concat(j2.elements);else if(!j&&j2)j=j2;
+ dynBusy=false;if(!j){dynFailAt=Date.now();return}dynCenters.push({x:at.x,y:at.y});dynCenters=dynCenters.slice(-40);try{localStorage.setItem('og-dync',JSON.stringify(dynCenters))}catch(e){}
  const out=[];for(const el of j.elements){const t=el.tags||{},ty=dynTypeOf(t);if(!ty)continue;const la2=el.lat!=null?el.lat:el.center&&el.center.lat,lo2=el.lon!=null?el.lon:el.center&&el.center.lon;if(la2==null)continue;
   const nm=t['name:ru']||t['name:en']||t.name;if(!nm&&ty[0]==='food')continue;const wk=t.wikipedia||'';
   out.push({id:'osm:'+el.type+'/'+el.id,dyn:true,cat:ty[0],ic:ty[1],pts:ty[2],rad:ty[3],name:nm||ty[4],zh:t.name&&t.name!==nm?t.name:'',lat:+la2.toFixed(6),lon:+lo2.toFixed(6),wk,
