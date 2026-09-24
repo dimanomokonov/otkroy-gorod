@@ -278,6 +278,31 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
 .rt-acts{display:flex;gap:6px;flex-wrap:wrap}
 .rt-main{flex:1 1 100%;height:46px;border-radius:14px;background:var(--lime);color:#1b1238;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px}
 .rt-ext{flex:1;min-width:0;height:40px;border-radius:12px;background:var(--soft);color:var(--ink);font-weight:600;font-size:13px;display:grid;place-items:center;text-decoration:none;white-space:nowrap}
+
+.pop{max-height:calc(100% - 140px);overflow-y:auto;width:258px}
+.olg{display:grid;grid-template-columns:1fr 1fr;gap:0 2px;margin-bottom:4px}
+.olg .chip{font-size:13px;padding:7px 8px}
+.olg .chip[aria-pressed="false"]{opacity:.45}
+.olg .chip[aria-pressed="true"]{background:var(--soft);opacity:1}
+.pc-photo{display:none;margin:-4px 0 2px;border-radius:18px;overflow:hidden;position:relative;background:var(--soft)}
+.pc-photo.on{display:block}
+.pc-photo img{display:block;width:100%;height:210px;object-fit:cover}
+.pc-cap{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);font-size:10.5px;color:#fff;background:rgba(27,18,56,.55);padding:3px 8px;border-radius:8px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv{border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
+.rv-hd{display:flex;align-items:center;gap:8px}
+.rv-hd b{font:800 16px Rubik,sans-serif}
+.rv-hd #rvAvg{font-size:13px;color:var(--muted);font-weight:600;flex:1}
+.rv-add{display:flex;align-items:center;gap:5px;padding:8px 12px;border-radius:12px;background:var(--soft);color:var(--vio);font-weight:700;font-size:13px;margin-left:auto}
+.rv-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.rv-it{display:flex;gap:10px}
+.rv-it img{width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none}
+.rv-it p{margin:3px 0 0;font-size:14px;line-height:1.45}
+.rv-meta{font-size:12.5px;color:var(--muted)}
+.rv-meta b{color:var(--ink);font-weight:600}
+.st{color:#ffb020;letter-spacing:1px}.st i{font-style:normal;color:var(--line)}
+.rv-stars{display:flex;gap:6px;margin:14px 0 2px}
+.rv-stars button{font-size:34px;line-height:1;color:var(--line);padding:2px}
+.rv-stars button.on{color:#ffb020}
 </style>
 </head>
 <body>
@@ -293,13 +318,13 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
   <div class="toast glass" id="toast"></div>
   <input type="file" id="impFile" multiple accept=".gpx,.kml,.json,.xml,application/json,application/gpx+xml" hidden>
   <div class="pop glass" id="pop">
-    <h4>Карта</h4><button class="opt" data-base="carto">Улицы</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><hr><h4>Точки</h4>
+    <h4>Карта</h4><button class="opt" data-base="carto">Улицы</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><hr><h4>Достопримечательности</h4>
     <div id="chips">
       <button class="chip" data-l="main" aria-pressed="true"><i style="background:var(--main)"></i>Главное</button>
       <button class="chip" data-l="local" aria-pressed="true"><i style="background:var(--local)"></i>Локальное</button>
       <button class="chip" data-l="food" aria-pressed="true"><i style="background:var(--food)"></i>Поесть</button>
     </div>
-    <hr><button class="opt" id="gpsBtn">GPS</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © Esri, OpenStreetMap · маршруты © OSRM / FOSSGIS</p>
+    <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © Esri, OpenStreetMap · маршруты © OSRM / FOSSGIS</p>
   </div>
   <button id="nearPill" style="display:none" hidden></button>
   <div class="rt" id="rt" aria-live="polite"></div>
@@ -334,7 +359,7 @@ const P=(lat,lon)=>({x:(lon-LON0)*KX,y:-(lat-LAT0)*KY});
 const U=p=>[LAT0-p.y/KY,LON0+p.x/KX];
 const REVEAL=140,CELL=30,ACELL=50,DISCOVER=60,SPEED=38;
 const STORE='otkroy-gorod-gz-v1';
-const CAT={main:{c:'--main',n:'Главное'},local:{c:'--local',n:'Локальное'},food:{c:'--food',n:'Поесть'}};
+const CAT={main:{c:'--main',n:'Главное'},local:{c:'--local',n:'Локальное'},food:{c:'--food',n:'Поесть'},pin:{c:'--vio',n:'Точка'},osm:{c:'--vio',n:'Место'}};
 const DIST={
  py:{n:'Паньюй',zh:'番禺',about:'Южный пригород: Чимелонг, деревни у воды, университетский городок.',stay:'далеко от центра, для поездок в парки развлечений.'},
  by:{n:'Байюнь',zh:'白云',about:'Север города: гора Байюнь и аэропорт.',stay:'удобно рядом с аэропортом, от центра далеко.'},
@@ -380,6 +405,7 @@ const POIS=[
 POIS.forEach(p=>Object.assign(p,P(p.lat,p.lon)));
 const IC={"temple": "M4 9h16M6 9l6-5 6 5M7 9v10M17 9v10M5 19h14M10 19v-5h4v5", "tower": "M12 2v4M9 22l2-16h2l2 16M8.5 12h7M9.8 17h4.4", "columns": "M3 9l9-5 9 5M5 9v9M9.5 9v9M14.5 9v9M19 9v9M3 20h18", "church": "M12 2v5M10 4h4M6 21V11l6-4 6 4v10M10 21v-4h4v4", "tree": "M12 21v-5M6 16h12L12 4z", "bag": "M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0", "bridge": "M2 16h20M4 16c2-6 14-6 16 0M7.5 16v-3M12 16v-4.5M16.5 16v-3", "star": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z", "houses": "M3 21V10l5-4 5 4v11M13 21v-8l4-3 4 3v8M2 21h20", "opera": "M3 18c3-8 7-10 9-10s6 3 9 10zM2 18h20", "skyline": "M4 21V11h4v10M10 21V4h5v17M17 21V9h4v12M2 21h20", "search": "M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8", "arcade": "M3 20V9l9-5 9 5v11M7 20v-5a2 2 0 0 1 4 0v5M13 20v-5a2 2 0 0 1 4 0v5", "person": "M12 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM8 22l1-8-2-3 5-3 5 3-2 3 1 8", "lotus": "M12 20c-4 0-7-3-7-6 3 0 5 1 7 3 2-2 4-3 7-3 0 3-3 6-7 6zM12 17c-2-3-2-6 0-10 2 4 2 7 0 10z", "scroll": "M8 4h11v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-1h11v1a3 3 0 0 0 3 3M8 4a2 2 0 0 0-2 2v9M11 8h5M11 12h5", "boat": "M3 15h18l-3 5H6zM12 4v11M12 4l6 8h-6", "anchor": "M12 8v13M5 13a7 7 0 0 0 14 0M9 11h6M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "bowl": "M4 11h16a8 8 0 0 1-16 0zM9 7l1-3M13 7l1-3", "cup": "M6 8h12l-1.5 12h-9zM5 8h14M10 8V5a2 2 0 0 1 4 0v3", "mark": "M7 4h10v16l-5-3.5L7 20z", "check": "m5 12 5 5 9-10", "walk": "M13 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9 21l2.5-7L9 11l3-3 3 3 3 1M11.5 14 14 17v4", "x": "M6 6l12 12M18 6 6 18"};const ICM={"canton": "tower", "chen": "temple", "shamian": "tree", "zhenhai": "temple", "rams": "star", "sys": "columns", "cathedral": "church", "beijing": "bag", "liurong": "temple", "yongqing": "houses", "huacheng": "skyline", "opera": "opera", "bridge": "bridge", "road": "search", "qilou": "arcade", "statues": "person", "dafo": "lotus", "wanmu": "scroll", "liwan": "boat", "tianzi": "anchor", "taotao": "bowl", "panxi": "bowl", "nanxin": "cup", "gzjj": "bowl"};POIS.forEach(p=>p.ic=ICM[p.id]||'star');
 Object.assign(IC,{bike:'M5.5 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18.5 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5.5 15l4-7h5l4 7M9.5 8l3 7h1M12.5 5h3',car:'M5 17h14v-5l-2-5H7l-2 5zM5 12h14M7.5 17v2M16.5 17v2',bus:'M6 17V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11zM6 12h12M8 17v2M16 17v2M9 14.5h.01M15 14.5h.01'});
+Object.assign(IC,{basket:'M4 10h16l-2 10H6zM8 10l4-6 4 6',shirt:'M8 4l4 2 4-2 4 4-3 3v9H7v-9L4 8z',cart:'M3 4h2l2 11h11l2-8H6M9 20h.01M17 20h.01',metro:'M7 17h10a2 2 0 0 0 2-2V6a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v9a2 2 0 0 0 2 2zM5 11h14M9 14h.01M15 14h.01M7 17l-2 3M17 17l2 3',pill:'M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7zM7 10l7 7',card:'M3 6h18v12H3zM3 10h18M7 15h3',exchange:'M7 7h13l-4-4M17 17H4l4 4',wc:'M7 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5 9h4v6H8v6H6v-6H5zM15 9h4l1 7h-2v5h-2v-5h-2z',cross:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',phone:'M7 2h10v20H7zM11 18h2',pin:'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',navi:'M19 5 5 11l6 2 2 6z'});
 const ICP={};for(const k in IC)ICP[k]=new Path2D(IC[k]);
 const isvg=(k,sz=18,sw=2)=>`<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[k]}"></path></svg>`;
 function drawIcon(k,x,y,sz,col){ctx.save();ctx.translate(x-sz/2,y-sz/2);ctx.scale(sz/24,sz/24);ctx.lineWidth=2.3;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=col;ctx.stroke(ICP[k]);ctx.restore()}
@@ -410,7 +436,7 @@ function saveMarks(){try{localStorage.setItem(MSTORE,JSON.stringify(marks.map(({
 try{const s=JSON.parse(localStorage.getItem(STORE)||'null');
  if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['carto','vector','amap'].includes(s.b))base=s.b;if(s.h)document.getElementById('hint').remove();}}catch(e){}
 function save(){try{localStorage.setItem(STORE,JSON.stringify({r:[...reveal],v:[...visited],p:pts,me,b:base,h:!document.getElementById('hint')}))}catch(e){}changed=false}
-const CH=32,chunks=new Map(),born=new Map();let quiet=false;
+const CH=32,chunks=new Map(),born=new Map(),discBorn=new Map(),DISC_R=3000;let quiet=false;
 function addCell(k,t){if(reveal.has(k))return false;reveal.add(k);const[i,j]=k.split(',').map(Number);const cx=(i+.5)*CELL,cy=(j+.5)*CELL;
  const ck=Math.floor(i/CH)+','+Math.floor(j/CH);let a0=chunks.get(ck);if(!a0)chunks.set(ck,a0=[]);a0.push(i,j);if(t!==undefined)born.set(k,t);
  for(let a=Math.floor((cx-REVEAL)/ACELL);a<=Math.floor((cx+REVEAL)/ACELL);a++)for(let b=Math.floor((cy-REVEAL)/ACELL);b<=Math.floor((cy+REVEAL)/ACELL);b++){
@@ -435,7 +461,7 @@ if(TILES[base])TILES[base].addTo(map);
 map.setView(toM(...U(me)),16);
 ['carto','amap'].forEach(k=>{let n=0;TILES[k].on('tileerror',()=>{if(++n===8&&base===k){const nx=k==='carto'?'amap':'vector';toast(`<div>Карта «${BN[k]}» грузится плохо. Переключить на «${BN[nx]}»?</div><button data-base="${nx}">Да</button>`)}})});
 function decR(c,o){const r=[];let px=o[0],py=o[1];for(let i=0;i<c.length;i+=2){let x=c.charCodeAt(i)-64,y=c.charCodeAt(i+1)-64;x=(x>>1)^(-(x&1));y=(y>>1)^(-(y&1));x+=px;y+=py;px=x;py=y;r.push([y/1024,x/1024])}return r}
-GEO.forEach(d=>{const g=d.g;d.rings=(g.type==='Polygon'?[[g.coordinates,g.encodeOffsets]]:g.coordinates.map((c,i)=>[c,g.encodeOffsets[i]])).map(([cs,os])=>decR(cs[0],os[0]))});
+GEO.forEach(d=>{const g=d.g;d.rings=(g.type==='Polygon'?[[g.coordinates,g.encodeOffsets]]:g.coordinates.map((c,i)=>[c,g.encodeOffsets[i]])).map(([cs,os])=>decR(cs[0],os[0]));d.ringsP=d.rings.map(r=>r.map(a=>P(a[0],a[1])))});
 function inRing(la,lo,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i],b=r[j];if((a[0]>la)!=(b[0]>la)&&lo<(b[1]-a[1])*(la-a[0])/(b[0]-a[0])+a[1])c=!c}return c}
 const RV=[[[[23.152,113.228],[23.136,113.2305],[23.121,113.232],[23.109,113.2335],[23.1025,113.2405],[23.1035,113.250],[23.108,113.258],[23.113,113.265],[23.1155,113.272],[23.116,113.281],[23.114,113.290],[23.112,113.300],[23.111,113.312],[23.111,113.325],[23.110,113.340],[23.107,113.36],[23.103,113.39],[23.097,113.42],[23.09,113.45]],300],[[[23.1025,113.2405],[23.091,113.2365],[23.075,113.235],[23.05,113.24]],240]];
 function buffer(line,w){const pts=line.map(a=>P(a[0],a[1])),L1=[],R1=[];for(let i=0;i<pts.length;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy)||1,nx=-dy/l*w/2,ny=dx/l*w/2;
@@ -454,6 +480,7 @@ function centerMe(){map.setView(toM(...U(me)),map.getZoom(),{animate:false})}
 map.on('move zoom resize viewreset',()=>dirty=true);
 map.on('dragstart',()=>{follow=false});
 map.on('click',e=>tap(e.containerPoint.x,e.containerPoint.y));
+map.on('contextmenu',e=>{if(e.originalEvent&&e.originalEvent.preventDefault)e.originalEvent.preventDefault();const ll=fromM(e.latlng);openPin(P(ll[0],ll[1]))});
 
 const cv=document.getElementById('fog'),ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1,C={};
@@ -468,6 +495,9 @@ const noise=document.createElement('canvas');noise.width=noise.height=256;
 {const n=noise.getContext('2d');for(let i=0;i<70;i++){const x=Math.random()*256,y=Math.random()*256,r=20+Math.random()*50,g=n.createRadialGradient(x,y,0,x,y,r);const a=.05+Math.random()*.08;g.addColorStop(0,`rgba(150,160,175,${a*.35})`);g.addColorStop(1,'rgba(150,160,175,0)');n.fillStyle=g;
  for(const dx of[-256,0,256])for(const dy of[-256,0,256]){n.save();n.translate(dx,dy);n.fillRect(x-r,y-r,2*r,2*r);n.restore()}}}
 let noisePat=null;
+const brushD=document.createElement('canvas');brushD.width=brushD.height=256;
+{const b=brushD.getContext('2d'),g=b.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.72,'rgba(0,0,0,1)');g.addColorStop(.9,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,0)');b.fillStyle=g;b.fillRect(0,0,256,256)}
+let hereCache={k:'',d:null};
 
 function draw(){
  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalCompositeOperation='source-over';ctx.clearRect(0,0,W,H);
@@ -482,6 +512,15 @@ function draw(){
    let r=R;if(born.size){const b=born.get(i+','+j);if(b!==undefined){const t=(now-b)/1600;if(t<0)continue;if(t>=1)born.delete(i+','+j);else{const e=1-Math.pow(1-t,3);ctx.globalAlpha=e;r=R*(.35+.65*e)}}}
    ctx.drawImage(brush,sx-r,sy-r,2*r,2*r);ctx.globalAlpha=1}}
  if(born.size)dirty=true;
+ for(const p of POIS){if(p.cat!=='main'||!visited.has(p.id))continue;let r=DISC_R*ax*1.05;const b=discBorn.get(p.id);
+  if(b!==undefined){const t=(now-b)/2600;if(t<0)continue;if(t>=1)discBorn.delete(p.id);else{const e=1-Math.pow(1-t,3);r*=Math.max(.02,e);ctx.globalAlpha=Math.min(1,e*1.4)}}
+  const sx=c0.x+p.x*ax,sy=c0.y+p.y*ay;if(sx+r>0&&sy+r>0&&sx-r<W&&sy-r<H)ctx.drawImage(brushD,sx-r,sy-r,2*r,2*r);ctx.globalAlpha=1}
+ if(discBorn.size)dirty=true;
+ ctx.globalCompositeOperation='source-over';
+ if(map.getZoom()>=9){const hk=Math.round(me.x/50)+','+Math.round(me.y/50);if(hereCache.k!==hk)hereCache={k:hk,d:distAt(...U(me))};
+  for(const d of GEO){const on=d.k===hereCache.d;ctx.beginPath();for(const r of d.ringsP){r.forEach((q,i)=>{const sx=c0.x+q.x*ax,sy=c0.y+q.y*ay;i?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy)});ctx.closePath()}
+   ctx.setLineDash(on?[]:[6,7]);ctx.lineWidth=on?2.5:1.4;ctx.strokeStyle=on?'rgba(75,47,214,.7)':'rgba(75,47,214,.32)';ctx.stroke()}ctx.setLineDash([]);
+  if(map.getZoom()<=14){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='800 11px Rubik,sans-serif';for(const d of GEO){if(!CP[d.k])continue;const q=P(...CP[d.k]),sx=c0.x+q.x*ax,sy=c0.y+q.y*ay;ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.strokeText(DIST[d.k].n.toUpperCase(),sx,sy);ctx.fillStyle='rgba(75,47,214,.75)';ctx.fillText(DIST[d.k].n.toUpperCase(),sx,sy)}}}
  ctx.globalCompositeOperation='source-over';ctx.lineCap=ctx.lineJoin='round';ctx.textAlign='center';ctx.textBaseline='middle';
  if(target){const a=S(me),b=S(target);ctx.setLineDash([2,8]);ctx.lineWidth=3;ctx.strokeStyle=C.me;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle=C.me;ctx.beginPath();ctx.arc(b.x,b.y,5,0,7);ctx.fill()}
@@ -499,6 +538,12 @@ function draw(){
   ctx.shadowColor='rgba(27,18,56,.22)';ctx.shadowBlur=6;ctx.beginPath();ctx.arc(s.x,s.y,10,0,7);ctx.fillStyle=C.mine;ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();drawIcon('mark',s.x,s.y,11,'#ffffff');
   if(z>=16){ctx.font='500 11.5px Rubik,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(q.name,s.x+15,s.y);ctx.fillStyle='#2e2650';ctx.fillText(q.name,s.x+15,s.y)}}
  ctx.textAlign='center';
+ if(map.getZoom()>=14){ctx.textAlign='left';for(const k in OLAY){if(!OL[k]||!osmData[k])continue;const col=OLAY[k].col,z2=map.getZoom();
+  for(const it of osmData[k]){const sx=c0.x+it.x*ax,sy=c0.y+it.y*ay;if(sx<-20||sy<-20||sx>W+20||sy>H+20)continue;const r=z2>=16?9.5:5;
+   ctx.beginPath();ctx.arc(sx,sy,r,0,7);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=1.6;ctx.strokeStyle='#fff';ctx.stroke();if(z2>=16)drawIcon(OLAY[k].ic,sx,sy,11,'#fff');
+   if(z2>=17&&it.name!==OLAY[k].n){ctx.font='500 11px Rubik,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(it.name,sx+r+4,sy);ctx.fillStyle='#2e2650';ctx.fillText(it.name,sx+r+4,sy)}}}ctx.textAlign='center'}
+ const pd=pin||(route&&route.dest&&(route.dest.cat==='pin'||route.dest.cat==='osm')?route.dest:null);
+ if(pd){const s=S(pd);ctx.save();ctx.translate(s.x,s.y-15);ctx.shadowColor='rgba(27,18,56,.3)';ctx.shadowBlur=6;ctx.fillStyle=pd.col||C.vio;ctx.beginPath();ctx.moveTo(0,15);ctx.bezierCurveTo(-12,2,-10,-12,0,-12);ctx.bezierCurveTo(10,-12,12,2,0,15);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,-2,4.5,0,7);ctx.fill();ctx.restore()}
  const m=S(me),k=1/mpp();
  if(acc>DISCOVER){ctx.beginPath();ctx.arc(m.x,m.y,acc*k,0,7);ctx.fillStyle='rgba(75,47,214,.06)';ctx.fill()}
  ctx.beginPath();ctx.arc(m.x,m.y,Math.max(14,DISCOVER*k),0,7);ctx.fillStyle='rgba(75,47,214,.12)';ctx.fill();
@@ -510,11 +555,15 @@ function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,
  if(d<.5){if(walkPath&&walkPath.length){target=walkPath.shift();return}target=null;walkPath=null;changed=true;dirty=true;return}
  me={x:me.x+(target.x-me.x)/d*mv,y:me.y+(target.y-me.y)/d*mv};revealAt(me);checkDiscover();
  if(follow)centerMe();dirty=true}
-function checkDiscover(){for(const p of POIS){if(!visited.has(p.id)&&dist(me,p)<=DISCOVER){visited.add(p.id);qVisit(p.id);if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
- toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков</div><button data-open="${p.id}">Читать</button>`);save()}}}
+function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=DISCOVER){visited.add(p.id);qVisit(p.id);if(p.cat==='main')discBorn.set(p.id,performance.now());if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
+ toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cat==='main'?' · открыто 3 км вокруг':''}</div><button data-open="${p.id}">Читать</button>`);save()}}
+ if(route&&route.dest&&dist(at,route.dest)<=Math.max(DISCOVER,40))closeRoute(true)}
 function tap(x,y){if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat])continue;const s=S(p),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
  for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
  if(best){best.type&&best.t?openMark(best):openCard(best);return}
+ if(map.getZoom()>=14){let bo=null,bdo=20;for(const k in OLAY){if(!OL[k]||!osmData[k])continue;for(const it of osmData[k]){const s=S(it),d=Math.hypot(s.x-x,s.y-y);if(d<bdo){bdo=d;bo=it}}}if(bo){openOsm(bo);return}}
+ if(route){return}
+ if(mode==='gps'){const ll=fromM(map.containerPointToLatLng([x,y]));openPin(P(ll[0],ll[1]));return}
  if(mode==='sim'){const ll=fromM(map.containerPointToLatLng([x,y]));target=P(ll[0],ll[1]);follow=true;dirty=true;hideHint()}}
 
 // ---------- UI ----------
@@ -527,8 +576,8 @@ function stats(list){const t=list.reduce((a,p)=>a+p.pts,0),vs=list.filter(p=>vis
 const km=n=>(n*ACELL*ACELL/1e6).toFixed(2).replace('.',',');
 let selDist='auto',lastDist=null;
 function updateHUD(){const here=distAt(...U(me)),cur=selDist==='auto'?(here||'city'):selDist;let st,name,top,line;
- if(cur==='city'){st=stats(POIS);name='Гуанчжоу';top=selDist==='auto'?'Где вы сейчас ▾':'Весь город ▾';line='广州 · открыто '+km(area.size)+' км²'}
- else{st=stats(POIS.filter(p=>p.d===cur));name=DIST[cur].n;top='Гуанчжоу · '+(selDist==='auto'?'вы здесь':'выбранный район')+' ▾';line=`места ${st.v} из ${st.n} · открыто ${km(areaBy()[cur])} км²`}
+ if(cur==='city'){st=stats(POIS);name='Гуанчжоу';top=selDist==='auto'?'Где вы сейчас ▾':'Весь город ▾';line='广州 · пройдено '+km(area.size)+' км²'}
+ else{st=stats(POIS.filter(p=>p.d===cur));name=DIST[cur].n;top='Гуанчжоу · '+(selDist==='auto'?'вы здесь':'выбранный район')+' ▾';line=`места ${st.v} из ${st.n} · пройдено ${km(areaBy()[cur])} км²`}
  $('pct').textContent=st.pc+'%';$('ringArc').style.strokeDashoffset=53.41*(1-st.pc/100);$('pts').textContent=pts;
  $('dName').textContent=name;$('cityLine').textContent=top;$('area').textContent=line;
  if(selDist==='auto'){if(lastDist&&here&&here!==lastDist)toast(`<div>Вы в районе <b>${name}</b>, изучено ${st.pc}%</div>`);if(here)lastDist=here}
@@ -563,10 +612,11 @@ function openCard(p){const v=visited.has(p.id),d=dist(me,p),dl=DIST[p.d],col=`va
  $('card').innerHTML=`<div class="pc-top"><svg class="rings" width="340" height="340" viewBox="0 0 340 340" aria-hidden="true"><circle cx="170" cy="170" r="70"></circle><circle cx="170" cy="170" r="110"></circle><circle cx="170" cy="170" r="150"></circle></svg>
  <div class="pc-bar"><button class="pc-x" data-close aria-label="Закрыть">${isvg('x',20,2.4)}</button><span class="pc-tag" style="background:${col}">${isvg(p.ic,14,2.4)}${CAT[p.cat].n}</span></div>
  <h2>${p.name}</h2><div class="pc-sub">${p.zh} · ${dl.n} · ${walk(d)} пешком</div></div>
- <div class="pc-body"><div class="pc-stats"><div><b>${v?'✓':'+'+p.pts}</b><span>${v?'посещено':'за визит'}</span></div><div><b>${fmtD(d)}</b><span>до места</span></div><div><b>${after}%</b><span>${dl.n} ${v?'сейчас':'после'}</span></div></div>
- <p class="pc-story">${p.s}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м</p>`}${cta}</div>`;
- $('card').classList.add('place','on');$('scrim').classList.add('on')}
-function closeCard(){$('card').classList.remove('on');$('scrim').classList.toggle('on',$('sheet').classList.contains('open'))}
+ <div class="pc-body"><div class="pc-photo" id="pcPhoto" data-id="${p.id}"></div><div class="pc-stats"><div><b>${v?'✓':'+'+p.pts}</b><span>${v?'посещено':'за визит'}</span></div><div><b>${fmtD(d)}</b><span>до места</span></div><div><b>${after}%</b><span>${dl.n} ${v?'сейчас':'после'}</span></div></div>
+ <p class="pc-story">${p.s}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м${p.cat==='main'?', и откроется 3 км вокруг':''}</p>`}${cta}${reviewsBlock(p.id,p.name)}</div>`;
+ $('card').classList.add('place','on');$('scrim').classList.add('on');loadReviews(p.id);
+ wikiPhoto(p.id,p.zh+' 广州').then(v2=>{const el=$('pcPhoto');if(!el||el.dataset.id!==p.id)return;if(v2){el.innerHTML=`<img src="${esc(v2.url)}" alt="${esc(p.name)}"><a class="pc-cap" href="${esc(v2.page)}" target="_blank" rel="noopener">Фото: ${esc(v2.author||'Wikimedia Commons')}${v2.lic?' · '+esc(v2.lic):''}</a>`;el.classList.add('on')}else el.remove()})}
+function closeCard(){$('card').classList.remove('on');if(pin){pin=null;dirty=true}$('scrim').classList.toggle('on',$('sheet').classList.contains('open'))}
 function openPanel(){closePops();$('sheet').classList.add('open');$('scrim').classList.add('on');renderSheet()}
 function closePanel(){$('sheet').classList.remove('open');if(!$('card').classList.contains('on'))$('scrim').classList.remove('on')}
 function closePops(){$('pop').classList.remove('on');if($('dpick').classList.contains('on'))togglePick(false)}
@@ -576,7 +626,7 @@ function renderNear(){return;const el=$('nearPill'),c=POIS.filter(p=>layers[p.ca
 let tt=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),4200)}
 function hideHint(){const h=$('hint');if(h){h.remove();changed=true}}
 
-document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[data-go],[data-close],[data-seg],[data-soon],[data-amap],[data-add],[data-mt],[data-savemark],[data-mark],[data-delmark],[data-export],[data-import],[data-pick],[data-base],[data-route],[data-rtmode],[data-rtclose],[data-rtext],[data-rtwalk],#reset');if(!t)return;if(handleMine(t))return;
+document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[data-go],[data-close],[data-seg],[data-soon],[data-amap],[data-add],[data-mt],[data-savemark],[data-mark],[data-delmark],[data-export],[data-import],[data-pick],[data-base],[data-route],[data-rtmode],[data-rtclose],[data-rtext],[data-rtwalk],[data-rvnew],[data-rvstar],[data-rvsave],[data-pin],[data-osm],[data-ol],#wakeBtn,#reset');if(!t)return;if(handleMine(t))return;
  if(t.dataset.open){const p=POIS.find(q=>q.id===t.dataset.open);closePanel();closePops();$('toast').classList.remove('on');follow=false;map.setView(toM(p.lat,p.lon),Math.max(map.getZoom(),16),{animate:false});map.panBy([0,120],{animate:false});openCard(p)}
  else if('amap' in t.dataset){setBase('amap')}
  else if(t.dataset.go){const p=POIS.find(q=>q.id===t.dataset.go);target={x:p.x,y:p.y};follow=true;closeCard();hideHint();closePanel()}
@@ -600,12 +650,24 @@ function startGps(user){
  if(!navigator.geolocation){if(user)toast('<div>Браузер не даёт доступ к геолокации. Работает режим прогулки по нажатию.</div>');return}
  if(!window.isSecureContext){toast('<div>GPS работает только на странице с адресом https://. Разместите файл на хостинге.</div>');return}
  mode='gps';target=null;$('gpsBtn').classList.add('on');let first=true;
- watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;me=P(c.latitude,c.longitude);acc=c.accuracy||0;
+ watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;if(!first&&c.accuracy>70)return;const np=P(c.latitude,c.longitude),prev=lastFix;acc=c.accuracy||0;
+  lastFix={x:np.x,y:np.y,t:pos.timestamp||Date.now()};try{localStorage.setItem('og-lastfix',JSON.stringify(lastFix))}catch(e){}me=np;if(prev)bridge(prev,np,(lastFix.t-prev.t)/1000);
   if(first){first=false;follow=true;map.setView(toM(c.latitude,c.longitude),17,{animate:false});toast('<div>GPS включён. Идите — туман рассеивается за вами.</div>');
    if(Math.hypot(me.x,me.y)>25000)toast('<div>Туман работает везде, но точки интереса пока есть только в центре Гуанчжоу.</div>')}
   revealAt(me);checkDiscover();if(follow)centerMe();dirty=true;if(tab==='near')renderSheet()},
   err=>{toast(`<div>GPS недоступен: ${err.code===1?'это окно не получило доступ к геолокации':'не удалось определить место'}. Включён режим прогулки по нажатию.</div>`);stopGps()},
   {enableHighAccuracy:true,maximumAge:3000,timeout:20000})}
+let lastFix=null;try{const lf=JSON.parse(localStorage.getItem('og-lastfix')||'null');if(lf&&Date.now()-lf.t<12*3600e3)lastFix=lf}catch(e){}
+function fillLine(a,b){const d=dist(a,b),n=Math.max(1,Math.ceil(d/15));for(let i=1;i<=n;i++){const q={x:a.x+(b.x-a.x)*i/n,y:a.y+(b.y-a.y)*i/n};revealAt(q);if(i%3===0||i===n)checkDiscover(q)}}
+async function bridge(a,b,dt){const d=dist(a,b);if(d<25)return;if(d<=250){fillLine(a,b);return}
+ if(d>12000||dt<=0||d/dt>45)return;
+ try{const A=U(a),B=U(b),r=await fetch(`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`),j=await r.json();
+  if(j.code!=='Ok'||!j.routes[0]||j.routes[0].distance>d*2.2)throw 0;const cs=j.routes[0].geometry.coordinates.map(c=>P(c[1],c[0]));
+  quiet=true;for(let i=1;i<cs.length;i++)fillLine(cs[i-1],cs[i]);quiet=false;updateHUD();changed=true;dirty=true;toast('<div>Дорисовал путь, пройденный с заблокированным экраном</div>')}
+ catch(e){quiet=false;if(d<1500)fillLine(a,b)}}
+let wakeWant=false,wakeLock=null;
+async function wakeOn(){try{wakeLock=await navigator.wakeLock.request('screen');$('wakeBtn').classList.add('on');wakeLock.addEventListener('release',()=>{wakeLock=null;if(!wakeWant)$('wakeBtn').classList.remove('on')})}catch(e){wakeWant=false;$('wakeBtn').classList.remove('on');toast('<div>Этот браузер не умеет держать экран включённым</div>')}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&wakeWant&&!wakeLock)wakeOn()});
 function stopGps(){if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;mode='sim';acc=0;$('gpsBtn').classList.remove('on');dirty=true}
 
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -615,8 +677,8 @@ function mineHTML(){let h=`<div class="acts"><button class="ghost" data-add>＋ 
  if(!marks.length)return h+'<p class="note">Здесь будут ваши находки: вкусная лапшичная, необычный двор, красивый вид. Отметка ставится там, где вы стоите, с фото и заметкой, и приносит 15 очков.</p>';
  [...marks].sort((a,b)=>b.t-a.t).forEach(q=>{const d=dist(me,q);h+=`<button class="item" data-mark="${q.id}">${(q.photo||q.photoUrl)?`<img class="thumb" src="${q.photo||q.photoUrl}" alt="">`:`<span class="dot" style="box-shadow:inset 0 0 0 2px var(--mine)">${MT[q.type].e}</span>`}<span class="t"><b>${esc(q.name)}</b><span>${MT[q.type].n} · ${fmtD(d)} · ${fdate(q.t)}</span></span></button>`});
  return h+`<p class="note">Отметки хранятся только в этом браузере. Выгружайте их время от времени, чтобы не потерять.</p>`}
-function openAdd(){draft={type:'place',photo:null};const hereGps=mode==='gps';
- $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><h2>Новая отметка</h2><div class="zh">${hereGps?'Там, где вы стоите сейчас (GPS)':'В точке, где стоит ваш человечек'}</div>
+function openAdd(at){draft={type:'place',photo:null,at:at&&at.x!==undefined?at:null};const hereGps=mode==='gps';
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><h2>Новая отметка</h2><div class="zh">${draft.at?'В выбранной точке на карте':hereGps?'Там, где вы стоите сейчас (GPS)':'В точке, где стоит ваш человечек'}</div>
  <label class="fl">Название<input id="mName" maxlength="60" placeholder="Например, лапшичная у моста"></label>
  <div class="types">${Object.entries(MT).map(([k,v])=>`<button data-mt="${k}" class="${k==='place'?'on':''}">${v.e} ${v.n}</button>`).join('')}</div>
  <label class="fl">Заметка<textarea id="mNote" rows="3" placeholder="Что здесь интересного, цены, часы работы"></textarea></label>
@@ -636,7 +698,7 @@ async function exportMarks(){try{const dl=window.claude&&window.claude.use?await
  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Мои отметки: Гуанчжоу'});return}}catch(e){if(e&&e.name==='AbortError')return}
  const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 function handleMine(t){
- if(handleRoute(t))return true;
+ if(handleRoute(t)||handleExtra(t))return true;
  if('import' in t.dataset){$('impFile').value='';$('impFile').click();return true}
  if(t.dataset.base){setBase(t.dataset.base);return true}
  if(t.dataset.pick){const k=t.dataset.pick;selDist=k;togglePick(false);
@@ -645,7 +707,7 @@ function handleMine(t){
  if('add' in t.dataset){openAdd();return true}
  if(t.dataset.mt){draft.type=t.dataset.mt;[...t.parentNode.children].forEach(b=>b.classList.toggle('on',b===t));return true}
  if('savemark' in t.dataset){const name=$('mName').value.trim();if(!name){$('mName').focus();$('mName').placeholder='Введите название';return true}
-  const[lat,lon]=U(me),q={id:'m'+Date.now(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),name,note:$('mNote').value.trim(),type:draft.type,photo:draft.photo,t:Date.now()};
+  const[lat,lon]=U(draft.at||me),q={id:'m'+Date.now(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),name,note:$('mNote').value.trim(),type:draft.type,photo:draft.photo,t:Date.now()};
   Object.assign(q,P(q.lat,q.lon));marks.push(q);if(!saveMarks()){marks.pop();return true}qMark(q.id);flushSoon();
   pts+=15;changed=true;save();updateHUD();closeCard();draft=null;tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
   toast(`<span style="font-size:22px">${MT[q.type].e}</span><div><b>Отметка сохранена</b><br>+15 очков</div>`);return true}
@@ -653,7 +715,7 @@ function handleMine(t){
  if(t.dataset.delmark){if(confirm('Удалить эту отметку?')){qDel(t.dataset.delmark);marks=marks.filter(m=>m.id!==t.dataset.delmark);saveMarks();flushSoon();pts=Math.max(0,pts-15);changed=true;save();updateHUD();closeCard();renderSheet();dirty=true}return true}
  if('export' in t.dataset){if(!marks.length){toast('<div>Пока нечего выгружать: поставьте первую отметку кнопкой ＋.</div>')}else exportMarks();return true}
  return false}
-$('addBtn').onclick=openAdd;
+$('addBtn').onclick=()=>openAdd();
 function parseTrack(text,name){const out=[];const t=text.trimStart();
  if(t[0]==='<'){const doc=new DOMParser().parseFromString(text,'application/xml');
   doc.querySelectorAll('trkpt,rtept,wpt').forEach(e=>{const la=+e.getAttribute('lat'),lo=+e.getAttribute('lon');if(isFinite(la)&&isFinite(lo))out.push([la,lo])});
@@ -675,7 +737,7 @@ $('impFile').onchange=async e=>{const files=[...e.target.files];if(!files.length
  track.forEach((ll,idx)=>{const p=P(ll[0],ll[1]),t=t0+idx/total*2200;
   if(prev){const d=dist(prev,p);if(d>25&&d<400){const k=Math.ceil(d/20);for(let s2=1;s2<k;s2++)revealAt({x:prev.x+(p.x-prev.x)*s2/k,y:prev.y+(p.y-prev.y)*s2/k},t)}}
   revealAt(p,t);prev=p;n++;
-  for(const q of POIS)if(!visited.has(q.id)&&Math.abs(q.x-p.x)<DISCOVER&&Math.abs(q.y-p.y)<DISCOVER&&dist(q,p)<=DISCOVER){visited.add(q.id);qVisit(q.id);got++;gain+=q.pts}
+  for(const q of POIS)if(!visited.has(q.id)&&Math.abs(q.x-p.x)<DISCOVER&&Math.abs(q.y-p.y)<DISCOVER&&dist(q,p)<=DISCOVER){visited.add(q.id);qVisit(q.id);if(q.cat==='main')discBorn.set(q.id,t);got++;gain+=q.pts}
   if(ll[0]<mnLa)mnLa=ll[0];if(ll[0]>mxLa)mxLa=ll[0];if(ll[1]<mnLo)mnLo=ll[1];if(ll[1]>mxLo)mxLo=ll[1]});
  quiet=false;pts+=gain;
  changed=true;save();updateHUD();renderSheet();follow=false;
@@ -699,7 +761,7 @@ function extLinks(){const p=route.dest,[la,lo]=U(me),m=route.mode;
   google:`https://www.google.com/maps/dir/?api=1&origin=${la.toFixed(6)},${lo.toFixed(6)}&destination=${p.lat},${p.lon}&travelmode=${gg}`}}
 function renderRoute(){if(!route)return;const p=route.dest,L2=extLinks(),m=route.mode;
  const info=m==='transit'?'Маршрут на транспорте откроется в Картах':route.loading?'Строю маршрут…':route.dur?`${fdur(route.dur)} · ${fmtD(route.dist)}${route.approx?' · примерно':''}`:'';
- $('rt').innerHTML=`<div class="rt-hd"><span class="rt-ic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><span class="rt-t"><b>${p.name}</b><span>${info}</span></span><button class="rt-x" data-rtclose aria-label="Закрыть маршрут">${isvg('x',18,2.4)}</button></div>
+ $('rt').innerHTML=`<div class="rt-hd"><span class="rt-ic" style="background:${p.col||`var(${CAT[p.cat].c})`}">${isvg(p.ic,18,2.2)}</span><span class="rt-t"><b>${p.name}</b><span>${info}</span></span><button class="rt-x" data-rtclose aria-label="Закрыть маршрут">${isvg('x',18,2.4)}</button></div>
  <div class="rt-modes" role="tablist">${Object.entries(RMODES).map(([k,v])=>`<button data-rtmode="${k}" role="tab" aria-selected="${k===m}" class="${k===m?'on':''}">${isvg(v.ic,19,2)}<span>${v.n}</span></button>`).join('')}</div>
  ${m==='transit'?`<p class="rt-note">Метро и автобусы лучше всего знают карты: откройте маршрут одним нажатием.</p>`:''}
  <div class="rt-acts">${mode==='sim'&&m!=='transit'&&route.pts?`<button class="rt-main" data-rtwalk>${isvg('walk',18,2.4)}Идти (демо)</button>`:''}
@@ -720,6 +782,83 @@ function handleRoute(t){
  if(t.dataset.rtmode){if(route&&route.mode!==t.dataset.rtmode){route.mode=t.dataset.rtmode;walkPath=null;calcRoute()}return true}
  if('rtclose' in t.dataset){closeRoute();return true}
  if('rtwalk' in t.dataset){if(route&&route.pts){walkPath=route.pts.slice(1).map(q=>({x:q.x,y:q.y}));target=walkPath.shift();follow=true;hideHint()}return true}
+ return false}
+
+// ================= РАЗДЕЛЫ КАРТЫ (OpenStreetMap), ТОЧКИ, ФОТО, ОТЗЫВЫ =================
+const OLAY={"food": {"n": "Еда", "ic": "bowl", "col": "#ff8a3d", "q": ["[\"amenity\"~\"^(restaurant|fast_food|food_court)$\"]"]}, "coffee": {"n": "Кофейни", "ic": "cup", "col": "#8a5a3c", "q": ["[\"amenity\"=\"cafe\"]"]}, "malls": {"n": "ТЦ", "ic": "bag", "col": "#e0569b", "q": ["[\"shop\"~\"^(mall|department_store)$\"]"]}, "markets": {"n": "Рынки", "ic": "basket", "col": "#2fa84f", "q": ["[\"amenity\"=\"marketplace\"]"]}, "clothes": {"n": "Одежда", "ic": "shirt", "col": "#7a5cff", "q": ["[\"shop\"~\"^(clothes|shoes|boutique)$\"]"]}, "grocery": {"n": "Продукты", "ic": "cart", "col": "#1e9e8a", "q": ["[\"shop\"~\"^(supermarket|convenience)$\"]"]}, "metro": {"n": "Метро", "ic": "metro", "col": "#2f6feb", "q": ["[\"railway\"=\"station\"][\"station\"=\"subway\"]", "[\"public_transport\"=\"station\"][\"subway\"=\"yes\"]"]}, "pharmacy": {"n": "Аптеки", "ic": "pill", "col": "#18c29c", "q": ["[\"amenity\"=\"pharmacy\"]"]}, "atm": {"n": "Банкоматы", "ic": "card", "col": "#5f6b72", "q": ["[\"amenity\"~\"^(atm|bank)$\"]"]}, "exchange": {"n": "Обмен валют", "ic": "exchange", "col": "#b8860b", "q": ["[\"amenity\"=\"bureau_de_change\"]"]}, "toilets": {"n": "Туалеты", "ic": "wc", "col": "#3aa0c8", "q": ["[\"amenity\"=\"toilets\"]"]}, "hospital": {"n": "Больницы", "ic": "cross", "col": "#e5484d", "q": ["[\"amenity\"~\"^(hospital|clinic)$\"]"]}, "sim": {"n": "Связь и SIM", "ic": "phone", "col": "#6b6490", "q": ["[\"shop\"=\"mobile_phone\"]"]}};
+let OL={};try{OL=JSON.parse(localStorage.getItem('og-ol')||'{}')}catch(e){}
+const OVP=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+const osmData={},osmBox={};let osmT=0,osmBusy=false,osmWarn=false,pin=null,rvDraft=null;
+function renderOL(){document.querySelectorAll('[data-ol]').forEach(b=>b.setAttribute('aria-pressed',!!OL[b.dataset.ol]))}
+function osmSchedule(){clearTimeout(osmT);osmT=setTimeout(osmRefresh,700)}
+async function osmRefresh(){const act=Object.keys(OLAY).filter(k=>OL[k]);if(!act.length||osmBusy)return;
+ if(map.getZoom()<14){if(!osmWarn){osmWarn=true;toast('<div>Приблизьте карту, чтобы увидеть выбранные разделы</div>')}return}
+ const b=map.getBounds(),sw=fromM(b.getSouthWest()),ne=fromM(b.getNorthEast()),box=[sw[0],sw[1],ne[0],ne[1]];osmBusy=true;
+ try{for(const k of act){const ob=osmBox[k];if(ob&&ob[0]<=box[0]&&ob[1]<=box[1]&&ob[2]>=box[2]&&ob[3]>=box[3])continue;
+  const dy=(box[2]-box[0])*.5,dx=(box[3]-box[1])*.5,bb=[box[0]-dy,box[1]-dx,box[2]+dy,box[3]+dx],q=bb.map(v=>v.toFixed(5)).join(',');
+  const ql=`[out:json][timeout:20];(${OLAY[k].q.map(f=>`nwr${f}(${q});`).join('')});out center tags 400;`;let j=null;
+  for(const u of OVP){try{const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(ql),headers:{'Content-Type':'application/x-www-form-urlencoded'}});if(r.ok){j=await r.json();break}}catch(e){}}
+  if(!j){toast(`<div>Не удалось загрузить раздел «${OLAY[k].n}». Попробуйте позже.</div>`);continue}
+  osmData[k]=j.elements.map(el=>{const la=el.lat!=null?el.lat:el.center&&el.center.lat,lo=el.lon!=null?el.lon:el.center&&el.center.lon;if(la==null)return null;const t=el.tags||{};
+   return Object.assign({id:el.type+'/'+el.id,lay:k,lat:la,lon:lo,tags:t,name:t['name:ru']||t['name:en']||t.name||OLAY[k].n,local:t.name||''},P(la,lo))}).filter(Boolean);
+  osmBox[k]=bb;dirty=true}}finally{osmBusy=false}}
+map.on('moveend',osmSchedule);
+function osmDest(it){const L0=OLAY[it.lay];return{id:'osm:'+it.id,name:it.name,zh:it.local&&it.local!==it.name?it.local:'',lat:it.lat,lon:it.lon,x:it.x,y:it.y,cat:'osm',ic:L0.ic,col:L0.col}}
+function openOsm(it){const L0=OLAY[it.lay],t=it.tags,d=dist(me,it),addr=[t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' ');
+ $('card').classList.remove('place');curOsm=it;
+ $('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:${L0.col};color:#fff">${isvg(L0.ic,28,2)}</span><div><h2>${esc(it.name)}</h2><div class="zh">${esc(L0.n)}${it.local&&it.local!==it.name?' · '+esc(it.local):''}</div></div></div>
+ <div class="meta"><span>${fmtD(d)}, ${walk(d)}</span>${t.opening_hours?`<span>${esc(t.opening_hours)}</span>`:''}${t.cuisine?`<span>${esc(t.cuisine.replace(/;/g,', '))}</span>`:''}${addr?`<span>${esc(addr)}</span>`:''}</div>
+ <button class="cta" data-osm="route">${isvg('navi',18,2.2)} Маршрут сюда</button><button class="ghost" data-osm="mark">Поставить метку здесь</button>${reviewsBlock('osm:'+it.id,it.name)}`;
+ $('card').classList.add('on');$('scrim').classList.add('on');loadReviews('osm:'+it.id)}
+let curOsm=null;
+function openPin(pt){pin={x:pt.x,y:pt.y};dirty=true;const d=dist(me,pt),dd=distAt(...U(pt));
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:var(--vio);color:#fff">${isvg('pin',28,2)}</span><div><h2>Выбранная точка</h2><div class="zh">${fmtD(d)} от вас${dd?' · '+DIST[dd].n:''}</div></div></div>
+ <button class="cta" data-pin="route">${isvg('navi',18,2.2)} Маршрут сюда</button><button class="ghost" data-pin="mark">Поставить метку здесь</button>${mode==='sim'?'<button class="ghost" data-pin="walk">Идти сюда (демо)</button>':''}`;
+ $('card').classList.add('on');$('scrim').classList.add('on')}
+async function wikiPhoto(key,q){const ck='og-ph-'+key;try{const c=JSON.parse(localStorage.getItem(ck)||'null');if(c&&Date.now()-c.t<30*864e5)return c.v}catch(e){}
+ let v=null;try{const j=await (await fetch(`https://zh.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=1&prop=pageimages&piprop=name&format=json&origin=*`)).json();
+  const pg=j.query&&Object.values(j.query.pages)[0];
+  if(pg&&pg.pageimage&&/\.(jpe?g|png|webp)$/i.test(pg.pageimage)){const c=await (await fetch(`https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent('File:'+pg.pageimage)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=900&format=json&origin=*`)).json();
+   const cp=Object.values(c.query.pages)[0],ii=cp&&cp.imageinfo&&cp.imageinfo[0];
+   if(ii){const md=ii.extmetadata||{},strip=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();v={url:ii.thumburl||ii.url,author:strip(md.Artist&&md.Artist.value).slice(0,60),lic:strip(md.LicenseShortName&&md.LicenseShortName.value),page:ii.descriptionurl}}}}
+ catch(e){return null}
+ try{localStorage.setItem(ck,JSON.stringify({t:Date.now(),v}))}catch(e){}return v}
+const stars=n=>{const f=Math.max(0,Math.min(5,Math.round(n)));return `<span class="st">${'★'.repeat(f)}<i>${'★'.repeat(5-f)}</i></span>`};
+function reviewsBlock(id,name){return `<div class="rv" id="rv" data-id="${esc(id)}"><div class="rv-hd"><b>Отзывы</b><span id="rvAvg"></span><button class="rv-add" data-rvnew="${esc(id)}" data-name="${esc(name)}">${isvg('star',15,2.2)}Оценить</button></div><div id="rvList" class="rv-list"><p class="note">Загружаю…</p></div></div>`}
+async function loadReviews(id){const box=$('rvList');if(!box)return;if(!sb){box.innerHTML='';return}
+ let data,error;try{({data,error}=await sb.from('reviews').select('*').eq('poi_id',id).order('created_at',{ascending:false}).limit(30))}catch(e){error=e}
+ if(!$('rv')||$('rv').dataset.id!==id)return;
+ if(error){box.innerHTML='<p class="note">Отзывы скоро появятся.</p>';return}
+ if(!data.length){box.innerHTML='<p class="note">Пока нет отзывов. Будьте первым!</p>';return}
+ const avg=data.reduce((a,r)=>a+r.rating,0)/data.length;$('rvAvg').innerHTML=`${stars(avg)} ${avg.toFixed(1).replace('.',',')} · ${data.length}`;
+ box.innerHTML=data.map(r=>`<div class="rv-it">${r.photo_path?`<img src="${esc(r.photo_path)}" alt="Фото из отзыва" loading="lazy">`:''}<div><div class="rv-meta">${stars(r.rating)} <b>${esc(r.author_name||'Путешественник')}</b> · ${new Date(r.created_at).toLocaleDateString('ru-RU',{day:'numeric',month:'short'})}</div>${r.text?`<p>${esc(r.text)}</p>`:''}</div></div>`).join('')}
+function openReview(id,name,back){if(!sb)return;if(!user){toast('<div>Войдите, чтобы оставлять отзывы и фото</div>');openLogin();return}
+ rvDraft={id,name,rating:0,photo:null,back};$('card').classList.remove('place');
+ $('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><h2>Ваш отзыв</h2><div class="zh">${esc(name)}</div>
+ <div class="rv-stars" role="radiogroup" aria-label="Оценка">${[1,2,3,4,5].map(n=>`<button data-rvstar="${n}" aria-label="${n} из 5">★</button>`).join('')}</div>
+ <label class="fl">Что понравилось или нет<textarea id="rvText" rows="4" maxlength="1000" placeholder="Например: очень вкусные вонтоны, очередь небольшая"></textarea></label>
+ <label class="photo" id="rvPhotoBox"><input type="file" accept="image/*" id="rvPhoto" hidden><span>📷 Добавить фото</span></label>
+ <button class="cta" data-rvsave>Опубликовать</button>`;$('card').classList.add('on');$('scrim').classList.add('on')}
+document.addEventListener('change',async e=>{if(e.target.id!=='rvPhoto'||!e.target.files[0]||!rvDraft)return;
+ try{rvDraft.photo=await shrink(e.target.files[0]);$('rvPhotoBox').innerHTML=`<img src="${rvDraft.photo}" alt="Фото к отзыву">`}catch(err){toast('<div>Не удалось прочитать фото</div>')}});
+async function saveReview(t){if(!rvDraft)return;if(!rvDraft.rating){toast('<div>Поставьте оценку от 1 до 5 звёзд</div>');return}
+ t.disabled=true;t.textContent='Публикую…';
+ try{let url=null;if(rvDraft.photo){const blob=await (await fetch(rvDraft.photo)).blob(),path=`${user.id}/${rvDraft.id.replace(/[^\w-]/g,'_')}-${Date.now()}.jpg`;
+   const {error:ue}=await sb.storage.from('review-photos').upload(path,blob,{contentType:'image/jpeg'});if(ue)throw ue;url=sb.storage.from('review-photos').getPublicUrl(path).data.publicUrl}
+  const row={user_id:user.id,poi_id:rvDraft.id,rating:rvDraft.rating,text:$('rvText').value.trim()||null,author_name:(user.email||'').split('@')[0]};if(url)row.photo_path=url;
+  const {error}=await sb.from('reviews').upsert(row,{onConflict:'user_id,poi_id'});if(error)throw error;
+  const back=rvDraft.back;rvDraft=null;closeCard();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
+ catch(e){t.disabled=false;t.textContent='Опубликовать';toast(`<div>Не удалось сохранить отзыв: ${esc(e.message||'ошибка')}</div>`)}}
+function handleExtra(t){
+ if(t.dataset.ol){const k=t.dataset.ol;OL[k]=!OL[k];if(!OL[k])delete OL[k];try{localStorage.setItem('og-ol',JSON.stringify(OL))}catch(e){}renderOL();osmWarn=false;dirty=true;if(OL[k])osmRefresh();return true}
+ if(t.id==='wakeBtn'){wakeWant=!wakeWant;if(wakeWant)wakeOn();else{if(wakeLock)wakeLock.release();wakeLock=null;$('wakeBtn').classList.remove('on')}return true}
+ if(t.dataset.pin){const pt=pin;if(!pt)return true;const a=t.dataset.pin;closeCard();
+  if(a==='route')openRoute({id:'pin',name:'Выбранная точка',zh:'',lat:U(pt)[0],lon:U(pt)[1],x:pt.x,y:pt.y,cat:'pin',ic:'pin'});
+  else if(a==='mark')openAdd(pt);else if(a==='walk'){target={x:pt.x,y:pt.y};follow=true;dirty=true}return true}
+ if(t.dataset.osm){const it=curOsm;if(!it)return true;closeCard();if(t.dataset.osm==='route')openRoute(osmDest(it));else openAdd({x:it.x,y:it.y});return true}
+ if(t.dataset.rvnew){const id=t.dataset.rvnew,name=t.dataset.name||'',p=POIS.find(q=>q.id===id),it=curOsm;openReview(id,name,p?()=>openCard(p):(it&&('osm:'+it.id)===id?()=>openOsm(it):null));return true}
+ if(t.dataset.rvstar){if(!rvDraft)return true;rvDraft.rating=+t.dataset.rvstar;document.querySelectorAll('[data-rvstar]').forEach(b=>b.classList.toggle('on',+b.dataset.rvstar<=rvDraft.rating));return true}
+ if('rvsave' in t.dataset){saveReview(t);return true}
  return false}
 
 // ================= ОБЛАКО (Supabase) =================
@@ -766,7 +905,7 @@ function importMarks(txt){let o;try{o=JSON.parse(txt)}catch(e){return false}if(!
  saveMarks();recomputePts();save();updateHUD();renderSheet();dirty=true;flushSoon();toast(`<div>Загружено отметок: <b>${n}</b></div>`);return true}
 function profileHTML(){const vs=POIS.filter(p=>visited.has(p.id)).length;
  let h=`<div class="pf"><span class="pf-av">${user&&user.email?esc(user.email[0].toUpperCase()):'?'}</span><span class="pf-t"><b>${user?esc(user.email||''):'Гость'}</b><span>${syncText()}</span></span></div>
- <div class="pc-stats" style="margin:12px 0"><div><b>${pts}</b><span>очков</span></div><div><b>${vs}/${POIS.length}</b><span>мест</span></div><div><b>${km(area.size)}</b><span>км² открыто</span></div></div>`;
+ <div class="pc-stats" style="margin:12px 0"><div><b>${pts}</b><span>очков</span></div><div><b>${vs}/${POIS.length}</b><span>мест</span></div><div><b>${km(area.size)}</b><span>км² пройдено</span></div></div>`;
  h+=user?`<button class="ghost" data-syncnow>Синхронизировать сейчас</button><button class="ghost" data-logout>Выйти из аккаунта</button>`:`<button class="cta" data-login>Войти и сохранять в облако</button>`;
  return h+`<p class="note">Рейтинг игроков появится, когда подключатся друзья.</p><button class="ghost" id="reset">Сбросить прогресс</button>`}
 const SITE='https://dimanomokonov.github.io/otkroy-gorod/';
@@ -807,7 +946,7 @@ setInterval(flush,10000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});
 window.addEventListener('online',flush);
 
-loadColors();try{buildBase()}catch(e){}revealAt(me);updateHUD();renderSheet();renderPop();
+loadColors();try{buildBase()}catch(e){}revealAt(me);updateHUD();renderSheet();renderPop();renderOL();setTimeout(osmSchedule,1500);
 try{resize()}catch(e){toast('<div>Карта не запустилась: '+esc(e.message)+'</div>')}
 try{startGps(false)}catch(e){}
 let last=performance.now();
