@@ -434,24 +434,35 @@ const pendCells=new Set(Q.cells),pendVisits=new Set(Q.visits),pendMarks=new Set(
 let tracks=[];try{tracks=JSON.parse(localStorage.getItem('og-tracks')||'[]')}catch(e){}let curSeg=null,trackDirty=false;const pendTracks=new Set(Q.tracks||[]);
 function saveTracks(){try{localStorage.setItem('og-tracks',JSON.stringify(tracks.map(({P,bb,...t})=>t)))}catch(e){}trackDirty=false}
 function llDist(a,b){return dist(P(a[0],a[1]),P(b[0],b[1]))}
-const STOP_R=30,STOP_T=300;let anchor=null;
+const STOP_T=300,DWELL_T=45,DWELL_R=30;let anc=null,cands=[];
 function markSeg(){curSeg.P=null;pendTracks.add(curSeg.id);trackDirty=true;dirty=true}
-function recordFix(la,lo,tms,acc){if(acc>50)return;const t=Math.round(tms/1000),p=[+la.toFixed(6),+lo.toFixed(6),t],last=curSeg&&curSeg.pts[curSeg.pts.length-1];
- if(!curSeg||!last||t-(curSeg.tLast||last[2])>900||llDist(last,p)>600){curSeg={id:'t'+t,pts:[p],stops:[],inf:false,clean:1,tLast:t};tracks.push(curSeg);anchor={la,lo,t0:t,t1:t,n:1,sla:la,slo:lo};markSeg();return}
- curSeg.tLast=t;curSeg.stops=curSeg.stops||[];
- if(anchor&&llDist([anchor.la,anchor.lo],p)<=Math.max(STOP_R,Math.min(acc,50))){anchor.t1=t;anchor.n++;anchor.sla+=la;anchor.slo+=lo;
-  if(anchor.t1-anchor.t0>=STOP_T){const c=[+(anchor.sla/anchor.n).toFixed(6),+(anchor.slo/anchor.n).toFixed(6),anchor.t0,anchor.t1],st=curSeg.stops,ls=st[st.length-1];if(ls&&ls[2]===anchor.t0)st[st.length-1]=c;else st.push(c);markSeg()}return}
- anchor={la,lo,t0:t,t1:t,n:1,sla:la,slo:lo};if(llDist(last,p)>=10){curSeg.pts.push(p);markSeg()}}
-function cleanSeg(sg){sg.stops=sg.stops||[];if(sg.clean||sg.inf||!sg.pts||sg.pts.length<3){sg.clean=1;return false}
- const A=sg.pts,out=[],stops=sg.stops.slice();let i=0;
- while(i<A.length){let j=i+1,sla=A[i][0],slo=A[i][1],n=1;while(j<A.length&&llDist(A[i],A[j])<=STOP_R){sla+=A[j][0];slo+=A[j][1];n++;j++}
-  const dur=A[j-1][2]-A[i][2];if(dur>=STOP_T){const c=[+(sla/n).toFixed(6),+(slo/n).toFixed(6),A[i][2],A[j-1][2]];stops.push(c);out.push([c[0],c[1],A[i][2]])}else{const lp=out[out.length-1];if(!lp||llDist(lp,A[i])>=10)out.push(A[i])}
-  i=j}
- const lastA=A[A.length-1],lo2=out[out.length-1];if(lo2&&lo2!==lastA&&llDist(lo2,lastA)>=10)out.push(lastA);
- const ch=out.length!==A.length||stops.length!==sg.stops.length;sg.pts=out;sg.stops=stops;sg.clean=1;sg.P=null;return ch}
+function recordFix(la,lo,tms,acc){if(acc>65)return;const t=Math.round(tms/1000),p=[+la.toFixed(6),+lo.toFixed(6),t],last=curSeg&&curSeg.pts[curSeg.pts.length-1];
+ if(!curSeg||!last||!anc||t-(curSeg.tLast||last[2])>900||llDist(last,p)>800){curSeg={id:'t'+t,pts:[p],stops:[],inf:false,clean:3,tLast:t};tracks.push(curSeg);anc={sla:la,slo:lo,n:1,t0:t,t1:t,vi:0};cands=[];markSeg();return}
+ const dtl=Math.max(1,t-(curSeg.tLast||last[2]));if(llDist(last,p)/dtl>50)return;curSeg.tLast=t;
+ const R=Math.max(DWELL_R,Math.min(acc*2,80)),cen=[anc.sla/anc.n,anc.slo/anc.n],dc=llDist(cen,p);
+ if(dc<=R){anc.sla+=la;anc.slo+=lo;anc.n++;anc.t1=t;cands=[];const dur=anc.t1-anc.t0;
+  if(dur>=DWELL_T){const c=[+(anc.sla/anc.n).toFixed(6),+(anc.slo/anc.n).toFixed(6)],v=curSeg.pts[anc.vi];if(v){v[0]=c[0];v[1]=c[1]}curSeg.pts.length=anc.vi+1;
+   if(dur>=STOP_T){const st=curSeg.stops,ls=st[st.length-1],sp=[c[0],c[1],anc.t0,anc.t1];if(ls&&ls[2]===anc.t0)st[st.length-1]=sp;else st.push(sp)}markSeg()}
+  return}
+ cands.push({p,d:dc});if(cands.length<3)return;
+ const k=cands.length,ok=cands[k-1].d>R*1.35&&cands[k-1].d>=cands[k-2].d-4&&cands[k-2].d>=cands[k-3].d-4;
+ if(!ok){if(cands.length>8)cands.shift();return}
+ for(const c of cands){const lp=curSeg.pts[curSeg.pts.length-1];if(llDist(lp,c.p)>=8)curSeg.pts.push(c.p)}
+ const lc=cands[k-1].p;anc={sla:lc[0],slo:lc[1],n:1,t0:lc[2],t1:lc[2],vi:curSeg.pts.length-1};cands=[];markSeg()}
+function cleanSeg(sg){sg.stops=sg.stops||[];if((sg.clean||0)>=3||sg.inf||!sg.pts||sg.pts.length<2){if(!sg.inf)sg.clean=3;return false}
+ const A=sg.pts.slice().sort((a,b)=>a[2]-b[2]),B=[A[0]];
+ for(let i=1;i<A.length;i++){const q=B[B.length-1];if(llDist(q,A[i])/Math.max(1,A[i][2]-q[2])>50)continue;B.push(A[i])}
+ const C=B,out=[],stops=[],RR=45;let i=0;
+ while(i<C.length){let n=1,sla=C[i][0],slo=C[i][1],j=i+1,lastIn=i;
+  while(j<C.length){const cen=[sla/n,slo/n];if(llDist(cen,C[j])<=RR){sla+=C[j][0];slo+=C[j][1];n++;lastIn=j;j++;continue}
+   let back=false;for(let k=j+1;k<=Math.min(C.length-1,j+3);k++)if(llDist(cen,C[k])<=RR){back=true;break}if(back){j++;continue}break}
+  const dur=C[lastIn][2]-C[i][2];
+  if(n>2&&dur>=DWELL_T){const cc=[+(sla/n).toFixed(6),+(slo/n).toFixed(6)];out.push([cc[0],cc[1],C[i][2]]);if(dur>=STOP_T)stops.push([cc[0],cc[1],C[i][2],C[lastIn][2]]);i=lastIn+1}
+  else{const lp=out[out.length-1];if(!lp||llDist(lp,C[i])>=8)out.push(C[i]);i++}}
+ sg.pts=out;sg.stops=stops;sg.clean=3;sg.P=null;return true}
 function cleanAll(){let ch=0;for(const sg of tracks)if(cleanSeg(sg)){pendTracks.add(sg.id);ch++}if(ch){trackDirty=true;dirty=true}}
 let showTrack=localStorage.getItem('og-showtrack')!=='0';
-function addInferred(cs){if(cs.length<2)return;const t=Math.round(Date.now()/1000),sg={id:'i'+t,pts:cs.map(q=>{const u=U(q);return[+u[0].toFixed(6),+u[1].toFixed(6),t]}),inf:true};tracks.push(sg);pendTracks.add(sg.id);trackDirty=true;curSeg=null}
+function addInferred(cs){if(cs.length<2)return;const t=Math.round(Date.now()/1000),sg={id:'i'+t,pts:cs.map(q=>{const u=U(q);return[+u[0].toFixed(6),+u[1].toFixed(6),t]}),inf:true,clean:3};tracks.push(sg);pendTracks.add(sg.id);trackDirty=true;curSeg=null}
 function trackKm(since){let m=0;for(const sg of tracks){for(let i=1;i<sg.pts.length;i++){if(since&&sg.pts[i][2]<since)continue;m+=llDist(sg.pts[i-1],sg.pts[i])}}return m/1000}
 function saveQ(){try{localStorage.setItem(QK,JSON.stringify({cells:[...pendCells],visits:[...pendVisits],marks:[...pendMarks],del:[...pendDel],tracks:[...pendTracks],owner:Q.owner}))}catch(e){}}
 function qCell(k){pendCells.add(k)}function qVisit(id){pendVisits.add(id);saveQ()}function qMark(id){pendMarks.add(id);pendDel.delete(id);saveQ()}function qDel(id){pendMarks.delete(id);pendDel.add(id);saveQ()}
@@ -555,13 +566,7 @@ function draw(){
   ctx.fillStyle=C.me;ctx.beginPath();ctx.arc(b.x,b.y,5,0,7);ctx.fill()}
  const z=map.getZoom();
  ctx.lineCap=ctx.lineJoin='round';
- if(showTrack){for(const sg of tracks){if(!sg.pts||!sg.pts.length)continue;if(!sg.P){sg.P=sg.pts.map(q=>P(q[0],q[1]));sg.SP=(sg.stops||[]).map(q=>Object.assign(P(q[0],q[1]),{d:q[3]-q[2]}));let a=1e12,b=-1e12,c=1e12,e=-1e12;for(const q of sg.P){a=Math.min(a,q.x);b=Math.max(b,q.x);c=Math.min(c,q.y);e=Math.max(e,q.y)}sg.bb=[a-50,b+50,c-50,e+50]}
-  if(sg.bb[1]<x0||sg.bb[0]>x1||sg.bb[3]<y0||sg.bb[2]>y1)continue;
-  if(sg.P.length>1){ctx.beginPath();let lx=0,ly=0;const Q=sg.P;
-   for(let n=0;n<Q.length;n++){const sx=WX(Q[n].x,Q[n].y),sy=WY(Q[n].x,Q[n].y);if(n===0){ctx.moveTo(sx,sy);lx=sx;ly=sy;continue}if(Math.abs(sx-lx)+Math.abs(sy-ly)<2&&n<Q.length-1)continue;ctx.quadraticCurveTo(lx,ly,(lx+sx)/2,(ly+sy)/2);lx=sx;ly=sy}ctx.lineTo(lx,ly);
-   ctx.setLineDash(sg.inf?[5,8]:[]);ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=7;ctx.stroke();ctx.strokeStyle=sg.inf?'rgba(14,165,214,.6)':'#0ea5d6';ctx.lineWidth=4;ctx.stroke();ctx.setLineDash([])}
-  for(const q of sg.SP){const sx=WX(q.x,q.y),sy=WY(q.x,q.y),r=Math.min(13,6+q.d/300);ctx.beginPath();ctx.arc(sx,sy,r,0,7);ctx.fillStyle='rgba(239,68,68,.9)';ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#fff';ctx.stroke();
-   if(map.getZoom()>=16){const lab=Math.round(q.d/60)+' мин';ctx.font='700 11px Rubik,sans-serif';ctx.textAlign='left';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(lab,sx+r+4,sy);ctx.fillStyle='#b91c1c';ctx.fillText(lab,sx+r+4,sy);ctx.textAlign='center'}}}}
+ if(showTrack)for(const sg of tracks)drawTrack(sg,WX,WY,x0,x1,y0,y1);
  drawMetro(WX,WY,x0,x1,y0,y1);
  if(route&&route.pts&&route.pts.length>1){ctx.lineCap=ctx.lineJoin='round';ctx.beginPath();(route.proj?[route.proj,...route.pts.slice(route.idx+1)]:route.pts).forEach((q,i)=>{const s=S(q);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y)});
   ctx.setLineDash(route.approx?[2,10]:[]);ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=9;ctx.stroke();ctx.strokeStyle=C.vio;ctx.lineWidth=5;ctx.stroke();ctx.setLineDash([])}
@@ -927,6 +932,25 @@ function handleExtra(t){
  if(t.dataset.rvstar){if(!rvDraft)return true;rvDraft.rating=+t.dataset.rvstar;document.querySelectorAll('[data-rvstar]').forEach(b=>b.classList.toggle('on',+b.dataset.rvstar<=rvDraft.rating));return true}
  if('rvsave' in t.dataset){saveReview(t);return true}
  return false}
+
+// ================= ОТРИСОВКА ПУТИ: свечение и градиент остановок =================
+const TQ=[14,165,214],RD=[239,68,68],GR=140;
+function chaikin(pts,it){let a=pts;for(let k=0;k<it;k++){if(a.length<3)break;const b=[a[0]];for(let i=0;i<a.length-1;i++){const p=a[i],q=a[i+1];b.push({x:.75*p.x+.25*q.x,y:.75*p.y+.25*q.y},{x:.25*p.x+.75*q.x,y:.25*p.y+.75*q.y})}b.push(a[a.length-1]);a=b}return a}
+function prepTrack(sg){const raw=sg.pts.map(q=>P(q[0],q[1]));sg.P=chaikin(raw,2);sg.S=[0];for(let i=1;i<sg.P.length;i++)sg.S.push(sg.S[i-1]+dist(sg.P[i-1],sg.P[i]));
+ sg.SP=(sg.stops||[]).map(q=>{const sp=Object.assign(P(q[0],q[1]),{d:q[3]-q[2]});let bi=0,bd=1e12;for(let i=0;i<sg.P.length;i++){const dd=dist(sg.P[i],sp);if(dd<bd){bd=dd;bi=i}}sp.s=sg.S[bi];return sp});
+ let a=1e12,b=-1e12,c=1e12,e=-1e12;for(const q of sg.P){a=Math.min(a,q.x);b=Math.max(b,q.x);c=Math.min(c,q.y);e=Math.max(e,q.y)}sg.bb=[a-60,b+60,c-60,e+60]}
+function drawTrack(sg,WX,WY,x0,x1,y0,y1){if(!sg.pts||!sg.pts.length)return;if(!sg.P)prepTrack(sg);if(sg.bb[1]<x0||sg.bb[0]>x1||sg.bb[3]<y0||sg.bb[2]>y1)return;
+ const al=sg.inf?.45:1,wOf=s=>{let w=0;for(const sp of sg.SP){const d=Math.abs(s-sp.s);if(d<GR){const k=1-d/GR;w=Math.max(w,k*k*(3-2*k))}}return w};
+ if(sg.P.length>1){const scr=[];let lx=-1e9,ly=-1e9;for(let n=0;n<sg.P.length;n++){const q=sg.P[n],sx=WX(q.x,q.y),sy=WY(q.x,q.y);if(n<sg.P.length-1&&Math.abs(sx-lx)+Math.abs(sy-ly)<1.5)continue;scr.push([sx,sy,sg.S[n]]);lx=sx;ly=sy}
+  const groups=[];let cur=null;for(let n=1;n<scr.length;n++){const qv=Math.round(wOf((scr[n-1][2]+scr[n][2])/2)*10);if(!cur||cur.q!==qv){cur={q:qv,p:[scr[n-1]]};groups.push(cur)}cur.p.push(scr[n])}
+  const col=(qv,a)=>{const k=qv/10;return`rgba(${Math.round(TQ[0]+(RD[0]-TQ[0])*k)},${Math.round(TQ[1]+(RD[1]-TQ[1])*k)},${Math.round(TQ[2]+(RD[2]-TQ[2])*k)},${a*al})`};
+  for(const pass of [[18,.07,'butt'],[11,.14,'butt'],[6.5,.3,'butt'],[3.2,1,'round']]){ctx.lineWidth=pass[0];ctx.lineCap=pass[2];ctx.lineJoin='round';
+   for(const g of groups){ctx.beginPath();g.p.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.strokeStyle=col(g.q,pass[1]);ctx.stroke()}}
+  ctx.lineCap='round'}
+ for(const sp of sg.SP){const sx=WX(sp.x,sp.y),sy=WY(sp.x,sp.y),r=Math.min(9,5+sp.d/600),hg=ctx.createRadialGradient(sx,sy,0,sx,sy,r*3.2);
+  hg.addColorStop(0,`rgba(239,68,68,${.55*al})`);hg.addColorStop(.45,`rgba(239,68,68,${.18*al})`);hg.addColorStop(1,'rgba(239,68,68,0)');ctx.fillStyle=hg;ctx.beginPath();ctx.arc(sx,sy,r*3.2,0,7);ctx.fill();
+  ctx.beginPath();ctx.arc(sx,sy,r,0,7);ctx.fillStyle=`rgba(239,68,68,${al})`;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.stroke();
+  if(map.getZoom()>=16){const lab=Math.round(sp.d/60)+' мин';ctx.font='700 11px Rubik,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(lab,sx+r+6,sy);ctx.fillStyle='#b91c1c';ctx.fillText(lab,sx+r+6,sy);ctx.textAlign='center'}}}
 
 // ================= МЕТРО: цвета линий, номера, схема =================
 let metro=null,metroBox=null,metroBusy=false,metroFail=0;
