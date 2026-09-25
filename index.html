@@ -431,24 +431,37 @@ marks.forEach(m=>Object.assign(m,P(m.lat,m.lon)));
 const MT={place:{e:'📍',n:'Место'},egg:{e:'✨',n:'Пасхалка'},food:{e:'🍜',n:'Еда'}};
 const QK='og-sync-v1';let Q={cells:[],visits:[],marks:[],del:[],owner:null};try{Q=Object.assign(Q,JSON.parse(localStorage.getItem(QK)||'{}'))}catch(e){}
 const pendCells=new Set(Q.cells),pendVisits=new Set(Q.visits),pendMarks=new Set(Q.marks),pendDel=new Set(Q.del);
-let tracks=[];try{tracks=JSON.parse(localStorage.getItem('og-tracks')||'[]')}catch(e){}let curSeg=null,trackDirty=false;const pendTracks=new Set(Q.tracks||[]);
-function saveTracks(){try{localStorage.setItem('og-tracks',JSON.stringify(tracks.map(({P,bb,...t})=>t)))}catch(e){}trackDirty=false}
+let tracks=[];try{tracks=JSON.parse(localStorage.getItem('og-tracks')||'[]')}catch(e){}let curSeg=null,trackDirty=false,trkVer=0;const pendTracks=new Set(Q.tracks||[]);
+function saveTracks(){try{localStorage.setItem('og-tracks',JSON.stringify(tracks.map(({P,bb,S,SP,...t})=>t)))}catch(e){try{localStorage.setItem('og-tracks',JSON.stringify(tracks.map(({P,bb,S,SP,mg,pg,...t})=>t)))}catch(e2){}}trackDirty=false}
 function llDist(a,b){return dist(P(a[0],a[1]),P(b[0],b[1]))}
-const STOP_T=300,DWELL_T=45,DWELL_R=30;let anc=null,cands=[];
-function markSeg(){curSeg.P=null;pendTracks.add(curSeg.id);trackDirty=true;dirty=true}
+const STOP_T=300,DWELL_T=45,DWELL_R=30,STEP_M=8;let anc=null,cands=[],mv=false,win=[],lastAcc=null;
+function mmReset(sg){sg.mg=null;sg.mi=-1;sg.pg=null;sg.pgi=-1;sg.mmBad=0;sg.mmGen=(sg.mmGen||0)+1}
+function markSeg(){curSeg.P=null;trkVer++;pendTracks.add(curSeg.id);trackDirty=true;dirty=true}
+function segCut(n){curSeg.pts.length=n;if(curSeg.pgi!=null&&curSeg.pgi>=n-1){curSeg.pg=null;curSeg.pgi=-1}}
 function recordFix(la,lo,tms,acc){if(acc>65)return;const t=Math.round(tms/1000),p=[+la.toFixed(6),+lo.toFixed(6),t],last=curSeg&&curSeg.pts[curSeg.pts.length-1];
- if(!curSeg||!last||!anc||t-(curSeg.tLast||last[2])>900||llDist(last,p)>800){curSeg={id:'t'+t,pts:[p],stops:[],inf:false,clean:3,tLast:t};tracks.push(curSeg);anc={sla:la,slo:lo,n:1,t0:t,t1:t,vi:0};cands=[];markSeg();return}
- const dtl=Math.max(1,t-(curSeg.tLast||last[2]));if(llDist(last,p)/dtl>50)return;curSeg.tLast=t;
- const R=Math.max(DWELL_R,Math.min(acc*2,80)),cen=[anc.sla/anc.n,anc.slo/anc.n],dc=llDist(cen,p);
- if(dc<=R){anc.sla+=la;anc.slo+=lo;anc.n++;anc.t1=t;cands=[];const dur=anc.t1-anc.t0;
-  if(dur>=DWELL_T){const c=[+(anc.sla/anc.n).toFixed(6),+(anc.slo/anc.n).toFixed(6)],v=curSeg.pts[anc.vi];if(v){v[0]=c[0];v[1]=c[1]}curSeg.pts.length=anc.vi+1;
-   if(dur>=STOP_T){const st=curSeg.stops,ls=st[st.length-1],sp=[c[0],c[1],anc.t0,anc.t1];if(ls&&ls[2]===anc.t0)st[st.length-1]=sp;else st.push(sp)}markSeg()}
-  return}
- cands.push({p,d:dc});if(cands.length<3)return;
- const k=cands.length,ok=cands[k-1].d>R*1.35&&cands[k-1].d>=cands[k-2].d-4&&cands[k-2].d>=cands[k-3].d-4;
- if(!ok){if(cands.length>8)cands.shift();return}
- for(const c of cands){const lp=curSeg.pts[curSeg.pts.length-1];if(llDist(lp,c.p)>=8)curSeg.pts.push(c.p)}
- const lc=cands[k-1].p;anc={sla:lc[0],slo:lc[1],n:1,t0:lc[2],t1:lc[2],vi:curSeg.pts.length-1};cands=[];markSeg()}
+ if(!curSeg||!last||(!anc&&!mv)||t-(curSeg.tLast||last[2])>900||llDist(lastAcc||last,p)>800){curSeg={id:'t'+t,pts:[p],stops:[],inf:false,clean:3,tLast:t,mi:-1,pgi:-1};tracks.push(curSeg);anc={sla:la,slo:lo,n:1,t0:t,t1:t,vi:0,R:DWELL_R};cands=[];win=[];mv=false;lastAcc=p;markSeg();return}
+ if(lastAcc&&llDist(lastAcc,p)/Math.max(1,t-lastAcc[2])>50)return;
+ lastAcc=p;curSeg.tLast=t;const R=Math.max(DWELL_R,Math.min(acc*2,80));
+ if(!mv){anc.R=R;const cen=[anc.sla/anc.n,anc.slo/anc.n],dc=llDist(cen,p);(anc.dh||(anc.dh=[])).push(dc);if(anc.dh.length>4)anc.dh.shift();
+  if(dc<=R){anc.sla+=la;anc.slo+=lo;anc.n++;anc.t1=t;if(cands.length)dirty=true;cands=[];const dur=anc.t1-anc.t0;
+   if(dur>=DWELL_T){const c=[+(anc.sla/anc.n).toFixed(6),+(anc.slo/anc.n).toFixed(6)],v=curSeg.pts[anc.vi];let ch=curSeg.pts.length!==anc.vi+1;
+    if(v&&llDist(v,c)>=1.5){v[0]=c[0];v[1]=c[1];ch=true}if(ch)segCut(anc.vi+1);
+    if(dur>=STOP_T){const st=curSeg.stops,ls=st[st.length-1],sp=[c[0],c[1],anc.t0,anc.t1];if(ls&&ls[2]===anc.t0){if(llDist(ls,sp)>=1.5)ch=true;st[st.length-1]=sp}else{st.push(sp);ch=true}}
+    if(ch)markSeg();else{pendTracks.add(curSeg.id);trackDirty=true}}
+   return}
+  cands.push({p,d:dc});dirty=true;if(cands.length<3)return;
+  const k=cands.length,ok=cands[k-1].d>R*1.35&&cands[k-1].d>=cands[k-2].d-4&&cands[k-2].d>=cands[k-3].d-4;
+  if(!ok){if(cands.length>8)cands.shift();return}
+  for(const c of cands){const lp=curSeg.pts[curSeg.pts.length-1];if(llDist(lp,c.p)>=STEP_M)curSeg.pts.push(c.p)}
+  win=cands.map(c=>c.p);mv=true;anc=null;cands=[];markSeg();return}
+ win.push(p);while(win.length&&win[0][2]<t-DWELL_T-20)win.shift();
+ let ch=false;if(llDist(curSeg.pts[curSeg.pts.length-1],p)>=STEP_M){curSeg.pts.push(p);ch=true}
+ const w=win.filter(q=>q[2]>=t-DWELL_T);
+ if(w.length>=5&&w[0][2]<=t-DWELL_T+8){let sla=0,slo=0;for(const q of w){sla+=q[0];slo+=q[1]}const cen=[sla/w.length,slo/w.length];
+  if(w.every(q=>llDist(cen,q)<=R)){const m=Math.max(1,Math.floor(w.length/3)),avg=a=>[a.reduce((s,q)=>s+q[0],0)/a.length,a.reduce((s,q)=>s+q[1],0)/a.length];
+   if(llDist(avg(w.slice(0,m)),avg(w.slice(-m)))<15){const t0=w[0][2];let n=curSeg.pts.length;while(n>1&&curSeg.pts[n-1][2]>=t0)n--;segCut(n);
+    curSeg.pts.push([+cen[0].toFixed(6),+cen[1].toFixed(6),t0]);anc={sla,slo,n:w.length,t0,t1:t,vi:curSeg.pts.length-1,R};mv=false;win=[];cands=[];ch=true}}}
+ if(ch)markSeg()}
 function cleanSeg(sg){sg.stops=sg.stops||[];if((sg.clean||0)>=3||sg.inf||!sg.pts||sg.pts.length<2){if(!sg.inf)sg.clean=3;return false}
  const A=sg.pts.slice().sort((a,b)=>a[2]-b[2]),B=[A[0]];
  for(let i=1;i<A.length;i++){const q=B[B.length-1];if(llDist(q,A[i])/Math.max(1,A[i][2]-q[2])>50)continue;B.push(A[i])}
@@ -459,7 +472,7 @@ function cleanSeg(sg){sg.stops=sg.stops||[];if((sg.clean||0)>=3||sg.inf||!sg.pts
   const dur=C[lastIn][2]-C[i][2];
   if(n>2&&dur>=DWELL_T){const cc=[+(sla/n).toFixed(6),+(slo/n).toFixed(6)];out.push([cc[0],cc[1],C[i][2]]);if(dur>=STOP_T)stops.push([cc[0],cc[1],C[i][2],C[lastIn][2]]);i=lastIn+1}
   else{const lp=out[out.length-1];if(!lp||llDist(lp,C[i])>=8)out.push(C[i]);i++}}
- sg.pts=out;sg.stops=stops;sg.clean=3;sg.P=null;return true}
+ sg.pts=out;sg.stops=stops;sg.clean=3;sg.P=null;mmReset(sg);trkVer++;return true}
 function cleanAll(){let ch=0;for(const sg of tracks)if(cleanSeg(sg)){pendTracks.add(sg.id);ch++}if(ch){trackDirty=true;dirty=true}}
 let showTrack=localStorage.getItem('og-showtrack')!=='0';
 function addInferred(cs){if(cs.length<2)return;const t=Math.round(Date.now()/1000),sg={id:'i'+t,pts:cs.map(q=>{const u=U(q);return[+u[0].toFixed(6),+u[1].toFixed(6),t]}),inf:true,clean:3};tracks.push(sg);pendTracks.add(sg.id);trackDirty=true;curSeg=null}
@@ -487,7 +500,7 @@ const CP={"ly": [23.125863, 113.244258], "yx": [23.128537, 113.266835], "hz": [2
 const toM=(la,lo)=>{const c=base==='amap'?w2g(la,lo):[la,lo];return L.latLng(c[0],c[1])};
 const fromM=ll=>base==='amap'?g2w(ll.lat,ll.lng):[ll.lat,ll.lng];
 const ROT=!!(L.Map.prototype.setBearing);
-const map=L.map('map',Object.assign({zoomControl:false,zoomAnimation:true,fadeAnimation:true,zoomSnap:0.25,zoomDelta:0.5,wheelPxPerZoomLevel:110,wheelDebounceTime:20,bounceAtZoomLimits:false,inertia:true,inertiaDeceleration:2600,easeLinearity:0.2,attributionControl:false,preferCanvas:true,minZoom:10,maxZoom:19},ROT?{rotate:true,touchRotate:true,rotateControl:false,bearing:0,shiftKeyRotate:true}:{}));
+const map=L.map('map',Object.assign({zoomControl:false,zoomAnimation:true,fadeAnimation:true,zoomSnap:0,zoomDelta:0.5,scrollWheelZoom:false,doubleClickZoom:false,keyboard:false,bounceAtZoomLimits:false,inertia:true,inertiaDeceleration:2600,easeLinearity:0.2,attributionControl:false,preferCanvas:true,minZoom:10,maxZoom:19},ROT?{rotate:true,touchRotate:true,rotateControl:false,bearing:0,shiftKeyRotate:true}:{}));
 window.__ogmap=map;map.on('rotate',()=>{dirty=true;const b=document.getElementById('compassBtn');if(b){const g=((map.getBearing?map.getBearing():0)%360+360)%360;b.style.display=g>1&&g<359?'':'none';b.firstChild.style.transform=`rotate(${-g}deg)`}});
 
 const DARKM=matchMedia('(prefers-color-scheme: dark)').matches;
@@ -513,21 +526,71 @@ function buildBase(){if(baseLayer)map.removeLayer(baseLayer);const g=L.layerGrou
  baseLayer=g.addTo(map)}
 function setBase(b){if(b===base)return;const c=fromM(map.getCenter()),z=map.getZoom();if(TILES[base])map.removeLayer(TILES[base]);base=b;if(TILES[b])TILES[b].addTo(map);
  map.setView(toM(c[0],c[1]),Math.min(z,18),{animate:false});buildBase();changed=true;save();renderPop();toast(`<div>Карта: <b>${BN[b]}</b></div>`);dirty=true}
-function centerMe(){map.setView(toM(...U(me)),map.getZoom(),{animate:false})}
-map.on('move zoom resize viewreset',()=>dirty=true);
-let zooming=false;
-map.on('zoomanim',e=>{try{const cb=map.latLngToContainerPoint(e.center),s2=map.getZoomScale(e.zoom,map.getZoom());zooming=true;cv.style.transformOrigin='0 0';cv.style.transition='transform .25s cubic-bezier(0,0,.25,1)';cv.style.transform=`translate(${W/2-cb.x*s2}px,${H/2-cb.y*s2}px) scale(${s2})`}catch(err){zooming=false}});
-map.on('zoomend',()=>{if(!zooming)return;zooming=false;cv.style.transition='none';cv.style.transform='';dirty=true});
+function centerMe(){follow=true;const sz=map.getSize(),ll=toM(...U(meD)),a=map.latLngToContainerPoint(ll);if(Math.hypot(a.x-sz.x/2,a.y-sz.y/2)>Math.max(sz.x,sz.y)*1.5)map.setView(ll,map.getZoom(),{animate:false});dirty=true}
+function flyGo(ll,z){z=Math.max(map.getMinZoom(),Math.min(map.getMaxZoom(),z));zStop();map._stop();map.flyTo(ll,z,{duration:.55,easeLinearity:.5})}
+function focusAt(la,lo){const z=Math.max(map.getZoom(),16),ll=toM(la,lo),b=(map.getBearing?map.getBearing():0)*PI/180,o=L.point(0,120),w=b&&o.rotate?o.rotate(-b):o;flyGo(map.unproject(map.project(ll,z).add(w),z),z)}
+// ---------- плавный зум: покадровый, без CSS-переходов, поэтому туман, путь и значки двигаются вместе с картой ----------
+const zA={on:false,z:0,tz:0,cp:null,ll:null,last:0};
+function zStop(){if(zA.on){zA.on=false;map._moveEnd(true)}}
+function zoomTo(tz,cp){tz=Math.max(map.getMinZoom(),Math.min(map.getMaxZoom(),tz));const sz=map.getSize();if(follow||!cp)cp=L.point(sz.x/2,sz.y/2);
+ if(!zA.on){map._stop();zA.on=true;zA.z=map.getZoom();zA.last=performance.now();map._moveStart(true,false);requestAnimationFrame(zStep)}
+ zA.tz=tz;zA.cp=cp;zA.ll=map.containerPointToLatLng(cp)}
+function zStep(t){if(!zA.on)return;const dt=Math.min(.05,Math.max(.001,(t-zA.last)/1000));zA.last=t;let z=zA.z+(zA.tz-zA.z)*(1-Math.exp(-dt/.075));if(Math.abs(zA.tz-z)<.003)z=zA.tz;zA.z=z;
+ const sz=map.getSize(),off=zA.cp.subtract(sz.divideBy(2)),b=(map.getBearing?map.getBearing():0)*PI/180,wo=b&&off.rotate?off.rotate(-b):off;
+ map._move(map.unproject(map.project(zA.ll,z).subtract(wo),z),z,{pinch:true});
+ if(z===zA.tz){zA.on=false;map._moveEnd(true);return}requestAnimationFrame(zStep)}
+map.getContainer().addEventListener('wheel',e=>{e.preventDefault();const dy=e.deltaY*(e.deltaMode===1?40:e.deltaMode===2?800:1),dz=Math.max(-1.5,Math.min(1.5,e.ctrlKey?-dy/100:-dy/240));if(!dz)return;zoomTo((zA.on?zA.tz:map.getZoom())+dz,map.mouseEventToContainerPoint(e))},{passive:false});
+map.getContainer().addEventListener('pointerdown',zStop,true);
+map.on('dblclick',e=>zoomTo((zA.on?zA.tz:map.getZoom())+(e.originalEvent&&e.originalEvent.shiftKey?-1:1),e.containerPoint));
 map.on('dragstart',()=>{follow=false});
 map.on('click',e=>tap(e.containerPoint.x,e.containerPoint.y));
 map.on('contextmenu',e=>{if(e.originalEvent&&e.originalEvent.preventDefault)e.originalEvent.preventDefault();const ll=fromM(e.latlng);openPin(P(ll[0],ll[1]))});
 
-const cv=document.getElementById('fog'),ctx=cv.getContext('2d');
-let W=0,H=0,DPR=1,C={};
-function loadColors(){const cs=getComputedStyle(document.documentElement);['ink','panel','fog','main','local','food','me','mine','land','water','park','line','lime','vio'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim());dirty=true}
-function resize(){DPR=Math.min(window.devicePixelRatio||1,2);const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);map.invalidateSize();dirty=true}
+// ================= СЛОИ ОТРИСОВКИ: всё жёстко привязано к карте =================
+// Туман и линии (путь, маршрут, метро, границы) рисуются на холстах внутри панели карты:
+// при сдвиге, щипке и повороте их двигает сама карта, так что они не могут «поплыть».
+// Значки, подписи и «я» рисуются поверх, но в каждом кадре по тем же координатам, что и карта.
+const geoPane=map.createPane('ogGeo',map._rotatePane||undefined);geoPane.style.zIndex=450;geoPane.style.pointerEvents='none';
+const cv=document.getElementById('fog'),ovCtx=cv.getContext('2d');let ctx=ovCtx;
+let W=0,H=0,DPR=1,C={},ogReady=false;
+const SPR=new Map();let sprD=0;
+function loadColors(){const cs=getComputedStyle(document.documentElement);['ink','panel','fog','main','local','food','me','mine','land','water','park','line','lime','vio'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim());SPR.clear();for(const s of sheets)s.need=true;dirty=true}
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);map.invalidateSize();for(const s of sheets)s.need=true;dirty=true}
 const S=p=>map.latLngToContainerPoint(toM(...U(p)));
 const mpp=()=>156543.03392*Math.cos(map.getCenter().lat*PI/180)/Math.pow(2,map.getZoom());
+function affFrom(a,b,c,d,e,f){const det=a*d-b*c||1e-12;return{a,b,c,d,e,f,ax:Math.hypot(a,b),X:(x,y)=>e+a*x+c*y,Y:(x,y)=>f+b*x+d*y,inv:(u,v)=>{u-=e;v-=f;return[(d*u-c*v)/det,(-b*u+a*v)/det]}}}
+function mkAff(p0,p1,p2,cx,cy,s){const a=(p1[0]-p0[0])/s,b=(p1[1]-p0[1])/s,c=(p2[0]-p0[0])/s,d=(p2[1]-p0[1])/s;return affFrom(a,b,c,d,p0[0]-a*cx-c*cy,p0[1]-b*cx-d*cy)}
+const viewLocal=()=>P(...fromM(map.getCenter()));
+// местные метры -> пиксели холста (мировые пиксели на зуме z минус угол холста), без округлений
+function affWorld(z,ox,oy,cl){const s=300*Math.pow(2,17-z),f=(x,y)=>{const w=map.project(toM(...U({x,y})),z);return[w.x-ox,w.y-oy]};return mkAff(f(cl.x,cl.y),f(cl.x+s,cl.y),f(cl.x,cl.y+s),cl.x,cl.y,s)}
+// местные метры -> пиксели экрана в текущем состоянии карты (с учётом поворота), без округлений
+function affC(){const z=map.getZoom(),o=map.getPixelOrigin(),cl=viewLocal(),s=300*Math.pow(2,17-z),f=(x,y)=>{const w=map.project(toM(...U({x,y})),z),c=map.layerPointToContainerPoint(L.point(w.x-o.x,w.y-o.y));return[c.x,c.y]};return mkAff(f(cl.x,cl.y),f(cl.x+s,cl.y),f(cl.x,cl.y+s),cl.x,cl.y,s)}
+function bez(t){let lo=0,hi=1,u=t;for(let i=0;i<24;i++){u=(lo+hi)/2;const x=.75*(1-u)*u*u+u*u*u;if(x<t)lo=u;else hi=u}return 3*(1-u)*u*u+u*u*u}
+const sheets=[];
+function mkSheet(dprMax,fn){const c=document.createElement('canvas');c.className='leaflet-zoom-animated';c.style.cssText='position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none';geoPane.appendChild(c);const s={c,g:c.getContext('2d'),dprMax,fn,z0:null,ox:0,oy:0,w:0,h:0,k:1,cost:0,need:true,sc:1,pat:null};sheets.push(s);return s}
+function sheetRender(s){if(!ogReady)return;const t0=performance.now(),z=map.getZoom(),o=map.getPixelOrigin(),sz=map.getSize();if(!sz.x||!sz.y)return;
+ const px=Math.max(150,sz.x*.45),py=Math.max(150,sz.y*.3);let x0=1e15,y0=1e15,x1=-1e15,y1=-1e15;
+ for(const q of [[-px,-py],[sz.x+px,-py],[-px,sz.y+py],[sz.x+px,sz.y+py]]){const l=map.containerPointToLayerPoint(L.point(q[0],q[1]));x0=Math.min(x0,l.x);y0=Math.min(y0,l.y);x1=Math.max(x1,l.x);y1=Math.max(y1,l.y)}
+ x0=Math.floor(x0);y0=Math.floor(y0);const w=Math.ceil(x1)-x0,h=Math.ceil(y1)-y0;let k=Math.min(window.devicePixelRatio||1,s.dprMax);const cap=s.dprMax>1?8e6:3e6;if(w*h*k*k>cap)k=Math.sqrt(cap/(w*h));
+ const cw=Math.round(w*k),chh=Math.round(h*k),g=s.g;if(s.c.width!==cw||s.c.height!==chh){s.c.width=cw;s.c.height=chh}else{g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cw,chh)}
+ s.c.style.width=w+'px';s.c.style.height=h+'px';s.z0=z;s.ox=x0+o.x;s.oy=y0+o.y;s.w=w;s.h=h;s.k=k;s.sc=1;s.c.style.transform=`translate3d(${x0}px,${y0}px,0)`;
+ g.setTransform(k,0,0,k,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
+ const A=affWorld(z,s.ox,s.oy,viewLocal()),iv=[[0,0],[w,0],[0,h],[w,h]].map(q=>A.inv(q[0],q[1])),bb=[Math.min(...iv.map(q=>q[0])),Math.max(...iv.map(q=>q[0])),Math.min(...iv.map(q=>q[1])),Math.max(...iv.map(q=>q[1]))];
+ const pv=ctx;ctx=g;try{s.fn(g,A,bb,s)}finally{ctx=pv;g.globalAlpha=1;g.globalCompositeOperation='source-over';g.setLineDash([])}
+ s.need=false;s.cost=s.cost*.5+(performance.now()-t0)*.5}
+function sheetPlace(s){if(s.z0==null)return;const o=map.getPixelOrigin(),sc=Math.pow(2,map.getZoom()-s.z0);s.sc=sc;s.c.style.transform=`translate3d(${s.ox*sc-o.x}px,${s.oy*sc-o.y}px,0)`+(Math.abs(sc-1)>1e-9?` scale(${sc})`:'')}
+function sheetCovers(s,m){if(s.z0==null)return false;const o=map.getPixelOrigin(),sc=Math.pow(2,map.getZoom()-s.z0),sz=map.getSize();m=m||0;
+ for(const q of [[-m,-m],[sz.x+m,-m],[-m,sz.y+m],[sz.x+m,sz.y+m]]){const l=map.containerPointToLayerPoint(L.point(q[0],q[1])),wx=(l.x+o.x)/sc-s.ox,wy=(l.y+o.y)/sc-s.oy;if(wx<0||wy<0||wx>s.w||wy>s.h)return false}return true}
+function sheetsZoom(){if(map._animatingZoom)return;for(const s of sheets){sheetPlace(s);if(s.sc<.8||s.sc>1.6||!sheetCovers(s,0)||(s===linesS&&s.cost<6&&Math.abs(s.sc-1)>.02))sheetRender(s)}}
+function sheetsMove(){if(map._animatingZoom)return;for(const s of sheets)if(!sheetCovers(s,0)){sheetPlace(s);sheetRender(s)}}
+function sheetsIdle(){if(map._animatingZoom)return;for(const s of sheets){sheetPlace(s);if(Math.abs(s.sc-1)>1e-6||!sheetCovers(s,80))s.need=true}}
+let zAnim=null,ovQ=false,ovDirty=false;
+function ovReq(){ovDirty=true;if(!ovQ){ovQ=true;queueMicrotask(()=>{ovQ=false;if(ovDirty)drawOverlay()})}}
+map.on('zoom',()=>{sheetsZoom();ovReq()});
+map.on('move rotate',()=>{sheetsMove();ovReq()});
+map.on('moveend zoomend',()=>{sheetsIdle();ovReq()});
+map.on('viewreset resize',()=>{for(const s of sheets){s.need=true;if(!map._animatingZoom)sheetRender(s)}ovReq()});
+map.on('zoomanim',e=>{zAnim={A0:affC(),t0:performance.now()};const o2=map._getNewPixelOrigin(e.center,e.zoom);for(const s of sheets){if(s.z0==null)continue;const sc=Math.pow(2,e.zoom-s.z0);s.c.style.transform=`translate3d(${s.ox*sc-o2.x}px,${s.oy*sc-o2.y}px,0) scale(${sc})`}ovReq()});
 
 const brush=document.createElement('canvas');brush.width=brush.height=128;
 {const b=brush.getContext('2d'),g=b.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.3,'rgba(0,0,0,.92)');g.addColorStop(.6,'rgba(0,0,0,.5)');g.addColorStop(.82,'rgba(0,0,0,.15)');g.addColorStop(1,'rgba(0,0,0,0)');b.fillStyle=g;b.fillRect(0,0,128,128)}
@@ -538,66 +601,86 @@ let noisePat=null;
 const brushD=document.createElement('canvas');brushD.width=brushD.height=256;
 {const b=brushD.getContext('2d'),g=b.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.72,'rgba(0,0,0,1)');g.addColorStop(.9,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,0)');b.fillStyle=g;b.fillRect(0,0,256,256)}
 let hereCache={k:'',d:null};
+function hereD(){const hk=Math.round(me.x/50)+','+Math.round(me.y/50);if(hereCache.k!==hk)hereCache={k:hk,d:distAt(...U(me))};return hereCache.d}
+function sprite(key,w,h,fn){if(sprD!==DPR){SPR.clear();sprD=DPR}let s=SPR.get(key);if(!s){const c=document.createElement('canvas'),cw=Math.max(2,Math.ceil(w*DPR/2)*2),chh=Math.max(2,Math.ceil(h*DPR/2)*2);c.width=cw;c.height=chh;const g=c.getContext('2d');g.scale(DPR,DPR);s={c,w:cw/DPR,h:chh/DPR};const pv=ctx;ctx=g;try{fn(g,s.w/2,s.h/2)}finally{ctx=pv}SPR.set(key,s)}return s}
+function blit(s,x,y){ctx.drawImage(s.c,Math.round((x-s.w/2)*DPR)/DPR,Math.round((y-s.h/2)*DPR)/DPR,s.w,s.h)}
+function label(t,x,y,fs){ctx.font=`500 ${fs||11.5}px Rubik,sans-serif`;ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(t,x,y);ctx.fillStyle='#2e2650';ctx.fillText(t,x,y)}
 
-function draw(){
- ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalCompositeOperation='source-over';ctx.clearRect(0,0,W,H);
- ctx.globalAlpha=.93;ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
- if(!noisePat)noisePat=ctx.createPattern(noise,'repeat');
- const c0=S({x:0,y:0}),cx1=S({x:1000,y:0}),cy1=S({x:0,y:1000}),ma=(cx1.x-c0.x)/1000,mb=(cx1.y-c0.y)/1000,mc=(cy1.x-c0.x)/1000,md=(cy1.y-c0.y)/1000,ax=Math.hypot(ma,mb),det=ma*md-mb*mc||1e-9,WX=(x,y)=>c0.x+ma*x+mc*y,WY=(x,y)=>c0.y+mb*x+md*y,SW=(sx,sy)=>{const u=sx-c0.x,v=sy-c0.y;return[(md*u-mc*v)/det,(-mb*u+ma*v)/det]};
- ctx.save();ctx.globalAlpha=1;ctx.translate(((c0.x%256)+256)%256-256,((c0.y%256)+256)%256-256);ctx.fillStyle=noisePat;ctx.fillRect(0,0,W+512,H+512);ctx.restore();
- ctx.globalAlpha=1;ctx.globalCompositeOperation='destination-out';
- const R=REVEAL*ax*1.35,now=performance.now(),crn=[SW(-R,-R),SW(W+R,-R),SW(-R,H+R),SW(W+R,H+R)],x0=Math.min(...crn.map(c=>c[0])),x1=Math.max(...crn.map(c=>c[0])),y0=Math.min(...crn.map(c=>c[1])),y1=Math.max(...crn.map(c=>c[1])),cw=CELL*CH;
+// ---- туман: белая вуаль, фактура привязана к карте и масштабируется вместе с ней ----
+function drawFog(g,A,bb,s){g.globalAlpha=.93;g.fillStyle='#ffffff';g.fillRect(0,0,s.w,s.h);
+ if(!s.pat)s.pat=g.createPattern(noise,'repeat');const L1=Math.floor(s.z0),fr=s.z0-L1;
+ for(const [lv,wt] of [[L1,1-fr],[L1+1,fr]]){if(wt<.03)continue;const k=Math.pow(2,s.z0-lv),per=256*k,tx=-(((s.ox%per)+per)%per),ty=-(((s.oy%per)+per)%per);
+  g.save();g.globalAlpha=wt;g.translate(tx,ty);g.scale(k,k);g.fillStyle=s.pat;g.fillRect(0,0,(s.w-tx)/k+2,(s.h-ty)/k+2);g.restore()}
+ g.globalAlpha=1;g.globalCompositeOperation='destination-out';
+ const R=REVEAL*A.ax*1.35,Rm=REVEAL*1.4,now=performance.now(),cw=CELL*CH,x0=bb[0]-Rm,x1=bb[1]+Rm,y0=bb[2]-Rm,y1=bb[3]+Rm;
  for(let ci=Math.floor(x0/cw);ci<=Math.floor(x1/cw);ci++)for(let cj=Math.floor(y0/cw);cj<=Math.floor(y1/cw);cj++){const arr=chunks.get(ci+','+cj);if(!arr)continue;
-  for(let n=0;n<arr.length;n+=2){const i=arr[n],j=arr[n+1],wxc=(i+.5)*CELL,wyc=(j+.5)*CELL,sx=WX(wxc,wyc),sy=WY(wxc,wyc);if(sx<-R||sy<-R||sx>W+R||sy>H+R)continue;
-   let r=R;if(born.size){const b=born.get(i+','+j);if(b!==undefined){const t=(now-b)/1600;if(t<0)continue;if(t>=1)born.delete(i+','+j);else{const e=1-Math.pow(1-t,3);ctx.globalAlpha=e;r=R*(.35+.65*e)}}}
-   ctx.drawImage(brush,sx-r,sy-r,2*r,2*r);ctx.globalAlpha=1}}
- if(born.size)dirty=true;
- for(const p of POIS){if(!p.cur||p.cat!=='main'||!visited.has(p.id))continue;let r=DISC_R*ax*1.05;const b=discBorn.get(p.id);
-  if(b!==undefined){const t=(now-b)/2600;if(t<0)continue;if(t>=1)discBorn.delete(p.id);else{const e=1-Math.pow(1-t,3);r*=Math.max(.02,e);ctx.globalAlpha=Math.min(1,e*1.4)}}
-  const sx=WX(p.x,p.y),sy=WY(p.x,p.y);if(sx+r>0&&sy+r>0&&sx-r<W&&sy-r<H)ctx.drawImage(brushD,sx-r,sy-r,2*r,2*r);ctx.globalAlpha=1}
- if(discBorn.size)dirty=true;
- ctx.globalCompositeOperation='source-over';
- if(map.getZoom()>=9){const hk=Math.round(me.x/50)+','+Math.round(me.y/50);if(hereCache.k!==hk)hereCache={k:hk,d:distAt(...U(me))};
-  for(const d of GEO){const on=d.k===hereCache.d;ctx.beginPath();for(const r of d.ringsP){r.forEach((q,i)=>{const sx=WX(q.x,q.y),sy=WY(q.x,q.y);i?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy)});ctx.closePath()}
-   ctx.setLineDash(on?[]:[6,7]);ctx.lineWidth=on?2.5:1.4;ctx.strokeStyle=on?'rgba(75,47,214,.7)':'rgba(75,47,214,.32)';ctx.stroke()}ctx.setLineDash([]);
-  if(map.getZoom()<=14){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='800 11px Rubik,sans-serif';for(const d of GEO){if(!CP[d.k])continue;const q=P(...CP[d.k]),sx=WX(q.x,q.y),sy=WY(q.x,q.y);ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.strokeText(DIST[d.k].n.toUpperCase(),sx,sy);ctx.fillStyle='rgba(75,47,214,.75)';ctx.fillText(DIST[d.k].n.toUpperCase(),sx,sy)}}}
- ctx.globalCompositeOperation='source-over';ctx.lineCap=ctx.lineJoin='round';ctx.textAlign='center';ctx.textBaseline='middle';
- if(target){const a=S(me),b=S(target);ctx.setLineDash([2,8]);ctx.lineWidth=3;ctx.strokeStyle=C.me;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle=C.me;ctx.beginPath();ctx.arc(b.x,b.y,5,0,7);ctx.fill()}
- const z=map.getZoom();
- ctx.lineCap=ctx.lineJoin='round';
- if(showTrack)for(const sg of tracks)drawTrack(sg,WX,WY,x0,x1,y0,y1);
- drawMetro(WX,WY,x0,x1,y0,y1);
- if(route&&route.pts&&route.pts.length>1){ctx.lineCap=ctx.lineJoin='round';ctx.beginPath();(route.proj?[route.proj,...route.pts.slice(route.idx+1)]:route.pts).forEach((q,i)=>{const s=S(q);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y)});
-  ctx.setLineDash(route.approx?[2,10]:[]);ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=9;ctx.stroke();ctx.strokeStyle=C.vio;ctx.lineWidth=5;ctx.stroke();ctx.setLineDash([])}
- ctx.textAlign='left';
- for(const p of POIS){if(!layers[p.cat]||(p.dyn&&z<14))continue;const s=S(p);if(s.x<-30||s.y<-30||s.x>W+30||s.y>H+30)continue;
-  const v=visited.has(p.id),col=C[p.cat],r=p.cat==='main'?13:11;
-  ctx.shadowColor='rgba(27,18,56,.22)';ctx.shadowBlur=6;ctx.shadowOffsetY=2;ctx.beginPath();ctx.arc(s.x,s.y,r,0,7);ctx.fillStyle=v?col:'#ffffff';ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-  ctx.lineWidth=2;ctx.strokeStyle=v?'#ffffff':col;ctx.stroke();drawIcon(p.ic,s.x,s.y,r*1.12,v?'#ffffff':col);
-  if(v){ctx.beginPath();ctx.arc(s.x+r*.78,s.y-r*.78,4.5,0,7);ctx.fillStyle=C.lime;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle='#ffffff';ctx.stroke()}
-  if(z>=16||(p.cat==='main'&&z>=15)){ctx.font='500 11.5px Rubik,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(p.name,s.x+r+5,s.y);ctx.fillStyle='#2e2650';ctx.fillText(p.name,s.x+r+5,s.y)}}
- for(const q of marks){const s=S(q);if(s.x<-30||s.y<-30||s.x>W+30||s.y>H+30)continue;
-  ctx.shadowColor='rgba(27,18,56,.22)';ctx.shadowBlur=6;ctx.beginPath();ctx.arc(s.x,s.y,10,0,7);ctx.fillStyle=C.mine;ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();drawIcon('mark',s.x,s.y,11,'#ffffff');
-  if(z>=16){ctx.font='500 11.5px Rubik,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(q.name,s.x+15,s.y);ctx.fillStyle='#2e2650';ctx.fillText(q.name,s.x+15,s.y)}}
- ctx.textAlign='center';
- if(map.getZoom()>=14){ctx.textAlign='left';for(const k in OLAY){if(!OL[k]||!osmData[k])continue;const col=OLAY[k].col,z2=map.getZoom();
-  for(const it of osmData[k]){const sx=WX(it.x,it.y),sy=WY(it.x,it.y);if(sx<-20||sy<-20||sx>W+20||sy>H+20)continue;const r=z2>=16?9.5:5;
-   ctx.beginPath();ctx.arc(sx,sy,r,0,7);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=1.6;ctx.strokeStyle='#fff';ctx.stroke();if(z2>=16)drawIcon(OLAY[k].ic,sx,sy,11,'#fff');
-   if(z2>=17&&it.name!==OLAY[k].n){ctx.font='500 11px Rubik,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(it.name,sx+r+4,sy);ctx.fillStyle='#2e2650';ctx.fillText(it.name,sx+r+4,sy)}}}ctx.textAlign='center'}
+  for(let n=0;n<arr.length;n+=2){const i=arr[n],j=arr[n+1],wx=(i+.5)*CELL,wy=(j+.5)*CELL,sx=A.X(wx,wy),sy=A.Y(wx,wy);if(sx<-R||sy<-R||sx>s.w+R||sy>s.h+R)continue;
+   let r=R;if(born.size){const b=born.get(i+','+j);if(b!==undefined){const t=(now-b)/1600;if(t<0)continue;if(t>=1)born.delete(i+','+j);else{const e=1-Math.pow(1-t,3);g.globalAlpha=e;r=R*(.35+.65*e)}}}
+   g.drawImage(brush,sx-r,sy-r,2*r,2*r);g.globalAlpha=1}}
+ for(const p of POIS){if(!p.cur||p.cat!=='main'||!visited.has(p.id))continue;let r=DISC_R*A.ax*1.05;const b=discBorn.get(p.id);
+  if(b!==undefined){const t=(now-b)/2600;if(t<0)continue;if(t>=1)discBorn.delete(p.id);else{const e=1-Math.pow(1-t,3);r*=Math.max(.02,e);g.globalAlpha=Math.min(1,e*1.4)}}
+  const sx=A.X(p.x,p.y),sy=A.Y(p.x,p.y);if(sx+r>0&&sy+r>0&&sx-r<s.w&&sy-r<s.h)g.drawImage(brushD,sx-r,sy-r,2*r,2*r);g.globalAlpha=1}
+ g.globalCompositeOperation='source-over'}
+
+// ---- линии: границы районов, мой путь, метро, маршрут ----
+function drawLinesSheet(g,A,bb,s){const X=A.X,Y=A.Y;g.lineCap=g.lineJoin='round';
+ const hd=hereD();for(const d of GEO){const on=d.k===hd;g.beginPath();for(const r of d.ringsP){r.forEach((q,i)=>{const sx=X(q.x,q.y),sy=Y(q.x,q.y);i?g.lineTo(sx,sy):g.moveTo(sx,sy)});g.closePath()}
+  g.setLineDash(on?[]:[6,7]);g.lineWidth=on?2.5:1.4;g.strokeStyle=on?'rgba(75,47,214,.7)':'rgba(75,47,214,.32)';g.stroke()}g.setLineDash([]);
+ if(showTrack)for(const sg of tracks)drawTrack(sg,A,bb);
+ drawMetroLines(A,bb,s.z0);
+ if(route&&route.pts&&route.pts.length>1){g.lineCap=g.lineJoin='round';g.beginPath();(route.proj?[route.proj,...route.pts.slice(route.idx+1)]:route.pts).forEach((q,i)=>{const sx=X(q.x,q.y),sy=Y(q.x,q.y);i?g.lineTo(sx,sy):g.moveTo(sx,sy)});
+  g.setLineDash(route.approx?[2,10]:[]);g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=9;g.stroke();g.strokeStyle=C.vio;g.lineWidth=5;g.stroke();g.setLineDash([])}}
+const fogS=mkSheet(1,drawFog),linesS=mkSheet(2,drawLinesSheet);
+
+// ---- верхний слой: значки, подписи, остановки, «хвост» и я ----
+function poiSprite(p,v,r){const col=C[p.cat];return sprite('p|'+p.cat+'|'+p.ic+'|'+(v?1:0),2*r+22,2*r+22,(g,cx,cy)=>{g.shadowColor='rgba(27,18,56,.22)';g.shadowBlur=6;g.shadowOffsetY=2;g.beginPath();g.arc(cx,cy,r,0,7);g.fillStyle=v?col:'#ffffff';g.fill();g.shadowBlur=0;g.shadowOffsetY=0;
+ g.lineWidth=2;g.strokeStyle=v?'#ffffff':col;g.stroke();drawIcon(p.ic,cx,cy,r*1.12,v?'#ffffff':col);if(v){g.beginPath();g.arc(cx+r*.78,cy-r*.78,4.5,0,7);g.fillStyle=C.lime;g.fill();g.lineWidth=1.5;g.strokeStyle='#ffffff';g.stroke()}})}
+function drawOverlay(){ovDirty=false;dirty=false;if(!ogReady||!W)return;const g=ovCtx;ctx=g;g.setTransform(DPR,0,0,DPR,0,0);g.globalCompositeOperation='source-over';g.globalAlpha=1;g.clearRect(0,0,W,H);
+ let A=affC();if(zAnim){const u=(performance.now()-zAnim.t0)/250;if(u>=1||!map._animatingZoom)zAnim=null;else{const k=bez(Math.max(0,u)),B=zAnim.A0,l=(p,q)=>p+(q-p)*k;A=affFrom(l(B.a,A.a),l(B.b,A.b),l(B.c,A.c),l(B.d,A.d),l(B.e,A.e),l(B.f,A.f));ovDirty=true}}
+ const X=A.X,Y=A.Y,M=60,iv=[[-M,-M],[W+M,-M],[-M,H+M],[W+M,H+M]].map(q=>A.inv(q[0],q[1])),vb=[Math.min(...iv.map(q=>q[0])),Math.max(...iv.map(q=>q[0])),Math.min(...iv.map(q=>q[1])),Math.max(...iv.map(q=>q[1]))];
+ const z=map.getZoom(),inV=(x,y,m)=>x>-m&&y>-m&&x<W+m&&y<H+m;g.lineCap=g.lineJoin='round';g.textAlign='center';g.textBaseline='middle';
+ if(z<=14){g.font='800 11px Rubik,sans-serif';for(const d of GEO){if(!CP[d.k])continue;const q=P(...CP[d.k]),sx=X(q.x,q.y),sy=Y(q.x,q.y);if(!inV(sx,sy,90))continue;const t=DIST[d.k].n.toUpperCase();
+  g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.9)';g.strokeText(t,sx,sy);g.fillStyle='rgba(75,47,214,.75)';g.fillText(t,sx,sy)}}
+ if(target){const ax=X(meD.x,meD.y),ay=Y(meD.x,meD.y),bx=X(target.x,target.y),by=Y(target.x,target.y);g.setLineDash([2,8]);g.lineWidth=3;g.strokeStyle=C.me;g.beginPath();g.moveTo(ax,ay);g.lineTo(bx,by);g.stroke();g.setLineDash([]);g.fillStyle=C.me;g.beginPath();g.arc(bx,by,5,0,7);g.fill()}
+ drawTail(A);
+ if(showTrack)drawStops(A,vb,z);
+ drawMetroStations(A,z);
+ g.textAlign='left';g.textBaseline='middle';
+ for(const p of POIS){if(!layers[p.cat]||(p.dyn&&z<14))continue;const sx=X(p.x,p.y),sy=Y(p.x,p.y);if(!inV(sx,sy,30))continue;const v=visited.has(p.id),r=p.cat==='main'?13:11;
+  blit(poiSprite(p,v,r),sx,sy);if(z>=16||(p.cat==='main'&&z>=15))label(p.name,sx+r+5,sy)}
+ for(const q of marks){const sx=X(q.x,q.y),sy=Y(q.x,q.y);if(!inV(sx,sy,30))continue;
+  blit(sprite('mk',42,42,(g2,cx,cy)=>{g2.shadowColor='rgba(27,18,56,.22)';g2.shadowBlur=6;g2.beginPath();g2.arc(cx,cy,10,0,7);g2.fillStyle=C.mine;g2.fill();g2.shadowBlur=0;g2.lineWidth=2;g2.strokeStyle='#fff';g2.stroke();drawIcon('mark',cx,cy,11,'#ffffff')}),sx,sy);
+  if(z>=16)label(q.name,sx+15,sy)}
+ if(z>=14){for(const k in OLAY){if(!OL[k]||!osmData[k])continue;const big=z>=16,r=big?9.5:5,col=OLAY[k].col,ic=OLAY[k].ic;
+  const sp=sprite('o|'+k+'|'+(big?1:0),2*r+6,2*r+6,(g2,cx,cy)=>{g2.beginPath();g2.arc(cx,cy,r,0,7);g2.fillStyle=col;g2.fill();g2.lineWidth=1.6;g2.strokeStyle='#fff';g2.stroke();if(big)drawIcon(ic,cx,cy,11,'#fff')});
+  for(const it of osmData[k]){const sx=X(it.x,it.y),sy=Y(it.x,it.y);if(!inV(sx,sy,20))continue;blit(sp,sx,sy);if(z>=17&&it.name!==OLAY[k].n)label(it.name,sx+r+4,sy,11)}}}
+ g.textAlign='center';
  const pd=pin||(route&&route.dest&&(route.dest.cat==='pin'||route.dest.cat==='osm')?route.dest:null);
- if(pd){const s=S(pd);ctx.save();ctx.translate(s.x,s.y-15);ctx.shadowColor='rgba(27,18,56,.3)';ctx.shadowBlur=6;ctx.fillStyle=pd.col||C.vio;ctx.beginPath();ctx.moveTo(0,15);ctx.bezierCurveTo(-12,2,-10,-12,0,-12);ctx.bezierCurveTo(10,-12,12,2,0,15);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,-2,4.5,0,7);ctx.fill();ctx.restore()}
- const m=S(me),k=1/mpp();
- if(acc>DISCOVER){ctx.beginPath();ctx.arc(m.x,m.y,acc*k,0,7);ctx.fillStyle='rgba(75,47,214,.06)';ctx.fill()}
- ctx.beginPath();ctx.arc(m.x,m.y,Math.max(14,DISCOVER*k),0,7);ctx.fillStyle='rgba(75,47,214,.12)';ctx.fill();
- ctx.shadowColor='rgba(75,47,214,.5)';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(m.x,m.y,6.5,0,7);ctx.fillStyle=C.me;ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=2.5;ctx.strokeStyle='#fff';ctx.stroke();
-}
+ if(pd){const sx=X(pd.x,pd.y),sy=Y(pd.x,pd.y);g.save();g.translate(sx,sy-15);g.shadowColor='rgba(27,18,56,.3)';g.shadowBlur=6;g.fillStyle=pd.col||C.vio;g.beginPath();g.moveTo(0,15);g.bezierCurveTo(-12,2,-10,-12,0,-12);g.bezierCurveTo(10,-12,12,2,0,15);g.fill();g.shadowBlur=0;g.fillStyle='#fff';g.beginPath();g.arc(0,-2,4.5,0,7);g.fill();g.restore()}
+ const mx=X(meD.x,meD.y),my=Y(meD.x,meD.y),k=A.ax;
+ if(acc>DISCOVER){g.beginPath();g.arc(mx,my,acc*k,0,7);g.fillStyle='rgba(75,47,214,.06)';g.fill()}
+ g.beginPath();g.arc(mx,my,Math.max(14,DISCOVER*k),0,7);g.fillStyle='rgba(75,47,214,.12)';g.fill();
+ g.shadowColor='rgba(75,47,214,.5)';g.shadowBlur=8;g.beginPath();g.arc(mx,my,6.5,0,7);g.fillStyle=C.me;g.fill();g.shadowBlur=0;g.lineWidth=2.5;g.strokeStyle='#fff';g.stroke()}
+
+// ---- «я» на экране движется плавно между отметками GPS; на месте — стоит в центре остановки ----
+let meD={x:me.x,y:me.y},meA=null,fixT=0;
+function meGoal(){if(mode!=='gps'||!curSeg||mv||!anc||cands.length||tracks[tracks.length-1]!==curSeg)return me;if(!curSeg.P)prepTrack(curSeg);const v=curSeg.P[curSeg.P.length-1];if(!v)return me;
+ const dc=dist(me,v),R=anc.R||DWELL_R,dh=anc.dh||[],n=dh.length,dep=n>=3&&dh[n-1]>dh[n-2]+.5&&dh[n-2]>dh[n-3]+.5&&dh[n-1]>6;if(dep)anc.dep=true;else if(dc<5)anc.dep=false;const k=anc.dep?1:Math.max(0,Math.min(1,(dc-5)/Math.max(1,Math.min(R,14)-5)));return{x:v.x+(me.x-v.x)*k,y:v.y+(me.y-v.y)*k}}
+function meFix(first){const gl=meGoal(),now=performance.now();if(first||dist(meD,gl)>400){meD={x:gl.x,y:gl.y};meA=null}else meA={fx:meD.x,fy:meD.y,tx:gl.x,ty:gl.y,t0:now,dur:Math.max(250,Math.min(1200,fixT?now-fixT:1000))};fixT=now;dirty=true}
+function meTick(now){if(mode!=='gps'){if(meD.x!==me.x||meD.y!==me.y){meD={x:me.x,y:me.y};dirty=true}meA=null;return}if(!meA)return;const u=Math.min(1,(now-meA.t0)/meA.dur);meD={x:meA.fx+(meA.tx-meA.fx)*u,y:meA.fy+(meA.ty-meA.fy)*u};if(u>=1)meA=null;dirty=true}
+// ---- камера следует за мной покадрово (без рывков раз в секунду) ----
+let fmT=0,fmOn=false,fmLast=0;
+function gestureOn(){const tg=map.touchGestures,dr=map.dragging&&map.dragging._draggable;return !!(tg&&(tg._zooming||tg._rotating))||zA.on||!!map._animatingZoom||!!map._flyToFrame||!!(map._panAnim&&map._panAnim._inProgress)||!!(dr&&dr._moving)}
+function followTick(dt){map.options.touchZoom=follow?'center':true;if(!follow||gestureOn())return;const sz=map.getSize();if(!sz.x)return;const A=affC();let ox=A.X(meD.x,meD.y)-sz.x/2,oy=A.Y(meD.x,meD.y)-sz.y/2;const d=Math.hypot(ox,oy);if(d<.3)return;
+ if(d>Math.max(sz.x,sz.y)*1.5){map.setView(toM(...U(meD)),map.getZoom(),{animate:false});return}
+ if(d>24){const k=1-Math.exp(-dt/.18);ox*=k;oy*=k}
+ map._rawPanBy(L.point(ox,oy));fmT=performance.now();fmOn=true;map.fire('move')}
 
 // ---------- movement ----------
 function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,SPEED*dt);
  if(d<.5){if(walkPath&&walkPath.length){target=walkPath.shift();return}target=null;walkPath=null;changed=true;dirty=true;return}
  me={x:me.x+(target.x-me.x)/d*mv,y:me.y+(target.y-me.y)/d*mv};revealAt(me);checkDiscover();navTick();
- if(follow)centerMe();dirty=true}
+ dirty=true}
 function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
  toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cur&&p.cat==='main'?' · открыто 3 км вокруг':''}</div><button data-open="${p.id}">Читать</button>`);save()}}
  if(route&&route.dest&&dist(at,route.dest)<=Math.max(DISCOVER,40))closeRoute(true)}
@@ -684,7 +767,7 @@ let tt=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on'
 function hideHint(){const h=$('hint');if(h){h.remove();changed=true}}
 
 document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[data-go],[data-close],[data-seg],[data-soon],[data-amap],[data-add],[data-mt],[data-savemark],[data-mark],[data-delmark],[data-export],[data-import],[data-pick],[data-base],[data-route],[data-rtmode],[data-rtclose],[data-rtext],[data-rtwalk],[data-rvnew],[data-rvstar],[data-rvsave],[data-pin],[data-osm],[data-ol],#wakeBtn,#trackBtn,#reset');if(!t)return;if(handleMine(t))return;
- if(t.dataset.open){const p=POIS.find(q=>q.id===t.dataset.open);closePanel();closePops();$('toast').classList.remove('on');follow=false;map.setView(toM(p.lat,p.lon),Math.max(map.getZoom(),16),{animate:false});map.panBy([0,120],{animate:false});openCard(p)}
+ if(t.dataset.open){const p=POIS.find(q=>q.id===t.dataset.open);closePanel();closePops();$('toast').classList.remove('on');follow=false;focusAt(p.lat,p.lon);openCard(p)}
  else if('amap' in t.dataset){setBase('amap')}
  else if(t.dataset.go){const p=POIS.find(q=>q.id===t.dataset.go);target={x:p.x,y:p.y};follow=true;closeCard();hideHint();closePanel()}
  else if('close' in t.dataset)closeCard();
@@ -709,9 +792,9 @@ function startGps(user){
  mode='gps';target=null;$('gpsBtn').classList.add('on');let first=true;
  watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;if(!first&&c.accuracy>70)return;const np=P(c.latitude,c.longitude),prev=lastFix;acc=c.accuracy||0;
   lastFix={x:np.x,y:np.y,t:pos.timestamp||Date.now()};recordFix(c.latitude,c.longitude,lastFix.t,c.accuracy||0);try{localStorage.setItem('og-lastfix',JSON.stringify(lastFix))}catch(e){}me=np;if(prev)bridge(prev,np,(lastFix.t-prev.t)/1000);
-  if(first){first=false;follow=true;map.setView(toM(c.latitude,c.longitude),17,{animate:false});toast('<div>GPS включён. Идите — туман рассеивается за вами.</div>');
+  const wasFirst=first;if(first){first=false;follow=true;map.setView(toM(c.latitude,c.longitude),17,{animate:false});toast('<div>GPS включён. Идите — туман рассеивается за вами.</div>');
    if(Math.hypot(me.x,me.y)>25000)toast('<div>Туман работает везде, но точки интереса пока есть только в центре Гуанчжоу.</div>')}
-  revealAt(me);checkDiscover();navTick();dynMaybe();if(follow){const tl=toM(...U(me)),cp=map.latLngToContainerPoint(tl);if(Math.hypot(cp.x-W/2,cp.y-H/2)>2)map.panTo(tl,{animate:true,duration:.6,easeLinearity:.3})}dirty=true;if(tab==='near')renderSheet()},
+  meFix(wasFirst);revealAt(me);checkDiscover();navTick();dynMaybe();dirty=true;if(tab==='near')renderSheet()},
   err=>{toast(`<div>GPS недоступен: ${err.code===1?'это окно не получило доступ к геолокации':'не удалось определить место'}. Включён режим прогулки по нажатию.</div>`);stopGps()},
   {enableHighAccuracy:true,maximumAge:3000,timeout:20000})}
 let lastFix=null;try{const lf=JSON.parse(localStorage.getItem('og-lastfix')||'null');if(lf&&Date.now()-lf.t<12*3600e3)lastFix=lf}catch(e){}
@@ -759,7 +842,7 @@ function handleMine(t){
  if('import' in t.dataset){$('impFile').value='';$('impFile').click();return true}
  if(t.dataset.base){setBase(t.dataset.base);return true}
  if(t.dataset.pick){const k=t.dataset.pick;selDist=k;togglePick(false);
-  if(DC[k]){follow=false;map.setView(toM(...DC[k]),15,{animate:false})}else if(k==='auto'){follow=true;centerMe()}
+  if(DC[k]){follow=false;flyGo(toM(...DC[k]),15)}else if(k==='auto'){follow=true;centerMe()}
   updateHUD();dirty=true;return true}
  if('add' in t.dataset){openAdd();return true}
  if(t.dataset.mt){draft.type=t.dataset.mt;[...t.parentNode.children].forEach(b=>b.classList.toggle('on',b===t));return true}
@@ -768,7 +851,7 @@ function handleMine(t){
   Object.assign(q,P(q.lat,q.lon));marks.push(q);if(!saveMarks()){marks.pop();return true}qMark(q.id);flushSoon();
   pts+=15;changed=true;save();updateHUD();closeCard();draft=null;tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
   toast(`<span style="font-size:22px">${MT[q.type].e}</span><div><b>Отметка сохранена</b><br>+15 очков</div>`);return true}
- if(t.dataset.mark){const q=marks.find(m=>m.id===t.dataset.mark);if(q){follow=false;map.setView(toM(q.lat,q.lon),Math.max(map.getZoom(),16),{animate:false});map.panBy([0,120],{animate:false});openMark(q)}return true}
+ if(t.dataset.mark){const q=marks.find(m=>m.id===t.dataset.mark);if(q){follow=false;focusAt(q.lat,q.lon);openMark(q)}return true}
  if(t.dataset.delmark){if(confirm('Удалить эту отметку?')){qDel(t.dataset.delmark);marks=marks.filter(m=>m.id!==t.dataset.delmark);saveMarks();flushSoon();pts=Math.max(0,pts-15);changed=true;save();updateHUD();closeCard();renderSheet();dirty=true}return true}
  if('export' in t.dataset){if(!marks.length){toast('<div>Пока нечего выгружать: поставьте первую отметку кнопкой ＋.</div>')}else exportMarks();return true}
  return false}
@@ -798,12 +881,12 @@ $('impFile').onchange=async e=>{const files=[...e.target.files];if(!files.length
   if(ll[0]<mnLa)mnLa=ll[0];if(ll[0]>mxLa)mxLa=ll[0];if(ll[1]<mnLo)mnLo=ll[1];if(ll[1]>mxLo)mxLo=ll[1]});
  quiet=false;pts+=gain;
  changed=true;save();updateHUD();renderSheet();follow=false;
- try{map.fitBounds([toM(mnLa,mnLo),toM(mxLa,mxLo)],{padding:[60,60],maxZoom:16,animate:false})}catch(err){}
+ try{zStop();map.flyToBounds([toM(mnLa,mnLo),toM(mxLa,mxLo)],{padding:[60,60],maxZoom:16,duration:.8})}catch(err){}
  dirty=true;toast(`<div><b>Импорт готов.</b> Точек: ${n.toLocaleString('ru-RU')}, открыто ${km(area.size-before)} км²${got?`, засчитано мест: ${got}`:''}.</div>`)};
 setInterval(()=>{if(trackDirty){saveTracks();saveQ()}if(changed){save();saveQ()}if(tab==='near'&&target)renderSheet()},1500);
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{loadColors();buildBase()});
 window.addEventListener('resize',resize);
-if(document.fonts)document.fonts.ready.then(()=>dirty=true);
+if(document.fonts)document.fonts.ready.then(()=>{SPR.clear();for(const s of sheets)s.need=true;dirty=true});
 
 // ================= МАРШРУТЫ =================
 let route=null,walkPath=null,rtSeq=0;
@@ -844,7 +927,7 @@ function navTick(){if(!route||route.loading)return;const now=Date.now();if(now-n
  if(best>45&&now-navRecalc>12000){navRecalc=now;calcRoute(true);return}
  route.idx=bi;route.proj=bp;let rem=dist(bp,pts[bi+1]||bp);for(let i=bi+1;i<pts.length-1;i++)rem+=dist(pts[i],pts[i+1]);route.remain=rem+Math.min(best,45);
  const el=$('rtInfo');if(el)el.textContent=navInfo();dirty=true}
-function fitRoute(pts){try{const b=L.latLngBounds(pts.map(q=>toM(...U(q))));follow=false;map.fitBounds(b,{paddingTopLeft:[40,80],paddingBottomRight:[40,230],maxZoom:17,animate:false})}catch(e){}}
+function fitRoute(pts){try{const b=L.latLngBounds(pts.map(q=>toM(...U(q))));follow=false;zStop();map.flyToBounds(b,{paddingTopLeft:[40,80],paddingBottomRight:[40,230],maxZoom:17,duration:.7})}catch(e){}}
 function handleRoute(t){
  if(t.dataset.route){const p=POIS.find(q=>q.id===t.dataset.route);if(p)openRoute(p);return true}
  if(t.dataset.rtmode){if(route&&route.mode!==t.dataset.rtmode){route.mode=t.dataset.rtmode;walkPath=null;calcRoute()}return true}
@@ -933,24 +1016,45 @@ function handleExtra(t){
  if('rvsave' in t.dataset){saveReview(t);return true}
  return false}
 
-// ================= ОТРИСОВКА ПУТИ: свечение и градиент остановок =================
-const TQ=[14,165,214],RD=[239,68,68],GR=140;
+// ================= ОТРИСОВКА ПУТИ: свечение, градиент остановок, привязка к дорогам =================
+const TQ=[14,165,214],RD=[239,68,68],GR=140,PASSES=[[18,.07,'butt'],[11,.14,'butt'],[6.5,.3,'butt'],[3.2,1,'round']];
 function chaikin(pts,it){let a=pts;for(let k=0;k<it;k++){if(a.length<3)break;const b=[a[0]];for(let i=0;i<a.length-1;i++){const p=a[i],q=a[i+1];b.push({x:.75*p.x+.25*q.x,y:.75*p.y+.25*q.y},{x:.25*p.x+.75*q.x,y:.25*p.y+.75*q.y})}b.push(a[a.length-1]);a=b}return a}
-function prepTrack(sg){const raw=sg.pts.map(q=>P(q[0],q[1]));sg.P=chaikin(raw,2);sg.S=[0];for(let i=1;i<sg.P.length;i++)sg.S.push(sg.S[i-1]+dist(sg.P[i-1],sg.P[i]));
- sg.SP=(sg.stops||[]).map(q=>{const sp=Object.assign(P(q[0],q[1]),{d:q[3]-q[2]});let bi=0,bd=1e12;for(let i=0;i<sg.P.length;i++){const dd=dist(sg.P[i],sp);if(dd<bd){bd=dd;bi=i}}sp.s=sg.S[bi];return sp});
- let a=1e12,b=-1e12,c=1e12,e=-1e12;for(const q of sg.P){a=Math.min(a,q.x);b=Math.max(b,q.x);c=Math.min(c,q.y);e=Math.max(e,q.y)}sg.bb=[a-60,b+60,c-60,e+60]}
-function drawTrack(sg,WX,WY,x0,x1,y0,y1){if(!sg.pts||!sg.pts.length)return;if(!sg.P)prepTrack(sg);if(sg.bb[1]<x0||sg.bb[0]>x1||sg.bb[3]<y0||sg.bb[2]>y1)return;
- const al=sg.inf?.45:1,wOf=s=>{let w=0;for(const sp of sg.SP){const d=Math.abs(s-sp.s);if(d<GR){const k=1-d/GR;w=Math.max(w,k*k*(3-2*k))}}return w};
- if(sg.P.length>1){const scr=[];let lx=-1e9,ly=-1e9;for(let n=0;n<sg.P.length;n++){const q=sg.P[n],sx=WX(q.x,q.y),sy=WY(q.x,q.y);if(n<sg.P.length-1&&Math.abs(sx-lx)+Math.abs(sy-ly)<1.5)continue;scr.push([sx,sy,sg.S[n]]);lx=sx;ly=sy}
-  const groups=[];let cur=null;for(let n=1;n<scr.length;n++){const qv=Math.round(wOf((scr[n-1][2]+scr[n][2])/2)*10);if(!cur||cur.q!==qv){cur={q:qv,p:[scr[n-1]]};groups.push(cur)}cur.p.push(scr[n])}
-  const col=(qv,a)=>{const k=qv/10;return`rgba(${Math.round(TQ[0]+(RD[0]-TQ[0])*k)},${Math.round(TQ[1]+(RD[1]-TQ[1])*k)},${Math.round(TQ[2]+(RD[2]-TQ[2])*k)},${a*al})`};
-  for(const pass of [[18,.07,'butt'],[11,.14,'butt'],[6.5,.3,'butt'],[3.2,1,'round']]){ctx.lineWidth=pass[0];ctx.lineCap=pass[2];ctx.lineJoin='round';
-   for(const g of groups){ctx.beginPath();g.p.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.strokeStyle=col(g.q,pass[1]);ctx.stroke()}}
-  ctx.lineCap='round'}
- for(const sp of sg.SP){const sx=WX(sp.x,sp.y),sy=WY(sp.x,sp.y),r=Math.min(9,5+sp.d/600),hg=ctx.createRadialGradient(sx,sy,0,sx,sy,r*3.2);
-  hg.addColorStop(0,`rgba(239,68,68,${.55*al})`);hg.addColorStop(.45,`rgba(239,68,68,${.18*al})`);hg.addColorStop(1,'rgba(239,68,68,0)');ctx.fillStyle=hg;ctx.beginPath();ctx.arc(sx,sy,r*3.2,0,7);ctx.fill();
-  ctx.beginPath();ctx.arc(sx,sy,r,0,7);ctx.fillStyle=`rgba(239,68,68,${al})`;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.stroke();
-  if(map.getZoom()>=16){const lab=Math.round(sp.d/60)+' мин';ctx.font='700 11px Rubik,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(lab,sx+r+6,sy);ctx.fillStyle='#b91c1c';ctx.fillText(lab,sx+r+6,sy);ctx.textAlign='center'}}}
+// скругление углов дороги небольшим радиусом (углы кварталов остаются чёткими)
+function roundC(a,r){if(a.length<3)return a.slice();const o=[a[0]];for(let i=1;i<a.length-1;i++){const p=a[i-1],v=a[i],n=a[i+1],l1=dist(p,v),l2=dist(v,n);if(l1<.5||l2<.5){o.push(v);continue}
+ const k1=Math.min(r/l1,.45),k2=Math.min(r/l2,.45),p1={x:v.x+(p.x-v.x)*k1,y:v.y+(p.y-v.y)*k1},p2={x:v.x+(n.x-v.x)*k2,y:v.y+(n.y-v.y)*k2};o.push(p1);
+ for(const t of [.25,.5,.75]){const u=1-t;o.push({x:u*u*p1.x+2*u*t*v.x+t*t*p2.x,y:u*u*p1.y+2*u*t*v.y+t*t*p2.y})}o.push(p2)}o.push(a[a.length-1]);return o}
+function dedupe(a){const o=[];for(const q of a)if(!o.length||dist(o[o.length-1],q)>.4)o.push(q);return o}
+function prepTrack(sg){const raw=sg.pts.map(q=>P(q[0],q[1])),mi=sg.mi==null?-1:sg.mi;let D;
+ const mg=(!sg.inf&&mi>=0&&sg.mg&&sg.mg.length)?sg.mg.map(q=>P(q[0],q[1])):[],pg=(!sg.inf&&sg.pg&&sg.pg.length&&sg.pgi>mi)?sg.pg.map(q=>P(q[0],q[1])):[],cov=pg.length?sg.pgi:(mg.length?mi:-1);
+ if(!mg.length&&!pg.length)D=chaikin(raw,2);
+ else{const sn=dedupe(mg.concat(pg)),sm=roundC(sn,7),rest=raw.slice(cov+1);D=rest.length?sm.concat(chaikin([sn[sn.length-1]].concat(rest),2).slice(1)):sm}
+ if(!D.length){sg.P=[];sg.S=[0];sg.SP=[];sg.bb=[0,-1,0,-1];return}
+ sg.P=D;sg.S=[0];for(let i=1;i<D.length;i++)sg.S.push(sg.S[i-1]+dist(D[i-1],D[i]));
+ sg.SP=(sg.stops||[]).map((q,k)=>{const sp=P(q[0],q[1]);let b={x:D[0].x,y:D[0].y,s:0,d:dist(D[0],sp)};
+  for(let i=1;i<D.length;i++){const a=D[i-1],c=D[i],dx=c.x-a.x,dy=c.y-a.y,l=dx*dx+dy*dy;let t=l?((sp.x-a.x)*dx+(sp.y-a.y)*dy)/l:0;t=Math.max(0,Math.min(1,t));const x=a.x+dx*t,y=a.y+dy*t,dd=Math.hypot(sp.x-x,sp.y-y);if(dd<b.d)b={x,y,s:sg.S[i-1]+t*Math.sqrt(l),d:dd}}
+  return{x:b.x,y:b.y,s:b.s,k,d:q[3]-q[2]}});
+ let a=1e12,b=-1e12,c=1e12,e=-1e12;for(const q of D){a=Math.min(a,q.x);b=Math.max(b,q.x);c=Math.min(c,q.y);e=Math.max(e,q.y)}sg.bb=[a-60,b+60,c-60,e+60]}
+function trackW(sg,s){let w=0;for(const sp of sg.SP){const d=Math.abs(s-sp.s);if(d<GR){const k=1-d/GR;w=Math.max(w,k*k*(3-2*k))}}return w}
+const tcol=(w,a)=>`rgba(${Math.round(TQ[0]+(RD[0]-TQ[0])*w)},${Math.round(TQ[1]+(RD[1]-TQ[1])*w)},${Math.round(TQ[2]+(RD[2]-TQ[2])*w)},${a})`;
+function drawTrack(sg,A,bb){if(!sg.pts||!sg.pts.length)return;if(!sg.P)prepTrack(sg);if(sg.P.length<2||sg.bb[1]<bb[0]||sg.bb[0]>bb[1]||sg.bb[3]<bb[2]||sg.bb[2]>bb[3])return;
+ const al=sg.inf?.45:1,scr=[];let lx=-1e9,ly=-1e9;for(let n=0;n<sg.P.length;n++){const q=sg.P[n],sx=A.X(q.x,q.y),sy=A.Y(q.x,q.y);if(n<sg.P.length-1&&Math.abs(sx-lx)+Math.abs(sy-ly)<1.2)continue;scr.push([sx,sy,sg.S[n]]);lx=sx;ly=sy}
+ const groups=[];let cur=null;for(let n=1;n<scr.length;n++){const qv=Math.round(trackW(sg,(scr[n-1][2]+scr[n][2])/2)*10);if(!cur||cur.q!==qv){cur={q:qv,p:[scr[n-1]]};groups.push(cur)}cur.p.push(scr[n])}
+ for(const pass of PASSES){ctx.lineWidth=pass[0];ctx.lineCap=pass[2];ctx.lineJoin='round';for(const gp of groups){ctx.beginPath();gp.p.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.strokeStyle=tcol(gp.q/10,pass[1]*al);ctx.stroke()}}
+ ctx.lineCap='round'}
+// точки остановок (≥5 минут) — поверх, постоянного размера
+function drawStops(A,vb,z){for(const sg of tracks){if(!sg.stops||!sg.stops.length||!sg.pts||!sg.pts.length)continue;if(!sg.P)prepTrack(sg);const al=sg.inf?.45:1;
+ for(const sp of sg.SP){if(sp.x<vb[0]||sp.x>vb[1]||sp.y<vb[2]||sp.y>vb[3])continue;const q=sg.stops[sp.k],d=q?q[3]-q[2]:sp.d,sx=A.X(sp.x,sp.y),sy=A.Y(sp.x,sp.y),r=Math.round(Math.min(9,5+d/600)*2)/2;
+  blit(sprite('st|'+r+'|'+al,r*6.4+4,r*6.4+4,(g,cx,cy)=>{const hg=g.createRadialGradient(cx,cy,0,cx,cy,r*3.2);hg.addColorStop(0,`rgba(239,68,68,${.55*al})`);hg.addColorStop(.45,`rgba(239,68,68,${.18*al})`);hg.addColorStop(1,'rgba(239,68,68,0)');g.fillStyle=hg;g.beginPath();g.arc(cx,cy,r*3.2,0,7);g.fill();
+   g.beginPath();g.arc(cx,cy,r,0,7);g.fillStyle=`rgba(239,68,68,${al})`;g.fill();g.lineWidth=2;g.strokeStyle='rgba(255,255,255,.9)';g.stroke()}),sx,sy);
+  if(z>=16){const lab=Math.round(d/60)+' мин';ctx.font='700 11px Rubik,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(lab,sx+r+6,sy);ctx.fillStyle='#b91c1c';ctx.fillText(lab,sx+r+6,sy);ctx.textAlign='center'}}}}
+// «хвост»: непрерывно тянется от конца записанного пути до меня
+function drawTail(A){if(!showTrack||mode!=='gps'||!curSeg||curSeg.inf||tracks[tracks.length-1]!==curSeg||!curSeg.pts.length)return;if(!curSeg.P)prepTrack(curSeg);const E=curSeg.P[curSeg.P.length-1];if(!E)return;
+ const pts=[E];if(!mv&&cands.length)for(const c of cands)pts.push(P(c.p[0],c.p[1]));pts.push(meD);
+ const scr=pts.map(q=>[A.X(q.x,q.y),A.Y(q.x,q.y)]);let lp=0;for(let i=1;i<scr.length;i++)lp+=Math.hypot(scr[i][0]-scr[i-1][0],scr[i][1]-scr[i-1][1]);if(lp<1)return;
+ const s0=curSeg.S[curSeg.S.length-1]||0,lm=polyLen(pts),w0=trackW(curSeg,s0),w1=trackW(curSeg,s0+lm),a=scr[0],b=scr[scr.length-1],gd=Math.abs(w0-w1)>.02&&Math.hypot(b[0]-a[0],b[1]-a[1])>1;
+ for(const pass of PASSES){let st=tcol(w0,pass[1]);if(gd){st=ctx.createLinearGradient(a[0],a[1],b[0],b[1]);st.addColorStop(0,tcol(w0,pass[1]));st.addColorStop(1,tcol(w1,pass[1]))}
+  ctx.lineWidth=pass[0];ctx.lineCap=pass[2];ctx.lineJoin='round';ctx.strokeStyle=st;ctx.beginPath();scr.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke()}
+ ctx.lineCap='round'}
 
 // ================= МЕТРО: цвета линий, номера, схема =================
 let metro=null,metroBox=null,metroBusy=false,metroFail=0;
@@ -970,13 +1074,54 @@ async function metroLoad(){if(metroBusy||Date.now()-metroFail<60000)return;const
   ls.sort((a,b)=>(parseInt(a.ref)||99)-(parseInt(b.ref)||99));
   st.push(Object.assign({id:'node/'+n.id,lay:'metro',lat:n.lat,lon:n.lon,tags:t,name:t['name:ru']||t['name:en']||t.name||'Метро',local:t.name||'',lines:ls},p))}
  metro={ways:[...ways.values()],st};metroBox=[bb[0]+.12,bb[1]+.14,bb[2]-.12,bb[3]-.14];dirty=true;toast(`<div>Схема метро: <b>${lines.size}</b> линий, ${st.length} станций</div>`)}
-function drawMetro(WX,WY,x0,x1,y0,y1){if(!OL.metro||!metro)return;const z=map.getZoom(),lw=z>=15?5:z>=13?4:3;ctx.lineCap=ctx.lineJoin='round';
- for(const w of metro.ways){if(w.bb[1]<x0||w.bb[0]>x1||w.bb[3]<y0||w.bb[2]>y1)continue;ctx.beginPath();w.P.forEach((q,i)=>{const sx=WX(q.x,q.y),sy=WY(q.x,q.y);i?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy)});ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=lw+3;ctx.stroke();ctx.strokeStyle=w.col;ctx.lineWidth=lw;ctx.stroke()}
- if(z<12)return;ctx.textAlign='center';ctx.textBaseline='middle';
- for(const s2 of metro.st){const sx=WX(s2.x,s2.y),sy=WY(s2.x,s2.y);if(sx<-30||sy<-30||sx>W+30||sy>H+30)continue;const ls=s2.lines.length?s2.lines.slice(0,3):[{ref:'M',col:'#2f6feb'}],r=z>=14?9:5.5;
-  ls.forEach((l,i)=>{const ox=(i-(ls.length-1)/2)*(r*1.7);ctx.beginPath();ctx.arc(sx+ox,sy,r,0,7);ctx.fillStyle=l.col;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();
-   if(z>=14){ctx.fillStyle='#fff';ctx.font=`800 ${l.ref.length>2?7:9.5}px Rubik,sans-serif`;ctx.fillText(l.ref,sx+ox,sy+.5)}});
+function drawMetroLines(A,bb,z){if(!OL.metro||!metro)return;const lw=z>=15?5:z>=13?4:3;ctx.lineCap=ctx.lineJoin='round';
+ for(const w of metro.ways){if(w.bb[1]<bb[0]||w.bb[0]>bb[1]||w.bb[3]<bb[2]||w.bb[2]>bb[3])continue;ctx.beginPath();w.P.forEach((q,i)=>{const sx=A.X(q.x,q.y),sy=A.Y(q.x,q.y);i?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy)});ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=lw+3;ctx.stroke();ctx.strokeStyle=w.col;ctx.lineWidth=lw;ctx.stroke()}}
+function drawMetroStations(A,z){if(!OL.metro||!metro||z<12)return;const big=z>=14,r=big?9:5.5;ctx.textAlign='center';ctx.textBaseline='middle';
+ for(const s2 of metro.st){const sx=A.X(s2.x,s2.y),sy=A.Y(s2.x,s2.y);if(sx<-30||sy<-30||sx>W+30||sy>H+30)continue;const ls=s2.lines.length?s2.lines.slice(0,3):[{ref:'M',col:'#2f6feb'}];
+  const sp=sprite('ms|'+(big?1:0)+'|'+ls.map(l=>l.ref+l.col).join(','),(ls.length-1)*r*1.7+2*r+8,2*r+8,(g,cx,cy)=>{ls.forEach((l,i)=>{const ox=(i-(ls.length-1)/2)*(r*1.7);g.beginPath();g.arc(cx+ox,cy,r,0,7);g.fillStyle=l.col;g.fill();g.lineWidth=2;g.strokeStyle='#fff';g.stroke();
+   if(big){g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.font=`800 ${l.ref.length>2?7:9.5}px Rubik,sans-serif`;g.fillText(l.ref,cx+ox,cy+.5)}})});
+  blit(sp,sx,sy);
   if(z>=15.5){ctx.font='600 11px Rubik,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';const ty=sy+r+9;ctx.strokeText(s2.name,sx,ty);ctx.fillStyle='#1b1238';ctx.fillText(s2.name,sx,ty)}}}
+
+// ================= ПРИВЯЗКА ПУТИ К ДОРОГАМ (Valhalla по данным OpenStreetMap) =================
+// Окончательные точки (старше ~70 с) привязываются навсегда, свежий участок — предварительно, каждые ~15 с.
+const MM={busy:false,next:0,fails:0,prov:0};
+function dec6(s){const o=[];let i=0,la=0,lo=0;while(i<s.length){for(let k=0;k<2;k++){let b,sh=0,r=0;do{b=s.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5}while(b>=32&&i<s.length);const d=(r&1)?~(r>>1):(r>>1);if(k===0)la+=d;else lo+=d}o.push([la/1e6,lo/1e6])}return o}
+const U6=q=>{const u=U(q);return[+u[0].toFixed(6),+u[1].toFixed(6)]};
+function polyLen(a){let l=0;for(let i=1;i<a.length;i++)l+=dist(a[i-1],a[i]);return l}
+function mmFinal(sg){const n=sg.pts.length;if(sg!==curSeg||mode!=='gps')return n-1;if(!mv&&anc)return anc.vi-1;const tl=curSeg.tLast||0;let i=n-1;while(i>=0&&sg.pts[i][2]>tl-70)i--;return i}
+function mmPick(){const now=Date.now(),order=curSeg?[curSeg]:[];for(let i=tracks.length-1;i>=0;i--)if(tracks[i]!==curSeg)order.push(tracks[i]);
+ for(const sg of order){if(sg.inf||!sg.pts||sg.pts.length<2||(sg.mmBad||0)>4)continue;const mi=sg.mi==null?-1:sg.mi,fi=mmFinal(sg),n=sg.pts.length;
+  if(sg===curSeg&&mode==='gps'){const pv=(n-1)-Math.max(mi,sg.pgi==null?-1:sg.pgi);
+   if(fi-mi>=6||(mv&&pv>=2&&now-MM.prov>15000)||(!mv&&anc&&fi>mi&&(curSeg.tLast-anc.t0)>20))return{sg,mi,fi,e:n-1}}
+  else if(fi>mi)return{sg,mi,fi,e:fi}}
+ return null}
+function projSeq(S,R){const cum=[0];for(let j=1;j<S.length;j++)cum.push(cum[j-1]+dist(S[j-1],S[j]));const out=[];let j0=0;
+ for(let n=0;n<R.length;n++){const p=R[n],lim=cum[j0]+(n?dist(R[n-1],p)*3:0)+120;let b=null;
+  for(let j=j0;j<S.length-1&&cum[j]<=lim;j++){const a=S[j],c=S[j+1],dx=c.x-a.x,dy=c.y-a.y,l=dx*dx+dy*dy;let t=l?((p.x-a.x)*dx+(p.y-a.y)*dy)/l:0;t=Math.max(0,Math.min(1,t));const x=a.x+dx*t,y=a.y+dy*t,d=Math.hypot(p.x-x,p.y-y);if(!b||d<b.d-.01)b={j,t,x,y,d,s:cum[j]+t*Math.sqrt(l)}}
+  if(!b)b={j:j0,t:0,x:S[j0].x,y:S[j0].y,d:dist(p,S[j0]),s:cum[j0]};out.push(b);j0=b.j}return out}
+function sliceS(S,a,b){const o=[{x:a.x,y:a.y}];for(let j=a.j+1;j<=b.j;j++)o.push(S[j]);o.push({x:b.x,y:b.y});return o}
+async function mmRun(){if(MM.busy||Date.now()<MM.next||!navigator.onLine||document.visibilityState==='hidden')return;const job=mmPick();if(!job)return;
+ const sg=job.sg,gen=sg.mmGen||0,s=Math.max(0,job.mi-3),e=Math.min(job.e,s+150),fi=Math.min(job.fi,e),raw=sg.pts.slice(s,e+1).map(q=>q.slice());
+ MM.busy=true;if(sg===curSeg)MM.prov=Date.now();let shape=null;
+ try{const r=await fetch('https://valhalla1.openstreetmap.de/trace_route',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({shape:raw.map(q=>({lat:q[0],lon:q[1]})),costing:'pedestrian',shape_match:'map_snap',directions_type:'none',trace_options:{search_radius:45,gps_accuracy:15,breakage_distance:800}})});
+  const j=await r.json().catch(()=>null);
+  if(r.ok&&j&&j.trip&&j.trip.legs)shape=j.trip.legs.flatMap(l=>dec6(l.shape));else if(!(r.status>=400&&r.status<500&&j&&j.error_code))throw new Error('http '+r.status);
+  MM.fails=0;MM.next=Date.now()+2500}
+ catch(err){MM.fails++;MM.next=Date.now()+Math.min(300000,20000*MM.fails);MM.busy=false;return}
+ MM.busy=false;if((sg.mmGen||0)!==gen||!tracks.includes(sg))return;
+ const same=i=>{const q=sg.pts[i],o=raw[i-s];return q&&q[0]===o[0]&&q[1]===o[1]&&q[2]===o[2]};
+ for(let i=s;i<=fi;i++)if(!same(i))return;let provOk=e>fi;for(let i=fi+1;i<=e&&provOk;i++)if(!same(i))provOk=false;
+ mmApply(sg,s,e,fi,raw,shape,provOk)}
+function mmApply(sg,s,e,fi,raw,shape,provOk){const mi=sg.mi==null?-1:sg.mi,R=raw.map(q=>P(q[0],q[1])),i0=Math.max(0,mi-s),iF=fi-s;let S=null,pos=null,good=false;
+ if(shape&&shape.length>=2){S=dedupe(shape.map(c=>P(c[0],c[1])));if(S.length>=2){pos=projSeq(S,R);let sum=0,bad=0;for(let i=i0;i<pos.length;i++){sum+=pos[i].d;if(pos[i].d>50)bad++}const cnt=pos.length-i0;
+  const lS=pos[pos.length-1].s-pos[i0].s,lR=polyLen(R.slice(i0));good=cnt>0&&sum/cnt<=30&&bad<=Math.max(1,cnt*.25)&&lS>=0&&lS<=lR*1.6+40;
+  if(window.__mmlog)window.__mmlog.push({s,e,fi,mi,n:S.length,cnt,mean:cnt?sum/cnt:0,bad,lS,lR,good})}}
+ if(!sg.mg||mi<0)sg.mg=[];const push=q=>{const l=sg.mg[sg.mg.length-1];if(!l||dist(P(l[0],l[1]),q)>.5)sg.mg.push(U6(q))};
+ if(good){if(fi>mi)for(const q of sliceS(S,pos[i0],pos[iF]))push(q);
+  if(provOk){sg.pg=sliceS(S,pos[Math.max(i0,iF)],pos[pos.length-1]).map(U6);sg.pgi=e}else{sg.pg=null;sg.pgi=-1}}
+ else{if(fi>mi)for(let i=(mi<0?0:i0+1);i<=iF;i++)push(R[i]);sg.pg=null;sg.pgi=-1;sg.mmBad=(sg.mmBad||0)+1}
+ if(fi>mi)sg.mi=fi;sg.P=null;trkVer++;trackDirty=true;dirty=true}
 
 // ================= МЕСТА РЯДОМ (автоматически из OpenStreetMap) =================
 const DYN_KEY='og-dyn-v1';let dynCenters=[],dynBusy=false;
@@ -1015,7 +1160,7 @@ function setSync(st,msg){syncState=st;syncMsg=msg||'';const d=$('sdot');if(d)d.c
 function syncText(){return !user?'Прогресс хранится только на этом телефоне':syncState==='ok'?'Всё сохранено в облаке':syncState==='sync'?'Синхронизация…':syncState==='err'?'Ошибка синхронизации: '+esc(syncMsg):'Подключаюсь к облаку…'}
 function flushSoon(){clearTimeout(flushT);flushT=setTimeout(flush,1500)}
 function recomputePts(){pts=POIS.filter(p=>visited.has(p.id)).reduce((a,p)=>a+p.pts,0)+marks.length*15}
-function wipeLocal(){reveal.clear();area.clear();chunks.clear();born.clear();visited.clear();tracks=[];curSeg=null;pendTracks.clear();saveTracks();for(const k in cellCnt)delete cellCnt[k];discCells.clear();discSig='';marks=[];pendCells.clear();pendVisits.clear();pendMarks.clear();pendDel.clear();pts=0;save();saveMarks();saveQ()}
+function wipeLocal(){reveal.clear();area.clear();chunks.clear();born.clear();visited.clear();tracks=[];curSeg=null;trkVer++;pendTracks.clear();saveTracks();for(const k in cellCnt)delete cellCnt[k];discCells.clear();discSig='';marks=[];pendCells.clear();pendVisits.clear();pendMarks.clear();pendDel.clear();pts=0;save();saveMarks();saveQ()}
 async function flush(){if(!sb||!user||syncing||!navigator.onLine)return;if(!pendCells.size&&!pendVisits.size&&!pendMarks.size&&!pendDel.size&&!pendTracks.size&&syncState==='ok')return;
  syncing=true;setSync('sync');const uid=user.id;
  try{
@@ -1043,7 +1188,7 @@ async function pull(){if(!sb||!user)return;const uid=user.id;setSync('sync');
   const {data:ms,error:mse}=await sb.from('marks').select('*');if(mse)throw mse;const sm=new Set();
   for(const r of ms){sm.add(r.id);let q=marks.find(m=>m.id===r.id);if(!q){q={id:r.id,lat:r.lat,lon:r.lon,name:r.name,note:r.note||'',type:MT[r.type]?r.type:'place',photo:null,t:Date.parse(r.created_at)};Object.assign(q,P(q.lat,q.lon));marks.push(q)}q.photo_path=r.photo_path}
   for(const m of marks)if(!sm.has(m.id)&&!pendDel.has(m.id))pendMarks.add(m.id);
-  try{const {data:ts}=await sb.from('tracks').select('id,points,stops,inferred');(ts||[]).forEach(r=>{const l=tracks.find(x=>x.id===r.id),rp=r.points||[];if(!l)tracks.push({id:r.id,pts:rp,stops:r.stops||[],inf:r.inferred});else if(rp.length&&l.pts.length&&rp[rp.length-1][2]>l.pts[l.pts.length-1][2]){l.pts=rp;l.stops=r.stops||[];l.clean=0;l.P=null}});cleanAll();for(const t of tracks)if(!(ts||[]).find(r=>r.id===t.id))pendTracks.add(t.id);saveTracks()}catch(e){}
+  try{const {data:ts}=await sb.from('tracks').select('id,points,stops,inferred');(ts||[]).forEach(r=>{const l=tracks.find(x=>x.id===r.id),rp=r.points||[];if(!l)tracks.push({id:r.id,pts:rp,stops:r.stops||[],inf:r.inferred});else if(rp.length&&l.pts.length&&rp[rp.length-1][2]>l.pts[l.pts.length-1][2]){l.pts=rp;l.stops=r.stops||[];l.clean=0;l.P=null;mmReset(l);trkVer++}});cleanAll();for(const t of tracks)if(!(ts||[]).find(r=>r.id===t.id))pendTracks.add(t.id);saveTracks()}catch(e){}
   saveMarks();recomputePts();save();saveQ();updateHUD();renderSheet();dirty=true;
   const need=marks.filter(m=>!m.photo&&m.photo_path);
   if(need.length){const {data}=await sb.storage.from('photos').createSignedUrls(need.map(m=>m.photo_path),604800);(data||[]).forEach((d,i)=>{if(d&&d.signedUrl)need[i].photoUrl=d.signedUrl})}
@@ -1096,10 +1241,21 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('online',flush);
 
 try{cleanAll()}catch(e){}loadColors();try{buildBase()}catch(e){}revealAt(me);updateHUD();renderSheet();renderPop();renderOL();setTimeout(osmSchedule,1500);
-try{resize()}catch(e){toast('<div>Карта не запустилась: '+esc(e.message)+'</div>')}
+ogReady=true;try{resize()}catch(e){toast('<div>Карта не запустилась: '+esc(e.message)+'</div>')}
 try{startGps(false)}catch(e){}
-let last=performance.now();
-let drawFails=0;(function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;try{step(dt);if(dirty&&!zooming){dirty=false;draw()}}catch(e){if(++drawFails===1)toast('<div>Ошибка отрисовки: '+esc(e.message)+'</div>')}requestAnimationFrame(loop)})(last);
+let last=performance.now(),mmT=0,fogSL='',linesSL='';
+const fogSig=()=>reveal.size+'|'+visited.size+'|'+base;
+const _ids=new WeakMap();let _idn=0;const oid=o=>{if(!o||typeof o!=='object')return 0;let v=_ids.get(o);if(!v){v=++_idn;_ids.set(o,v)}return v};
+const linesSig=()=>trkVer+'|'+tracks.length+'|'+showTrack+'|'+(route?[oid(route),oid(route.pts),route.idx,route.proj?Math.round(route.proj.x)+','+Math.round(route.proj.y):'',route.approx?1:0].join(','):'-')+'|'+(OL.metro?1:0)+'|'+oid(metro)+'|'+base+'|'+hereD();
+let drawFails=0;(function loop(t){const dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;
+ try{step(dt);meTick(t);followTick(dt);if(fmOn&&(t-fmT>300||t-fmLast>1000)){fmLast=t;if(t-fmT>300)fmOn=false;map.fire('moveend')}
+  const fs=fogSig();if(fs!==fogSL){fogSL=fs;fogS.need=true}if(born.size||discBorn.size)fogS.need=true;
+  const ls=linesSig();if(ls!==linesSL){linesSL=ls;linesS.need=true}
+  if(!map._animatingZoom)for(const s of sheets)if(s.need)sheetRender(s);
+  if(zAnim)dirty=true;if(dirty||ovDirty)drawOverlay();
+  if(t-mmT>1000){mmT=t;mmRun()}}
+ catch(e){if(++drawFails===1)toast('<div>Ошибка отрисовки: '+esc(e.message)+'</div>');console.error(e)}requestAnimationFrame(loop)})(last);
+if(location.hostname==='test.local')window.__ogdbg=()=>({me,meD,anc:anc&&{R:anc.R,dh:anc.dh,vi:anc.vi,n:anc.n},mv,cands:cands.length,follow,mode,n:curSeg&&curSeg.pts.length,E:curSeg&&curSeg.P&&curSeg.P[curSeg.P.length-1],z:map.getZoom()});
 })();
 </script>
 </body>
