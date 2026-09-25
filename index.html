@@ -328,7 +328,20 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
 .ogme .acc{background:rgba(75,47,214,.06)}
 .ogme .disc{background:rgba(75,47,214,.12)}
 .ogme .dot{width:13px;height:13px;background:var(--me);border:2.5px solid #fff;box-shadow:0 0 8px rgba(75,47,214,.5)}
+.dlabel span{text-shadow:0 0 2px var(--halo),0 0 3px var(--halo),0 0 4px var(--halo)}
+:root{--halo:#ffffff;--lbl:#2e2650}
+:root[data-theme="dark"]{--halo:#120d26;--lbl:#f3f0ff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--halo:#120d26;--lbl:#f3f0ff}}
+:root[data-theme="dark"] .dlabel span{color:#b9a8ff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dlabel span{color:#b9a8ff}}
+.ogmk .lb{color:var(--lbl);text-shadow:0 0 2px var(--halo),0 0 2px var(--halo),0 0 3px var(--halo),0 0 4px var(--halo)}
+.ogmk.met .lb{color:var(--lbl)}
+.bgp{margin:12px 2px 6px;font-size:14px;line-height:1.45;color:var(--muted)}
+.bgs{margin:6px 0 12px;padding-left:20px;font-size:14px;line-height:1.5;color:var(--ink)}
+.bgs li{margin:6px 0}
+.bgok{display:flex;align-items:center;gap:8px;margin:8px 0 12px;padding:10px 12px;border-radius:12px;background:var(--soft);font-size:13px;color:var(--ink)}
 </style>
+<script>try{var t=localStorage.getItem('og-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
 <div id="app">
@@ -344,13 +357,13 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
   <div class="toast glass" id="toast"></div>
   <input type="file" id="impFile" multiple accept=".gpx,.kml,.json,.xml,application/json,application/gpx+xml" hidden>
   <div class="pop glass" id="pop">
-    <h4>Карта</h4><button class="opt" data-base="carto">Улицы</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><hr><h4>Достопримечательности</h4>
+    <h4>Карта</h4><button class="opt" data-base="carto">Улицы</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><hr><h4>Тема</h4><button class="opt" data-theme-set="light">Светлая</button><button class="opt" data-theme-set="dark">Тёмная</button><button class="opt" data-theme-set="auto">Как в системе</button><hr><h4>Достопримечательности</h4>
     <div id="chips">
       <button class="chip" data-l="main" aria-pressed="true"><i style="background:var(--main)"></i>Главное</button>
       <button class="chip" data-l="local" aria-pressed="true"><i style="background:var(--local)"></i>Локальное</button>
       <button class="chip" data-l="food" aria-pressed="true"><i style="background:var(--food)"></i>Поесть</button>
     </div>
-    <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © Esri, OpenStreetMap · маршруты © OSRM / FOSSGIS</p>
+    <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © Esri, OpenStreetMap · маршруты © OSRM / FOSSGIS</p>
   </div>
   <button id="nearPill" style="display:none" hidden></button>
   <div class="rt" id="rt" aria-live="polite"></div>
@@ -482,7 +495,9 @@ const ROT=!!(L.Map.prototype.setBearing);
 const map=L.map('map',Object.assign({zoomControl:false,zoomAnimation:true,fadeAnimation:true,zoomSnap:0,zoomDelta:0.5,scrollWheelZoom:false,doubleClickZoom:false,keyboard:false,bounceAtZoomLimits:false,inertia:true,inertiaDeceleration:2600,easeLinearity:0.2,attributionControl:false,preferCanvas:true,minZoom:10,maxZoom:19},ROT?{rotate:true,touchRotate:true,rotateControl:false,bearing:0,shiftKeyRotate:true}:{}));
 window.__ogmap=map;map.on('rotate',()=>{dirty=true;const b=document.getElementById('compassBtn');if(b){const g=((map.getBearing?map.getBearing():0)%360+360)%360;b.style.display=g>1&&g<359?'':'none';b.firstChild.style.transform=`rotate(${-g}deg)`}});
 
-const DARKM=matchMedia('(prefers-color-scheme: dark)').matches;
+let theme=(()=>{try{const t=localStorage.getItem('og-theme');return t==='light'||t==='dark'?t:'auto'}catch(e){return 'auto'}})();
+const mqDark=matchMedia('(prefers-color-scheme: dark)'),isDark=()=>theme==='dark'||(theme==='auto'&&mqDark.matches);
+const DARKM=isDark();
 const TILES={carto:L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${DARKM?'Dark':'Light'}_Gray_Base/MapServer/tile/{z}/{y}/{x}`,{maxNativeZoom:16,maxZoom:19}),
  amap:L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',{subdomains:'1234',maxZoom:18})};
 const BN={vector:'Схема',carto:'Улицы',amap:'Amap 高德'};
@@ -636,7 +651,7 @@ let hereCache={k:'',d:null};
 function hereD(){const hk=Math.round(me.x/50)+','+Math.round(me.y/50);if(hereCache.k!==hk)hereCache={k:hk,d:distAt(...U(me))};return hereCache.d}
 
 // ---- туман: белая вуаль, фактура привязана к карте и масштабируется вместе с ней ----
-function drawFog(g,A,bb,s){g.globalAlpha=.93;g.fillStyle='#ffffff';g.fillRect(0,0,s.w,s.h);
+function drawFog(g,A,bb,s){g.globalAlpha=.93;g.fillStyle=isDark()?'#161129':'#ffffff';g.fillRect(0,0,s.w,s.h);
  if(!s.pat)s.pat=g.createPattern(noise,'repeat');const L1=Math.floor(s.z0),fr=s.z0-L1;
  for(const [lv,wt] of [[L1,1-fr],[L1+1,fr]]){if(wt<.03)continue;const k=Math.pow(2,s.z0-lv),per=256*k,tx=-(((s.ox%per)+per)%per),ty=-(((s.oy%per)+per)%per);
   g.save();g.globalAlpha=wt;g.translate(tx,ty);g.scale(k,k);g.fillStyle=s.pat;g.fillRect(0,0,(s.w-tx)/k+2,(s.h-ty)/k+2);g.restore()}
@@ -757,13 +772,13 @@ function closeCard(){$('card').classList.remove('on');if(pin){pin=null;dirty=tru
 function openPanel(){closePops();$('sheet').classList.add('open');$('scrim').classList.add('on');renderSheet()}
 function closePanel(){$('sheet').classList.remove('open');if(!$('card').classList.contains('on'))$('scrim').classList.remove('on')}
 function closePops(){$('pop').classList.remove('on');if($('dpick').classList.contains('on'))togglePick(false)}
-function renderPop(){$('pop').querySelectorAll('[data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===base))}
+function renderPop(){$('pop').querySelectorAll('[data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===base));$('pop').querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===theme))}
 function renderNear(){return;const el=$('nearPill'),c=POIS.filter(p=>layers[p.cat]&&!visited.has(p.id)).map(p=>({p,d:dist(me,p)})).sort((a,b)=>a.d-b.d)[0];
  if(!c){el.style.display='none';return}el.style.display='';el.dataset.open=c.p.id;el.innerHTML=`<span class="e">${c.p.e}</span><b>${c.p.name}</b><span>${walk(c.d)}</span>`}
 let tt=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),4200)}
 function hideHint(){const h=$('hint');if(h){h.remove();changed=true}}
 
-document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[data-go],[data-close],[data-seg],[data-soon],[data-amap],[data-add],[data-mt],[data-savemark],[data-mark],[data-delmark],[data-export],[data-import],[data-pick],[data-base],[data-route],[data-rtmode],[data-rtclose],[data-rtext],[data-rtwalk],[data-rvnew],[data-rvstar],[data-rvsave],[data-pin],[data-osm],[data-ol],#wakeBtn,#reset');if(!t)return;if(handleMine(t))return;
+document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[data-go],[data-close],[data-seg],[data-soon],[data-amap],[data-add],[data-mt],[data-savemark],[data-mark],[data-delmark],[data-export],[data-import],[data-pick],[data-base],[data-route],[data-rtmode],[data-rtclose],[data-rtext],[data-rtwalk],[data-rvnew],[data-rvstar],[data-rvsave],[data-pin],[data-osm],[data-ol],[data-theme-set],[data-bg],#wakeBtn,#bgBtn,#reset');if(!t)return;if(handleMine(t))return;
  if(t.dataset.open){const p=POIS.find(q=>q.id===t.dataset.open);closePanel();closePops();$('toast').classList.remove('on');follow=false;focusAt(p.lat,p.lon);openCard(p)}
  else if('amap' in t.dataset){setBase('amap')}
  else if(t.dataset.go){const p=POIS.find(q=>q.id===t.dataset.go);target={x:p.x,y:p.y};follow=true;closeCard();hideHint();closePanel()}
@@ -881,7 +896,6 @@ $('impFile').onchange=async e=>{const files=[...e.target.files];if(!files.length
  try{zStop();map.flyToBounds([toM(mnLa,mnLo),toM(mxLa,mxLo)],{padding:[60,60],maxZoom:16,duration:.8})}catch(err){}
  dirty=true;toast(`<div><b>Импорт готов.</b> Точек: ${n.toLocaleString('ru-RU')}, открыто ${km(area.size-before)} км²${got?`, засчитано мест: ${got}`:''}.</div>`)};
 setInterval(()=>{if(changed){save();saveQ()}if(tab==='near'&&target)renderSheet()},1500);
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{loadColors();buildBase()});
 window.addEventListener('resize',resize);
 if(document.fonts)document.fonts.ready.then(()=>{for(const s of sheets)s.need=true;dirty=true});
 
@@ -1001,6 +1015,7 @@ async function saveReview(t){if(!rvDraft)return;if(!rvDraft.rating){toast('<div>
   const back=rvDraft.back;rvDraft=null;closeCard();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
  catch(e){t.disabled=false;t.textContent='Опубликовать';toast(`<div>Не удалось сохранить отзыв: ${esc(e.message||'ошибка')}</div>`)}}
 function handleExtra(t){
+ if(bgClick(t))return true;
  if(t.dataset.ol){const k=t.dataset.ol;OL[k]=!OL[k];if(!OL[k])delete OL[k];try{localStorage.setItem('og-ol',JSON.stringify(OL))}catch(e){}renderOL();osmWarn=false;dirty=true;if(OL[k])osmRefresh();return true}
  if(t.id==='wakeBtn'){wakeWant=!wakeWant;if(wakeWant)wakeOn();else{if(wakeLock)wakeLock.release();wakeLock=null;$('wakeBtn').classList.remove('on')}return true}
  if(t.dataset.pin){const pt=pin;if(!pt)return true;const a=t.dataset.pin;closeCard();
@@ -1142,18 +1157,63 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-login],[da
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(e.target.id==='lgEmail')$('lgPass')&&$('lgPass').focus();if(e.target.id==='lgPass'){const b=document.querySelector('[data-lin],[data-lnewpass]');b&&b.click()}});
 if(sb){sb.auth.onAuthStateChange((ev,sess)=>{if(ev==='PASSWORD_RECOVERY')setTimeout(()=>openLogin('newpass'),300);const nu=sess&&sess.user||null,chg=(nu&&nu.id)!==(user&&user.id);user=nu;
   if(location.hash.includes('access_token')||location.hash.includes('error'))history.replaceState(null,'',location.pathname);
-  if(nu&&chg)setTimeout(pull,0);
+  if(nu&&chg){setTimeout(pull,0);bgTok=null;bgLoad();setTimeout(bgPull,2500)}
   if(!nu){setSync('off');if(ev==='INITIAL_SESSION'&&!localStorage.getItem('og-skip'))setTimeout(()=>openLogin(),600)}
   if(tab==='rank'&&$('sheet').classList.contains('open'))renderSheet()})}
 setInterval(flush,10000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});
 window.addEventListener('online',flush);
 
+// ================= ТЕМА: светлая / тёмная / как в системе =================
+function applyTheme(){const r=document.documentElement;if(theme==='auto')delete r.dataset.theme;else r.dataset.theme=theme;
+ const u=`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${isDark()?'Dark':'Light'}_Gray_Base/MapServer/tile/{z}/{y}/{x}`;if(TILES.carto._url!==u)TILES.carto.setUrl(u);
+ loadColors();try{buildBase()}catch(e){}for(const s of sheets)s.need=true;renderPop();dirty=true}
+mqDark.addEventListener('change',()=>{if(theme==='auto')applyTheme()});
+
+// ================= ФОНОВЫЙ GPS: Overland записывает прогулку при заблокированном экране =================
+const BG_FN=SB_URL+'/functions/v1/overland',BG_APP='https://apps.apple.com/app/id1292426766';
+let bgTok=null,bgLast=null,bgBusy=false,bgInfo=null;
+const bgKey=()=>'og-bg-v1'+(user?':'+user.id:'');
+function bgLoad(){try{bgLast=JSON.parse(localStorage.getItem(bgKey())||'null')}catch(e){bgLast=null}}
+async function bgToken(){if(!sb||!user)return null;if(bgTok)return bgTok;
+ const {data,error}=await sb.from('bg_tokens').select('token').eq('user_id',user.id).maybeSingle();if(error)throw error;if(data&&data.token)return bgTok=data.token;
+ const a=new Uint8Array(24);crypto.getRandomValues(a);const tok=btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+ const r=await sb.from('bg_tokens').insert({user_id:user.id,token:tok});if(r.error)throw r.error;return bgTok=tok}
+// точки идут по времени: соседние соединяем и открываем туман вдоль пути, большие скачки не соединяем
+function bgApply(rows,quietly){if(!rows||!rows.length)return 0;const before=area.size;let prev=bgLast&&bgLast.p?P(bgLast.p[0],bgLast.p[1]):null,prevT=bgLast&&bgLast.t?Date.parse(bgLast.t):0;quiet=true;
+ try{for(const r of rows){if(r.acc!=null&&r.acc>80)continue;const p=P(r.lat,r.lon),tt=Date.parse(r.t);
+   if(prev&&tt>prevT){const d=dist(prev,p),dt=(tt-prevT)/1000;if(d<=1500&&d/dt<45)fillLine(prev,p);else{revealAt(p);checkDiscover(p)}}else{revealAt(p);checkDiscover(p)}
+   prev=p;prevT=tt}}finally{quiet=false}
+ const last=rows[rows.length-1];bgLast={t:last.t,p:[last.lat,last.lon]};try{localStorage.setItem(bgKey(),JSON.stringify(bgLast))}catch(e){}
+ bgInfo={n:rows.length,t:last.t};updateHUD();changed=true;dirty=true;const gain=area.size-before;
+ if(gain>0&&!quietly)toast(`<div><b>Фоновый GPS</b><br>Открыл туман по пути, пройденному с заблокированным экраном</div>`);return gain}
+async function bgPull(){if(!sb||!user||bgBusy||!navigator.onLine)return;bgBusy=true;let more=false;
+ try{let q=sb.from('bg_points').select('t,lat,lon,acc').eq('user_id',user.id).order('t',{ascending:true}).limit(2000);if(bgLast&&bgLast.t)q=q.gt('t',bgLast.t);
+  const {data,error}=await q;if(error)throw error;if(data&&data.length){bgApply(data);more=data.length===2000}}catch(e){}finally{bgBusy=false}
+ if(more)setTimeout(bgPull,500)}
+async function bgOpen(){closePops();$('card').classList.remove('place');const logged=!!(sb&&user);let tok=null,err='';
+ if(logged){try{tok=await bgToken()}catch(e){err=e&&e.message||String(e)}}
+ const link=tok?'overland://setup?url='+encodeURIComponent(BG_FN)+'&token='+encodeURIComponent(tok)+'&device_id=iphone&unique_id=yes':'';
+ $('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:var(--vio);color:#fff">${isvg('navi',28,2)}</span><div><h2>Фоновый GPS</h2><div class="zh">Туман открывается, даже когда телефон заблокирован</div></div></div>
+ <p class="bgp">iPhone не даёт сайтам узнавать, где вы, пока экран заблокирован. Эту работу возьмёт бесплатное приложение Overland: оно записывает прогулку в фоне и присылает точки сюда, а карта открывает туман по всему пройденному пути.</p>
+ <ol class="bgs"><li><b>Установите Overland</b> из App Store.</li><li><b>Нажмите «Подключить»</b> — Overland откроется уже настроенным на вашу карту.</li><li>В Overland разрешите геопозицию <b>«Всегда»</b> и включите запись переключателем вверху. Для подробного тумана: <b>Desired Accuracy — 10 m</b>, <b>Send Interval — 1 min</b>.</li></ol>
+ ${bgInfo?`<div class="bgok">${isvg('check',16,2.4)} Последние точки пришли ${new Date(bgInfo.t).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>`:''}
+ ${err?`<div class="bgok">Не получилось подготовить подключение: ${esc(err)}</div>`:''}
+ ${link?`<a class="pc-cta" href="${link}">${isvg('navi',18,2.2)} Подключить Overland</a>`:logged?'':'<button class="cta" data-bg="login">Войти, чтобы подключить</button>'}
+ <button class="ghost" data-bg="store">Установить Overland из App Store</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on')}
+function bgClick(t){if(t.id==='bgBtn'){bgOpen();return true}
+ if(t.dataset.themeSet){theme=t.dataset.themeSet;try{localStorage.setItem('og-theme',theme)}catch(e){}applyTheme();return true}
+ if(t.dataset.bg){const a=t.dataset.bg;if(a==='store')window.open(BG_APP,'_blank');else if(a==='login'){closeCard();openLogin()}return true}return false}
+bgLoad();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(bgPull,800)});
+setInterval(()=>{if(document.visibilityState==='visible')bgPull()},60000);
+
 loadColors();try{buildBase()}catch(e){}revealAt(me);updateHUD();renderSheet();renderPop();renderOL();setTimeout(osmSchedule,1500);
 ogReady=true;try{resize()}catch(e){toast('<div>Карта не запустилась: '+esc(e.message)+'</div>')}
 try{startGps(false)}catch(e){}
 let last=performance.now(),fogSL='',linesSL='',mkSL='';
-const fogSig=()=>reveal.size+'|'+visited.size+'|'+base;
+const fogSig=()=>reveal.size+'|'+visited.size+'|'+base+'|'+isDark();
 const _ids=new WeakMap();let _idn=0;const oid=o=>{if(!o||typeof o!=='object')return 0;let v=_ids.get(o);if(!v){v=++_idn;_ids.set(o,v)}return v};
 const linesSig=()=>(route?[oid(route),oid(route.pts),route.idx,route.proj?Math.round(route.proj.x)+','+Math.round(route.proj.y):'',route.approx?1:0].join(','):'-')+'|'+(OL.metro?1:0)+'|'+oid(metro)+'|'+base+'|'+hereD();
 let drawFails=0;(function loop(t){const dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;
@@ -1165,7 +1225,7 @@ let drawFails=0;(function loop(t){const dt=Math.min(.05,Math.max(0,(t-last)/1000
   if(dirty){dirty=false;mkQ=true}
   if(mkQ)mkSync();if(meDirty)mePlace()}
  catch(e){if(++drawFails===1)toast('<div>Ошибка отрисовки: '+esc(e.message)+'</div>');console.error(e)}requestAnimationFrame(loop)})(last);
-if(location.hostname==='test.local')window.__ogdbg=()=>({me,meD,follow,mode,z:map.getZoom(),mk:MK.size});
+if(location.hostname==='test.local'){window.__ogdbg=()=>({me,meD,follow,mode,z:map.getZoom(),mk:MK.size,area:area.size,theme,dark:isDark()});window.__bgApply=r=>bgApply(r)}
 })();
 </script>
 </body>
