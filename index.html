@@ -572,7 +572,24 @@ function mkZone(){const z=map.getZoom(),c=[[14,'z14'],[15,'z15'],[15.5,'z155'],[
 function mkZoom(){if(map._animatingZoom)return;const zb=mkZone();if(zb!==mkZB){mkZB=zb;mkSync()}mkPlaceAll()}
 function mkReset(){for(const o of MK.values())o.el.remove();MK.clear();mkQ=true;meDirty=true}
 function mkEl(cls,z,html){const d=document.createElement('div');d.className='ogmk leaflet-zoom-animated '+cls;d.style.zIndex=z;d.innerHTML=html;return d}
-function poiEl(p,v){const r=p.cat==='main'?13:11,c=(CAT[p.cat]||CAT.main).c;return mkEl('poi '+(v?'v ':'')+(p.cat==='main'?'l15':'l16'),p.cat==='main'?40:30,
+// особые иконки главных достопримечательностей (остриё метки — точно в точке места)
+// Кантон-Тауэр строится по настоящей геометрии: 24 колонны между эллипсами 80×50 м и 54×40,5 м, повёрнутыми на 135°
+function ctSvg(v){const A0=40,B0=25,A1=27,B1=20.25,HT=454,PH=135*PI/180,az=35*PI/180,ex=2.6,cx=20,by=38,aH=138*.62,k=46/(HT+10+aH),ca=Math.cos(az),sa=Math.sin(az),f=n=>+n.toFixed(1);
+ const Pt=(th,t)=>{const x0=A0*Math.cos(th),y0=B0*Math.sin(th),X=x0+(A1*Math.cos(th+PH)-x0)*t,Y=y0+(B1*Math.sin(th+PH)-y0)*t;return[cx+(X*ca+Y*sa)*k*ex,by-HT*t*k,-X*sa+Y*ca]};
+ const Lp=[],Rp=[];for(let s=0;s<=48;s++){let mn=1e9,mx=-1e9,y=0;for(let j=0;j<360;j++){const p=Pt(2*PI*j/360,s/48);mn=Math.min(mn,p[0]);mx=Math.max(mx,p[0]);y=p[1]}Lp.push([mn,y]);Rp.push([mx,y])}
+ const body='M'+Lp.concat(Rp.reverse()).map(p=>f(p[0])+' '+f(p[1])).join('L')+'Z';let cols='',rings='';
+ for(let i=0;i<24;i++){const th=2*PI*i/24,a=Pt(th,0),b=Pt(th,1);if(Pt(th,.5)[2]<0)cols+=`M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}`}
+ for(let r=1;r<8;r++){let cur=[];const fl=()=>{if(cur.length>1)rings+='M'+cur.map(p=>f(p[0])+' '+f(p[1])).join('L');cur=[]};for(let j=0;j<=96;j++){const p=Pt(2*PI*j/96,r/8);if(p[2]<0)cur.push(p);else fl()}fl()}
+ let tn=1e9,tx=-1e9;for(let j=0;j<=96;j++){const p=Pt(2*PI*j/96,1);tn=Math.min(tn,p[0]);tx=Math.max(tx,p[0])}
+ const tc=(tn+tx)/2,wb=(tx-tn)*.13,yr=by-(HT+10)*k,yt=by-(HT+10+aH)*k,ant=`M${f(tc-wb/2)} ${f(yr)}L${f(tc-wb*.12)} ${f(yt)}L${f(tc+wb*.12)} ${f(yt)}L${f(tc+wb/2)} ${f(yr)}Z`;
+ const u='ct'+(v?'v':'u'),col=v?'#4b2fd6':'#fff',fg=v?'#fff':'#4b2fd6';
+ return `<svg viewBox="-3 -12 46 67" width="46" height="67"><defs><clipPath id="${u}c"><path d="${body}"/></clipPath><filter id="${u}s" x="-30%" y="-20%" width="160%" height="150%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#1b1238" flood-opacity=".25"/></filter></defs>`+
+  `<path d="M20 51C10.5 40.6 4 33 4 24.5A16 16 0 0 1 36 24.5C36 33 29.5 40.6 20 51Z" fill="${col}" stroke="${v?'#fff':'#4b2fd6'}" stroke-width="2" filter="url(#${u}s)"/>`+
+  `<path d="${body}" fill="${fg}" stroke="${col}" stroke-width="1.6" paint-order="stroke" stroke-linejoin="round"/><g clip-path="url(#${u}c)" fill="none" stroke="${col}"><path d="${cols}" stroke-width=".45" opacity=".6"/><path d="${rings}" stroke-width=".4" opacity=".45"/></g>`+
+  `<path d="${ant}" fill="${fg}" stroke="${col}" stroke-width="1.2" paint-order="stroke"/>`+(v?'<circle cx="34.5" cy="17" r="4.2" fill="#c8f43c" stroke="#fff" stroke-width="1.5"/>':'')+'</svg>'}
+const LANDMK={canton:{svg:ctSvg,w:46,h:67,ax:23,ay:63,lx:24,ly:-26.5,dy:-27,r:30}},LMC={};
+function lmSvg(id,v){const k=id+(v?1:0);return LMC[k]||(LMC[k]=LANDMK[id].svg(v))}
+function poiEl(p,v){const lm=LANDMK[p.id];if(lm)return mkEl('poi land l15',45,`<div style="position:absolute;left:${-lm.ax}px;top:${-lm.ay}px;width:${lm.w}px;height:${lm.h}px">${lmSvg(p.id,v)}</div><span class="lb" style="left:${lm.lx}px;top:${lm.ly}px">${esc(p.name)}</span>`);const r=p.cat==='main'?13:11,c=(CAT[p.cat]||CAT.main).c;return mkEl('poi '+(v?'v ':'')+(p.cat==='main'?'l15':'l16'),p.cat==='main'?40:30,
  `<div class="pm" style="--c:var(${c});width:${2*r}px;height:${2*r}px;left:${-r}px;top:${-r}px">${isvg(p.ic,Math.round(r*1.12),2.3)}</div>${v?`<i class="bd" style="left:${r*.78-6}px;top:${-r*.78-6}px"></i>`:''}<span class="lb" style="left:${r+5}px">${esc(p.name)}</span>`)}
 function markEl(q){return mkEl('mark l16',50,`<div class="pm" style="--c:var(--mine);width:20px;height:20px;left:-10px;top:-10px;background:var(--mine);border-color:#fff;color:#fff">${isvg('mark',11,2.3)}</div><span class="lb" style="left:15px">${esc(q.name)}</span>`)}
 function osmEl(k,it){const L0=OLAY[k];return mkEl('osm l17',10,`<div class="pm" style="--c:${L0.col}">${isvg(L0.ic,11,2.3)}</div>${it.name!==L0.n?`<span class="lb">${esc(it.name)}</span>`:''}`)}
@@ -664,7 +681,7 @@ function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,
 function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
  toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cur&&p.cat==='main'?' · открыто 3 км вокруг':''}</div><button data-open="${p.id}">Читать</button>`);save()}}
  if(route&&route.dest&&dist(at,route.dest)<=Math.max(DISCOVER,40))closeRoute(true)}
-function tap(x,y){if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
+function tap(x,y){if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
  for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
  if(best){best.type&&best.t?openMark(best):openCard(best);return}
  if(OL.metro&&metro&&map.getZoom()>=12){let bm=null,bdm=22;for(const it of metro.st){const s=S(it),d=Math.hypot(s.x-x,s.y-y);if(d<bdm){bdm=d;bm=it}}if(bm){openOsm(bm);return}}
