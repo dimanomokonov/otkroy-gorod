@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Открой город · 3D (тест)</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#efefec">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<style>
+:root{--ink:#1b1238;--mut:#6b6490;--vio:#4b2fd6;--lime:#c8f43c;--main:#ff5a5f;--land:#efefec;--card:#ffffff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--land);font-family:Rubik,system-ui,-apple-system,sans-serif;color:var(--ink)}
+#map{position:fixed;inset:0}
+.maplibregl-ctrl-attrib{font-size:10px;opacity:.7}
+.top{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 12px);display:flex;gap:8px;align-items:center;z-index:5;pointer-events:none}
+.pill{pointer-events:auto;height:44px;border-radius:99px;background:var(--card);box-shadow:0 2px 14px rgba(27,18,56,.12);display:flex;align-items:center;gap:8px;padding:0 16px;font-size:15px;font-weight:600;color:var(--ink);text-decoration:none;border:0;font-family:inherit}
+.pill .tag{font-size:12px;font-weight:700;color:#fff;background:var(--vio);border-radius:99px;padding:3px 8px}
+.pill small{font-size:13px;font-weight:500;color:var(--mut)}
+.rt{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 68px);display:flex;flex-direction:column;gap:10px;z-index:5}
+.ib{width:44px;height:44px;border-radius:50%;border:0;background:var(--card);box-shadow:0 2px 14px rgba(27,18,56,.12);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:var(--ink);font:700 13px Rubik,sans-serif}
+.ib.on{background:var(--ink);color:#fff}
+.ib svg{display:block}
+#meBtn{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom) + 24px);width:52px;height:52px;background:var(--vio);color:#fff;z-index:5}
+#meBtn.follow{box-shadow:0 0 0 4px rgba(75,47,214,.25),0 2px 14px rgba(27,18,56,.2)}
+.hint{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom) + 30px);right:76px;z-index:5;font-size:12.5px;line-height:1.35;color:var(--mut);pointer-events:none;text-shadow:0 0 3px var(--land),0 0 6px var(--land)}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 66px);transform:translate(-50%,-8px);background:var(--card);border-radius:16px;box-shadow:0 6px 24px rgba(27,18,56,.16);padding:12px 16px;font-size:14px;line-height:1.4;max-width:calc(100% - 100px);opacity:0;transition:opacity .25s,transform .25s;z-index:9;pointer-events:none}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#load{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:8;background:var(--land);font-size:15px;color:var(--mut);transition:opacity .4s}
+#load.off{opacity:0;pointer-events:none}
+.pm{position:relative;width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--main);box-shadow:0 2px 6px rgba(27,18,56,.25);display:flex;align-items:center;justify-content:center;color:var(--main)}
+.pm.v{background:var(--main);border-color:#fff;color:#fff}
+.pm.v::after{content:"";position:absolute;right:-4px;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--lime);border:1.5px solid #fff}
+.mk{display:flex;align-items:center;gap:6px;pointer-events:auto;cursor:pointer}
+.mk .lb{font:500 12px/1.2 Rubik,sans-serif;color:#2e2650;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 4px #fff}
+.lm{position:relative;width:46px;height:67px}
+.lm .lb{position:absolute;left:47px;top:30px;font:500 12px/1.2 Rubik,sans-serif;color:#2e2650;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 4px #fff}
+.me{position:relative;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(27,18,56,.35);display:flex;align-items:center;justify-content:center}
+.me::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--vio)}
+.me::after{content:"";position:absolute;width:64px;height:64px;border-radius:50%;background:rgba(75,47,214,.14);z-index:-1}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="top">
+<a class="pill" href="./" aria-label="Вернуться к обычной карте"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Карта</a>
+<div class="pill"><span class="tag">3D</span><small>тест · Чжуцзян Синьчэн</small></div>
+</div>
+<div class="rt">
+<button class="ib" id="compassBtn" aria-label="На север"><svg id="compassIc" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l4 9h-8z" fill="#ff5a5f"/><path d="M12 21l-4-9h8z" fill="#c9c6d6"/></svg></button>
+<button class="ib on" id="pitchBtn" aria-label="Наклон: 3D или вид сверху">3D</button>
+<button class="ib on" id="fogBtn" aria-label="Туман: показать или скрыть"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9h11M7 13h13M4 17h10"/></svg></button>
+</div>
+<button class="ib" id="meBtn" aria-label="К моему месту"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4L4 11l7 2 2 7z"/></svg></button>
+<div class="hint" id="hint">Двумя пальцами: вращение и наклон. Туман открывается, когда вы идёте по району.</div>
+<div id="toast"></div>
+<div id="load">Загружаю 3D-район…</div>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script>
+'use strict';
+// ---------- общие с основной картой константы и хранилище ----------
+const PI=Math.PI,LAT0=23.122,LON0=113.28,KX=Math.cos(LAT0*PI/180)*111320,KY=110540;
+const CELL=30,REVEAL=140,DISCOVER=60,DISC_R=3000;
+const STORE='otkroy-gorod-gz-v1',QK='og-sync-v1';
+const P=(lat,lon)=>({x:(lon-LON0)*KX,y:-(lat-LAT0)*KY});
+const U=p=>[LAT0-p.y/KY,LON0+p.x/KX];
+const $=id=>document.getElementById(id);
+function readJ(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')||d}catch(e){return d}}
+function writeJ(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const st=readJ(STORE,{});const reveal=new Set(st.r||[]),visited=new Set(st.v||[]);
+// места этого района (координаты сверены с OpenStreetMap)
+const POIS=[
+ {id:'canton',name:'Кантон-Тауэр',lat:23.10902,lon:113.31915,pts:100,land:true},
+ {id:'opera',name:'Оперный театр',lat:23.11788,lon:113.31703,pts:60,ic:'M3 18c3-8 7-10 9-10s6 3 9 10zM2 18h20'},
+ {id:'huacheng',name:'Площадь Хуачэн',lat:23.1221,lon:113.31858,pts:50,ic:'M4 21V11h4v10M10 21V4h5v17M17 21V9h4v12M2 21h20'}];
+let toastT=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3200)}
+
+// ---------- Кантон-Тауэр: иконка как в основной карте ----------
+function ctSvg(v){const A0=40,B0=25,A1=27,B1=20.25,HT=454,PH=135*PI/180,az=35*PI/180,ex=2.6,cx=20,by=38,aH=138*.62,k=46/(HT+10+aH),ca=Math.cos(az),sa=Math.sin(az),f=n=>+n.toFixed(1);
+ const Pt=(th,t)=>{const x0=A0*Math.cos(th),y0=B0*Math.sin(th),X=x0+(A1*Math.cos(th+PH)-x0)*t,Y=y0+(B1*Math.sin(th+PH)-y0)*t;return[cx+(X*ca+Y*sa)*k*ex,by-HT*t*k,-X*sa+Y*ca]};
+ const Lp=[],Rp=[];for(let s=0;s<=48;s++){let mn=1e9,mx=-1e9,y=0;for(let j=0;j<360;j++){const p=Pt(2*PI*j/360,s/48);mn=Math.min(mn,p[0]);mx=Math.max(mx,p[0]);y=p[1]}Lp.push([mn,y]);Rp.push([mx,y])}
+ const body='M'+Lp.concat(Rp.reverse()).map(p=>f(p[0])+' '+f(p[1])).join('L')+'Z';let cols='',rings='';
+ for(let i=0;i<24;i++){const th=2*PI*i/24,a=Pt(th,0),b=Pt(th,1);if(Pt(th,.5)[2]<0)cols+=`M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}`}
+ for(let r=1;r<8;r++){let cur=[];const fl=()=>{if(cur.length>1)rings+='M'+cur.map(p=>f(p[0])+' '+f(p[1])).join('L');cur=[]};for(let j=0;j<=96;j++){const p=Pt(2*PI*j/96,r/8);if(p[2]<0)cur.push(p);else fl()}fl()}
+ let tn=1e9,tx=-1e9;for(let j=0;j<=96;j++){const p=Pt(2*PI*j/96,1);tn=Math.min(tn,p[0]);tx=Math.max(tx,p[0])}
+ const tc=(tn+tx)/2,wb=(tx-tn)*.13,yr=by-(HT+10)*k,yt=by-(HT+10+aH)*k,ant=`M${f(tc-wb/2)} ${f(yr)}L${f(tc-wb*.12)} ${f(yt)}L${f(tc+wb*.12)} ${f(yt)}L${f(tc+wb/2)} ${f(yr)}Z`;
+ const u='ct'+(v?'v':'u'),col=v?'#4b2fd6':'#fff',fg=v?'#fff':'#4b2fd6';
+ return `<svg viewBox="-3 -12 46 67" width="46" height="67"><defs><clipPath id="${u}c"><path d="${body}"/></clipPath><filter id="${u}s" x="-30%" y="-20%" width="160%" height="150%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#1b1238" flood-opacity=".25"/></filter></defs>`+
+  `<path d="M20 51C10.5 40.6 4 33 4 24.5A16 16 0 0 1 36 24.5C36 33 29.5 40.6 20 51Z" fill="${col}" stroke="${v?'#fff':'#4b2fd6'}" stroke-width="2" filter="url(#${u}s)"/>`+
+  `<path d="${body}" fill="${fg}" stroke="${col}" stroke-width="1.6" paint-order="stroke" stroke-linejoin="round"/><g clip-path="url(#${u}c)" fill="none" stroke="${col}"><path d="${cols}" stroke-width=".45" opacity=".6"/><path d="${rings}" stroke-width=".4" opacity=".45"/></g>`+
+  `<path d="${ant}" fill="${fg}" stroke="${col}" stroke-width="1.2" paint-order="stroke"/>`+(v?'<circle cx="34.5" cy="17" r="4.2" fill="#c8f43c" stroke="#fff" stroke-width="1.5"/>':'')+'</svg>'}
+
+// ---------- сборка данных района из OpenStreetMap (один раз, потом из кэша) ----------
+function build3d(J,BB){
+const [S,Wd,N,E]=BB,O=[+((Wd+E)/2).toFixed(4),+((S+N)/2).toFixed(4)],Q=1e6,KXm=Math.cos(O[1]*Math.PI/180)*111320,KYm=110574,M=0.012;
+const TC=[113.31915,23.10902];
+const q=p=>[Math.round((Math.max(Wd-M,Math.min(E+M,p.lon))-O[0])*Q),Math.round((Math.max(S-M,Math.min(N+M,p.lat))-O[1])*Q)];
+const mx=a=>a[0]/Q*KXm,my=a=>a[1]/Q*KYm;
+function dd(p){const o=[];for(const v of p){const l=o[o.length-1];if(!l||l[0]!==v[0]||l[1]!==v[1])o.push(v)}return o}
+function dp0(p,tol){if(p.length<3)return p;const k=new Uint8Array(p.length);k[0]=k[p.length-1]=1;const st=[[0,p.length-1]];
+ while(st.length){const [a,b]=st.pop();let md=-1,mi=-1;const x1=mx(p[a]),y1=my(p[a]),x2=mx(p[b]),y2=my(p[b]),dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+  for(let i=a+1;i<b;i++){const X=mx(p[i]),Y=my(p[i]);const d=L>0?Math.abs(dy*(X-x1)-dx*(Y-y1))/L:Math.hypot(X-x1,Y-y1);if(d>md){md=d;mi=i}}
+  if(md>tol){k[mi]=1;st.push([a,mi],[mi,b])}}
+ return p.filter((_,i)=>k[i])}
+function dp(p,tol){const n=p.length;if(n>3&&p[0][0]===p[n-1][0]&&p[0][1]===p[n-1][1]){let fi=0,fd=-1;for(let i=1;i<n-1;i++){const d=Math.hypot(mx(p[i])-mx(p[0]),my(p[i])-my(p[0]));if(d>fd){fd=d;fi=i}}
+  const a=dp0(p.slice(0,fi+1),tol),b=dp0(p.slice(fi),tol);return a.concat(b.slice(1))}return dp0(p,tol)}
+const geo=(g,tol)=>dp(dd(g.map(q)),tol);
+const flat=p=>p.flat();
+function area(r){let s=0;for(let i=0,j=r.length-1;i<r.length;j=i++)s+=(mx(r[j])*my(r[i])-mx(r[i])*my(r[j]));return s/2}
+function pip(pt,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i],b=r[j];if(((a[1]>pt[1])!==(b[1]>pt[1]))&&(pt[0]<(b[0]-a[0])*(pt[1]-a[1])/(b[1]-a[1])+a[0]))c=!c}return c}
+function join(ws){const segs=ws.map(w=>w.slice()).filter(w=>w.length>1),out=[];const eq=(a,b)=>a[0]===b[0]&&a[1]===b[1];
+ while(segs.length){let cur=segs.shift(),ch=true;
+  while(!eq(cur[0],cur[cur.length-1])&&ch){ch=false;
+   for(let i=0;i<segs.length;i++){const s=segs[i];
+    if(eq(s[0],cur[cur.length-1])){cur=cur.concat(s.slice(1))}
+    else if(eq(s[s.length-1],cur[cur.length-1])){cur=cur.concat(s.slice().reverse().slice(1))}
+    else if(eq(s[s.length-1],cur[0])){cur=s.concat(cur.slice(1))}
+    else if(eq(s[0],cur[0])){cur=s.slice().reverse().concat(cur.slice(1))}
+    else continue;segs.splice(i,1);ch=true;break}}
+  if(!eq(cur[0],cur[cur.length-1]))cur.push(cur[0]);
+  if(cur.length>=4)out.push(cur)}
+ return out}
+// полигоны элемента: массив [outer, ...holes]
+function polys(e,tol){
+ if(e.type==='way'){if(!e.geometry)return [];const r=geo(e.geometry,tol);if(r.length<4||r[0][0]!==r[r.length-1][0]||r[0][1]!==r[r.length-1][1])return [];return [[r]]}
+ if(e.type==='relation'){const mem=(e.members||[]).filter(m=>m.type==='way'&&m.geometry);
+  const outs=join(mem.filter(m=>m.role!=='inner').map(m=>dd(m.geometry.map(q)))).map(r=>dp(r,tol)).filter(r=>r.length>=4);
+  const ins=join(mem.filter(m=>m.role==='inner').map(m=>dd(m.geometry.map(q)))).map(r=>dp(r,tol)).filter(r=>r.length>=4);
+  const P=outs.map(o=>[o]);for(const h of ins){const o=P.find(p=>pip(h[0],p[0]));if(o)o.push(h)}return P}
+ return []}
+const T=(e,k)=>e.tags&&e.tags[k];
+const num=v=>{if(v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null};
+const dist=(lon,lat,a)=>Math.hypot((lon-a[0])*KXm,(lat-a[1])*KYm);
+const cen=r=>{let x=0,y=0;for(const p of r){x+=p[0];y+=p[1]}return [O[0]+x/r.length/Q,O[1]+y/r.length/Q]};
+const out={v:1,o:O,bb:[Wd,S,E,N],bld:[],water:[],green:[],pitch:[],plaza:[],roads:[],canal:[]};
+const RC={motorway:'M',trunk:'M',primary:'M',motorway_link:'l',trunk_link:'l',primary_link:'l',secondary:'S',secondary_link:'l',tertiary:'T',tertiary_link:'T',residential:'m',unclassified:'m',living_street:'m',road:'m',service:'s',footway:'p',pedestrian:'p',path:'p',steps:'p',cycleway:'p',track:'p'};
+const GREEN=new Set(['grass','park','recreation_ground','forest','meadow','village_green','garden','cemetery']);
+const parts=[],blds=[];
+for(const e of J.elements){const t=e.tags||{};
+ if(e.type==='node')continue;
+ if(t.building||t['building:part']){
+  if(String(t.layer||'0').startsWith('-'))continue;
+  if(t.name==='广州塔'||t['name:zh']==='广州塔')continue;
+  for(const pg of polys(e,.5)){const c=cen(pg[0]);if(dist(c[0],c[1],TC)<75)continue;
+   const a=Math.abs(area(pg[0]));let h=num(t.height);if(h==null&&num(t['building:levels'])!=null)h=Math.max(4,num(t['building:levels'])*3.4);
+   const known=h!=null;if(h==null)h=a<300?9:a<1500?16:a<5000?24:30;
+   let b=num(t.min_height);if(b==null&&num(t['building:min_level'])!=null)b=num(t['building:min_level'])*3.4;if(b==null)b=0;
+   const rec={h:Math.round(h*10)/10,b:Math.round(b*10)/10,k:known?1:0,pg,c};(t['building:part']&&!t.building?parts:blds).push(rec)}
+  continue}
+ if(t.natural==='water'||t.waterway==='riverbank'||t.landuse==='reservoir'||t.landuse==='basin'){for(const pg of polys(e,1.5))out.water.push(pg.map(flat));continue}
+ if(t.waterway==='river'||t.waterway==='canal'||t.waterway==='stream'||t.waterway==='drain'){if(e.type==='way'&&e.geometry){const w=t.waterway==='river'?18:t.waterway==='canal'?8:3;out.canal.push([w,flat(geo(e.geometry,1.5))])}continue}
+ if(t.leisure==='pitch'||t.leisure==='stadium'||t.leisure==='track'){for(const pg of polys(e,1))out.pitch.push(pg.map(flat));continue}
+ if(t.leisure==='park'||t.leisure==='garden'||GREEN.has(t.landuse)||t.natural==='wood'||t.natural==='scrub'||t.natural==='grassland'){for(const pg of polys(e,1))out.green.push(pg.map(flat));continue}
+ if(t.highway){const c=RC[t.highway];if(!c||t.tunnel&&t.tunnel!=='no'||t.service==='parking_aisle')continue;
+  if(t.area==='yes'){for(const pg of polys(e,1))out.plaza.push(pg.map(flat));continue}
+  if(e.type==='way'&&e.geometry){const g=geo(e.geometry,1);if(g.length>1)out.roads.push([c,t.bridge&&t.bridge!=='no'?1:0,flat(g)])}}}
+// контур здания не рисуем, если внутри есть части с высотами
+for(const b of blds){if(parts.some(p=>pip([Math.round((p.c[0]-O[0])*Q),Math.round((p.c[1]-O[1])*Q)],b.pg[0])))continue;out.bld.push([b.h,b.b,b.k,b.pg.map(flat)])}
+for(const p of parts)out.bld.push([p.h,p.b,p.k,p.pg.map(flat)]);
+return out}
+const ZB=[23.094,113.308,23.130,113.345],DKEY='og-3d-zj-v1';
+const OVP=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+function ovQuery(){const B=ZB.join(',');return `[out:json][timeout:120];(
+way["building"](${B});relation["building"](${B});way["building:part"](${B});relation["building:part"](${B});
+way["natural"="water"](${B});relation["natural"="water"](${B});way["waterway"~"river|riverbank|canal|stream"](${B});way["landuse"~"reservoir|basin"](${B});
+way["leisure"~"park|garden|pitch|stadium|track"](${B});relation["leisure"~"park|garden"](${B});
+way["landuse"~"grass|park|recreation_ground|forest|meadow|village_green|cemetery"](${B});relation["landuse"~"grass|park|forest"](${B});
+way["natural"~"wood|scrub|grassland"](${B});
+way["highway"](${B});
+);out geom;`}
+async function loadData(){
+ try{const c=localStorage.getItem(DKEY);if(c)return JSON.parse(c)}catch(e){}
+ try{const r=await fetch('3d-zhujiang.json',{cache:'no-cache'});if(r.ok)return await r.json()}catch(e){}
+ $('load').textContent='Скачиваю дома района из OpenStreetMap. Это нужно только один раз…';
+ let J=null,err='';
+ for(const u of OVP){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),90000);
+   const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(ovQuery()),headers:{'content-type':'application/x-www-form-urlencoded'},signal:ac.signal});clearTimeout(tm);
+   if(!r.ok){err='сервер ответил '+r.status;continue}J=await r.json();if(J&&J.elements&&J.elements.length)break;J=null}catch(e){err=e.message}}
+ if(!J)throw new Error('не удалось скачать данные ('+err+')');
+ $('load').textContent='Собираю 3D-район…';await new Promise(r=>setTimeout(r,30));
+ const d=build3d(J,ZB);try{localStorage.setItem(DKEY,JSON.stringify(d))}catch(e){}return d}
+
+// ---------- данные района ----------
+let D=null,O=null,KXm=0;const KYm=110574,Q=1e6;
+const toLL=(x,y)=>[+(O[0]+x/Q).toFixed(6),+(O[1]+y/Q).toFixed(6)];
+const ring=a=>{const r=[];for(let i=0;i<a.length;i+=2)r.push(toLL(a[i],a[i+1]));return r};
+const FC=f=>({type:'FeatureCollection',features:f});
+const polyF=(pg,props)=>({type:'Feature',properties:props||{},geometry:{type:'Polygon',coordinates:pg.map(ring)}});
+const RW={M:22,S:16,T:12,l:9,m:8,s:5,p:3};
+// метры <-> градусы вокруг района
+const mLon=m=>m/KXm,mLat=m=>m/KYm;
+
+// ---------- модель башни: наклонённые эллипсы гиперболоида, слоями ----------
+const TC=[113.31915,23.10902],TA0=40,TB0=30,TA1=27,TB1=21,THT=454,TPH=135*PI/180,TAZ=-30*PI/180;
+function towerSec(t,scale){const pts=[];for(let j=0;j<=40;j++){const th=2*PI*j/40;const x0=TA0*Math.cos(th),y0=TB0*Math.sin(th),x1=TA1*Math.cos(th+TPH),y1=TB1*Math.sin(th+TPH);
+  let X=(x0+(x1-x0)*t)*(scale||1),Y=(y0+(y1-y0)*t)*(scale||1);const ex=X*Math.cos(TAZ)-Y*Math.sin(TAZ),ny=X*Math.sin(TAZ)+Y*Math.cos(TAZ);
+  pts.push([TC[0]+mLon(ex),TC[1]+mLat(ny)])}pts[pts.length-1]=pts[0];return pts}
+function towerFeatures(){const f=[],n=46;
+ for(let k=0;k<n;k++){const t=(k+.5)/n;f.push({type:'Feature',properties:{b:THT*k/n,h:THT*(k+1)/n+.3},geometry:{type:'Polygon',coordinates:[towerSec(t)]}})}
+ f.push({type:'Feature',properties:{b:THT,h:THT+12},geometry:{type:'Polygon',coordinates:[towerSec(1,.72)]}});
+ const circ=(r,cx,cy)=>{const p=[];for(let j=0;j<=16;j++){const a=2*PI*j/16;p.push([cx+mLon(r*Math.cos(a)),cy+mLat(r*Math.sin(a))])}p[16]=p[0];return p};
+ for(let k=0;k<8;k++){const z0=THT+12+k*16.5,r=5.5-k*.6;f.push({type:'Feature',properties:{b:z0,h:z0+16.5},geometry:{type:'Polygon',coordinates:[circ(r,TC[0],TC[1])]}})}
+ return f}
+
+// ---------- тени (канвас на земле) и туман (канвас на земле) ----------
+let GB=null,FW=0,FH=0,fogCv,fogCtx,shCv;
+const FOG_M=3,SH_M=2.5,SUN_E=Math.cos(40*PI/180),SUN_N=Math.sin(40*PI/180),SK=.4;
+function gx(lon,res){return (lon-GB[0])*KXm/res}function gy(lat,res){return (GB[3]-lat)*KYm/res}
+function hull(pts){pts=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);const lo=[],up=[];
+ for(const p of pts){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}
+ for(let i=pts.length-1;i>=0;i--){const p=pts[i];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)}
+ up.pop();lo.pop();return lo.concat(up)}
+function drawShadows(){const W=Math.ceil((GB[2]-GB[0])*KXm/SH_M),H=Math.ceil((GB[3]-GB[1])*KYm/SH_M);shCv=document.createElement('canvas');shCv.width=W;shCv.height=H;
+ const g=shCv.getContext('2d');g.fillStyle='#1d2338';const X=l=>gx(l,SH_M),Y=l=>gy(l,SH_M);
+ const shp=(pts,h)=>{const dx=h*SK*SUN_E/SH_M,dy=-h*SK*SUN_N/SH_M;const a=pts.map(p=>[X(p[0]),Y(p[1])]);
+  g.beginPath();a.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();a.forEach((p,i)=>i?g.lineTo(p[0]+dx,p[1]+dy):g.moveTo(p[0]+dx,p[1]+dy));g.closePath();
+  for(let i=0;i<a.length-1;i++){const p=a[i],q=a[i+1];g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1]);g.lineTo(q[0]+dx,q[1]+dy);g.lineTo(p[0]+dx,p[1]+dy);g.closePath()}
+  g.fill('nonzero')};
+ for(const b of D.bld){if(b[1]>2)continue;shp(ring(b[3][0]),b[0])}
+ // башня: оболочка между соседними сечениями
+ const n=24;for(let k=0;k<n;k++){const pts=[];for(const t of[k/n,(k+1)/n]){const z=THT*t;for(const p of towerSec(t))pts.push([X(p[0])+z*SK*SUN_E/SH_M,Y(p[1])-z*SK*SUN_N/SH_M])}
+  const h=hull(pts);g.beginPath();h.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill()}
+ g.lineWidth=3;g.strokeStyle='#1d2338';g.beginPath();const tx=X(TC[0]),ty=Y(TC[1]);g.moveTo(tx+THT*SK*SUN_E/SH_M,ty-THT*SK*SUN_N/SH_M);g.lineTo(tx+600*SK*SUN_E/SH_M,ty-600*SK*SUN_N/SH_M);g.stroke()}
+// кисти тумана — как в основной карте
+const brush=document.createElement('canvas');brush.width=brush.height=128;
+{const b=brush.getContext('2d'),g=b.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.3,'rgba(0,0,0,.92)');g.addColorStop(.6,'rgba(0,0,0,.5)');g.addColorStop(.82,'rgba(0,0,0,.15)');g.addColorStop(1,'rgba(0,0,0,0)');b.fillStyle=g;b.fillRect(0,0,128,128)}
+const brushD=document.createElement('canvas');brushD.width=brushD.height=256;
+{const b=brushD.getContext('2d'),g=b.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.72,'rgba(0,0,0,1)');g.addColorStop(.9,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,0)');b.fillStyle=g;b.fillRect(0,0,256,256)}
+function cellLL(k){const [i,j]=k.split(',').map(Number);return U({x:(i+.5)*CELL,y:(j+.5)*CELL})}
+function cutCell(k){const [la,lo]=cellLL(k);const x=gx(lo,FOG_M),y=gy(la,FOG_M),r=REVEAL*1.35/FOG_M;if(x<-r||y<-r||x>FW+r||y>FH+r)return false;fogCtx.drawImage(brush,x-r,y-r,2*r,2*r);return true}
+function drawFog(){FW=Math.ceil((GB[2]-GB[0])*KXm/FOG_M);FH=Math.ceil((GB[3]-GB[1])*KYm/FOG_M);
+ if(!fogCv){fogCv=document.createElement('canvas')}fogCv.width=FW;fogCv.height=FH;fogCtx=fogCv.getContext('2d',{willReadFrequently:true});
+ fogCtx.globalCompositeOperation='source-over';fogCtx.fillStyle='rgba(247,247,245,.93)';fogCtx.fillRect(0,0,FW,FH);
+ // лёгкие облачные пятна
+ for(let i=0;i<260;i++){const x=Math.random()*FW,y=Math.random()*FH,r=20+Math.random()*60,g=fogCtx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(170,176,190,.05)');g.addColorStop(1,'rgba(170,176,190,0)');fogCtx.fillStyle=g;fogCtx.fillRect(x-r,y-r,2*r,2*r)}
+ fogCtx.globalCompositeOperation='destination-out';
+ for(const k of reveal)cutCell(k);
+ for(const p of POIS){if(!visited.has(p.id))continue;const r=DISC_R*1.05/FOG_M;fogCtx.drawImage(brushD,gx(p.lon,FOG_M)-r,gy(p.lat,FOG_M)-r,2*r,2*r)}
+ fogCtx.globalCompositeOperation='source-over'}
+function fogAt(lon,lat){const x=Math.floor(gx(lon,FOG_M)),y=Math.floor(gy(lat,FOG_M));if(x<0||y<0||x>=FW||y>=FH)return 255;return fogCtx.getImageData(x,y,1,1).data[3]}
+
+// ---------- карта ----------
+let map,BLD=null,fogOn=true;
+function bldFC(){const f=[];for(let i=0;i<D.bld.length;i++){const b=D.bld[i];f.push(polyF(b[3],{h:b[0],b:b[1],x:BLD?BLD[i]:0}))}return FC(f)}
+function explored(i){const b=D.bld[i],r=b[3][0];let x=0,y=0,n=0;for(let k=0;k<r.length;k+=2){x+=r[k];y+=r[k+1];n++}const c=toLL(x/n,y/n);return fogAt(c[0],c[1])<110?1:0}
+function refreshExplored(){if(!D)return;const nb=D.bld.map((_,i)=>fogOn?explored(i):1);let ch=!BLD;if(BLD)for(let i=0;i<nb.length;i++)if(nb[i]!==BLD[i]){ch=true;break}BLD=nb;
+ if(ch&&map.getSource('bld'))map.getSource('bld').setData(bldFC());
+ const tx=fogOn?(fogAt(TC[0],TC[1])<110?1:0):1;
+ if(map.getLayer('tower')){map.setLayoutProperty('tower','visibility',tx?'visible':'none');map.setLayoutProperty('tower-g','visibility',tx?'none':'visible')}}
+function refreshFog(){const s=map.getSource('fog');if(s&&s.play){s.play();s.pause();map.triggerRepaint()}}
+async function init(){
+ D=await loadData();O=D.o;KXm=Math.cos(O[1]*PI/180)*111320;
+ const M=0.004;GB=[D.bb[0]-M,D.bb[1]-M,D.bb[2]+M,D.bb[3]+M];
+ drawFog();drawShadows();
+ const corners=[[GB[0],GB[3]],[GB[2],GB[3]],[GB[2],GB[1]],[GB[0],GB[1]]];
+ const roads=[],paths=[];for(const rd of D.roads){const f={type:'Feature',properties:{w:RW[rd[0]]||6,c:rd[0]},geometry:{type:'LineString',coordinates:ring(rd[2])}};(rd[0]==='p'?paths:roads).push(f)}
+ const canal=D.canal.map(c=>({type:'Feature',properties:{w:c[0]},geometry:{type:'LineString',coordinates:ring(c[1])}}));
+ const zone={type:'Feature',properties:{},geometry:{type:'LineString',coordinates:[[D.bb[0],D.bb[1]],[D.bb[2],D.bb[1]],[D.bb[2],D.bb[3]],[D.bb[0],D.bb[3]],[D.bb[0],D.bb[1]]]}};
+ // ширина в метрах -> пиксели на любом зуме
+ const mpp=78271.517*Math.cos(O[1]*PI/180);const W=(add)=>['interpolate',['exponential',2],['zoom'],10,['/',['+',['get','w'],add],mpp/1024],22,['/',['+',['get','w'],add],mpp/4194304]];
+ map=new maplibregl.Map({container:'map',attributionControl:{compact:true,customAttribution:'© OpenStreetMap'},
+  style:{version:8,sources:{
+   water:{type:'geojson',data:FC(D.water.map(p=>polyF(p)))},green:{type:'geojson',data:FC(D.green.map(p=>polyF(p)))},
+   pitch:{type:'geojson',data:FC(D.pitch.map(p=>polyF(p)))},plaza:{type:'geojson',data:FC(D.plaza.map(p=>polyF(p)))},
+   roads:{type:'geojson',data:FC(roads)},paths:{type:'geojson',data:FC(paths)},canal:{type:'geojson',data:FC(canal)},zone:{type:'geojson',data:FC([zone])},
+   shadow:{type:'canvas',canvas:shCv,coordinates:corners,animate:false},fog:{type:'canvas',canvas:fogCv,coordinates:corners,animate:false},
+   bld:{type:'geojson',data:FC([])},tower:{type:'geojson',data:FC(towerFeatures())}},
+  layers:[
+   {id:'bg',type:'background',paint:{'background-color':'#efefec'}},
+   {id:'green',type:'fill',source:'green',paint:{'fill-color':'#e1e7da'}},
+   {id:'pitch',type:'fill',source:'pitch',paint:{'fill-color':'#d9e3d1'}},
+   {id:'water',type:'fill',source:'water',paint:{'fill-color':'#d3dce3'}},
+   {id:'canal',type:'line',source:'canal',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#d3dce3','line-width':W(0)}},
+   {id:'plaza',type:'fill',source:'plaza',paint:{'fill-color':'#f7f7f5'}},
+   {id:'road-case',type:'line',source:'roads',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#e0e0e3','line-width':W(3)}},
+   {id:'paths',type:'line',source:'paths',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fbfbfa','line-width':W(0)}},
+   {id:'roads',type:'line',source:'roads',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffffff','line-width':W(0)}},
+   {id:'shadow',type:'raster',source:'shadow',paint:{'raster-opacity':.15,'raster-fade-duration':0,'raster-resampling':'linear'}},
+   {id:'fog',type:'raster',source:'fog',paint:{'raster-opacity':1,'raster-fade-duration':0,'raster-resampling':'linear'}},
+   {id:'zone',type:'line',source:'zone',paint:{'line-color':'#b9b6c8','line-width':1.2,'line-dasharray':[3,3]}},
+   {id:'bld-g',type:'fill-extrusion',source:'bld',filter:['==',['get','x'],0],paint:{'fill-extrusion-color':'#f4f4f5','fill-extrusion-height':['get','h'],'fill-extrusion-base':['get','b'],'fill-extrusion-opacity':.5}},
+   {id:'tower-g',type:'fill-extrusion',source:'tower',layout:{visibility:'none'},paint:{'fill-extrusion-color':'#f4f4f5','fill-extrusion-height':['get','h'],'fill-extrusion-base':['get','b'],'fill-extrusion-opacity':.5}},
+   {id:'bld',type:'fill-extrusion',source:'bld',filter:['==',['get','x'],1],paint:{'fill-extrusion-color':'#ffffff','fill-extrusion-height':['get','h'],'fill-extrusion-base':['get','b'],'fill-extrusion-opacity':1,'fill-extrusion-vertical-gradient':true}},
+   {id:'tower',type:'fill-extrusion',source:'tower',paint:{'fill-extrusion-color':'#ffffff','fill-extrusion-height':['get','h'],'fill-extrusion-base':['get','b'],'fill-extrusion-opacity':1}}
+  ],light:{anchor:'viewport',color:'#ffffff',intensity:.3,position:[1.25,200,35]},
+  sky:{'sky-color':'#f2f2f0','horizon-color':'#f2f2f0','fog-color':'#f2f2f0','fog-ground-blend':.55,'horizon-fog-blend':.7,'sky-horizon-blend':.6,'atmosphere-blend':0}},
+  center:[113.3208,23.1118],zoom:15.25,pitch:62,bearing:-14,maxPitch:78,minZoom:13.5,maxZoom:19.5,
+  maxBounds:[[GB[0]-.03,GB[1]-.03],[GB[2]+.03,GB[3]+.03]],fadeDuration:0});
+ window.__map=map;
+ map.on('load',()=>{refreshExplored();$('load').classList.add('off');addMarkers();startGps()});
+ map.on('rotate',()=>{$('compassIc').style.transform=`rotate(${-map.getBearing()}deg)`});
+ map.on('dragstart',()=>setFollow(false));
+}
+// ---------- метки ----------
+const MK={};
+function addMarkers(){for(const p of POIS){const el=document.createElement('div');el.className='mk';
+  const v=visited.has(p.id);
+  if(p.land){el.className='lm';el.innerHTML=ctSvg(v)+`<span class="lb">${p.name}</span>`}
+  else el.innerHTML=`<div class="pm${v?' v':''}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${p.ic}"/></svg></div><span class="lb">${p.name}</span>`;
+  el.setAttribute('role','img');el.setAttribute('aria-label',p.name+(v?', открыто':''));
+  const m=new maplibregl.Marker({element:el,anchor:p.land?'bottom':'left',offset:p.land?[0,4]:[-14,0]}).setLngLat([p.lon,p.lat]).addTo(map);MK[p.id]={m,el,p}}}
+function markVisited(p){const o=MK[p.id];if(!o)return;if(p.land)o.el.innerHTML=ctSvg(true)+`<span class="lb">${p.name}</span>`;else o.el.querySelector('.pm').classList.add('v')}
+// ---------- GPS и открытие тумана ----------
+let meM=null,me=null,follow=false,lastP=null;
+function setFollow(v){follow=v;$('meBtn').classList.toggle('follow',v)}
+function inZone(lon,lat){return D&&lon>D.bb[0]&&lon<D.bb[2]&&lat>D.bb[1]&&lat<D.bb[3]}
+function persist(newCells,newVisits,addPts){const s=readJ(STORE,{});const r=new Set(s.r||[]);newCells.forEach(k=>r.add(k));s.r=[...r];
+ if(newVisits.length){const v=new Set(s.v||[]);newVisits.forEach(id=>v.add(id));s.v=[...v];s.p=(s.p||0)+addPts}writeJ(STORE,s);
+ const q=readJ(QK,{cells:[],visits:[],marks:[],del:[],owner:null});const qc=new Set(q.cells||[]);newCells.forEach(k=>qc.add(k));q.cells=[...qc];
+ if(newVisits.length){const qv=new Set(q.visits||[]);newVisits.forEach(id=>qv.add(id));q.visits=[...qv]}writeJ(QK,q)}
+function onFix(lat,lon,acc){me=[lon,lat];
+ if(!meM){const el=document.createElement('div');el.className='me';el.setAttribute('role','img');el.setAttribute('aria-label','Вы здесь');meM=new maplibregl.Marker({element:el}).setLngLat(me).addTo(map)}else meM.setLngLat(me);
+ if(follow)map.easeTo({center:me,duration:900});
+ if(acc>50)return;
+ const p=P(lat,lon),nc=[];
+ const add=q=>{const k=Math.floor(q.x/CELL)+','+Math.floor(q.y/CELL);if(!reveal.has(k)){reveal.add(k);nc.push(k)}};
+ if(lastP){const d=Math.hypot(p.x-lastP.x,p.y-lastP.y);if(d>0&&d<300){const n=Math.ceil(d/15);for(let i=1;i<=n;i++)add({x:lastP.x+(p.x-lastP.x)*i/n,y:lastP.y+(p.y-lastP.y)*i/n})}else add(p)}else add(p);lastP=p;
+ const nv=[];let pts=0;for(const q of POIS){if(visited.has(q.id))continue;const qq=P(q.lat,q.lon);if(Math.hypot(qq.x-p.x,qq.y-p.y)<=DISCOVER){visited.add(q.id);nv.push(q.id);pts+=q.pts;markVisited(q);toast(`<b>${q.name}</b><br>Место открыто, +${q.pts} очков`)}}
+ if(!nc.length&&!nv.length)return;persist(nc,nv,pts);
+ if(nv.length)drawFog();else{fogCtx.globalCompositeOperation='destination-out';nc.forEach(cutCell);fogCtx.globalCompositeOperation='source-over'}
+ refreshFog();refreshExplored()}
+function startGps(){if(!navigator.geolocation)return;navigator.geolocation.watchPosition(ps=>onFix(ps.coords.latitude,ps.coords.longitude,ps.coords.accuracy||99),()=>{},{enableHighAccuracy:true,maximumAge:3000,timeout:20000})}
+// ---------- кнопки ----------
+$('compassBtn').onclick=()=>map.easeTo({bearing:0,duration:600});
+$('pitchBtn').onclick=()=>{const up=map.getPitch()<20;map.easeTo({pitch:up?62:0,duration:800});$('pitchBtn').classList.toggle('on',up);$('pitchBtn').textContent=up?'3D':'2D'};
+$('fogBtn').onclick=()=>{fogOn=!fogOn;$('fogBtn').classList.toggle('on',fogOn);map.setLayoutProperty('fog','visibility',fogOn?'visible':'none');refreshExplored();toast(fogOn?'Туман включён':'Туман скрыт: весь район целиком')};
+$('meBtn').onclick=()=>{if(!me){toast('Жду сигнал GPS…');return}if(!inZone(me[0],me[1])){toast('Вы сейчас вне тестового района. 3D пока есть только здесь');map.flyTo({center:[113.3208,23.1118],zoom:15.25,pitch:62,bearing:-14});return}setFollow(true);map.flyTo({center:me,zoom:Math.max(map.getZoom(),16.5),duration:1200})};
+setTimeout(()=>$('hint').style.opacity=0,9000);$('hint').style.transition='opacity .6s';
+if(location.hostname==='test.local')window.__fix=(la,lo,acc)=>onFix(la,lo,acc||8);
+init().catch(e=>{$('load').textContent='Не получилось загрузить 3D: '+e.message});
+</script>
+</body>
+</html>
