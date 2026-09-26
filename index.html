@@ -119,6 +119,7 @@ button:focus-visible{outline:2px solid var(--me);outline-offset:2px}
 .leaflet-bottom.leaflet-left{bottom:0}
 .leaflet-control-attribution{font-size:9px;opacity:.55;background:transparent!important}
 .leaflet-tile-pane{filter:saturate(.4)}
+#app.soft .leaflet-tile-pane{filter:none}
 #app.amap .leaflet-tile-pane{filter:grayscale(1) contrast(.85) brightness(1.08)}
 .glass{background:var(--panel);background:color-mix(in srgb,var(--panel) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid color-mix(in srgb,var(--ink) 8%,transparent);box-shadow:0 2px 14px rgba(0,0,0,.12)}
 .top{position:absolute;z-index:600;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:5px 14px 5px 5px;border-radius:99px;max-width:calc(100% - 20px);cursor:pointer}
@@ -357,13 +358,13 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
   <div class="toast glass" id="toast"></div>
   <input type="file" id="impFile" multiple accept=".gpx,.kml,.json,.xml,application/json,application/gpx+xml" hidden>
   <div class="pop glass" id="pop">
-    <h4>Карта</h4><button class="opt" data-base="carto">Улицы</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><a class="opt" href="3d.html" style="text-decoration:none;color:inherit;box-sizing:border-box"><span style="font-size:11px;font-weight:700;color:#fff;background:#4b2fd6;border-radius:99px;padding:2px 7px">3D</span>Район в 3D · тест</a><hr><h4>Тема</h4><button class="opt" data-theme-set="light">Светлая</button><button class="opt" data-theme-set="dark">Тёмная</button><button class="opt" data-theme-set="auto">Как в системе</button><hr><h4>Достопримечательности</h4>
+    <h4>Карта</h4><button class="opt" data-base="soft">Своя карта</button><button class="opt" data-base="carto">Esri, серая</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><a class="opt" href="3d.html" style="text-decoration:none;color:inherit;box-sizing:border-box"><span style="font-size:11px;font-weight:700;color:#fff;background:#4b2fd6;border-radius:99px;padding:2px 7px">3D</span>Район в 3D · тест</a><hr><h4>Тема</h4><button class="opt" data-theme-set="light">Светлая</button><button class="opt" data-theme-set="dark">Тёмная</button><button class="opt" data-theme-set="auto">Как в системе</button><hr><h4>Достопримечательности</h4>
     <div id="chips">
       <button class="chip" data-l="main" aria-pressed="true"><i style="background:var(--main)"></i>Главное</button>
       <button class="chip" data-l="local" aria-pressed="true"><i style="background:var(--local)"></i>Локальное</button>
       <button class="chip" data-l="food" aria-pressed="true"><i style="background:var(--food)"></i>Поесть</button>
     </div>
-    <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © Esri, OpenStreetMap · маршруты © OSRM / FOSSGIS</p>
+    <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © OpenStreetMap, OpenFreeMap, Esri · маршруты © OSRM / FOSSGIS</p>
   </div>
   <button id="nearPill" style="display:none" hidden></button>
   <div class="rt" id="rt" aria-live="polite"></div>
@@ -391,6 +392,7 @@ window.addEventListener('error',function(e){try{var t=document.getElementById('t
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>window.L||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>')</script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/protomaps-leaflet@5.1.0/dist/protomaps-leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
 <script>window.supabase||document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"><\/script>')</script>
 <script>(()=>{'use strict';
@@ -460,7 +462,7 @@ function w2g(la,lo){if(outCN(la,lo))return[la,lo];let dLa=tLat(lo-105,la-35),dLo
 function g2w(la,lo){const g=w2g(la,lo);return[la*2-g[0],lo*2-g[1]]}
 
 // ---------- state ----------
-let me=P(23.1262,113.2628),target=null,follow=true,mode='sim',watchId=null,acc=0,base='carto';
+let me=P(23.1262,113.2628),target=null,follow=true,mode='sim',watchId=null,acc=0,base='soft';
 const reveal=new Set(),area=new Set(),visited=new Set();let pts=0;
 const layers={main:true,local:true,food:true};
 let tab='near',rankSeg='p',dirty=true,changed=false;
@@ -474,7 +476,7 @@ function qCell(k){pendCells.add(k)}function qVisit(id){pendVisits.add(id);saveQ(
 
 function saveMarks(){try{localStorage.setItem(MSTORE,JSON.stringify(marks.map(({x,y,photoUrl,...m})=>m)));return true}catch(e){toast('<div>Память браузера заполнена. Выгрузите отметки во вкладке «Мои» и удалите старые фото.</div>');return false}}
 try{const s=JSON.parse(localStorage.getItem(STORE)||'null');
- if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['carto','vector','amap'].includes(s.b))base=s.b;if(s.h)document.getElementById('hint').remove();}}catch(e){}
+ if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['soft','carto','vector','amap'].includes(s.b))base=s.b;if(base==='carto'){let m=null;try{m=localStorage.getItem('og-soft-v1')}catch(e){}if(!m){base='soft';try{localStorage.setItem('og-soft-v1','1')}catch(e){}}}if(s.h)document.getElementById('hint').remove();}}catch(e){}
 function save(){try{localStorage.setItem(STORE,JSON.stringify({r:[...reveal],v:[...visited],p:pts,me,b:base,h:!document.getElementById('hint')}))}catch(e){}changed=false}
 const CH=32,chunks=new Map(),born=new Map(),discBorn=new Map(),DISC_R=3000;let areaReady=false;let quiet=false;
 function addCell(k,t){if(reveal.has(k))return false;reveal.add(k);const[i,j]=k.split(',').map(Number);const cx=(i+.5)*CELL,cy=(j+.5)*CELL;
@@ -500,7 +502,51 @@ const mqDark=matchMedia('(prefers-color-scheme: dark)'),isDark=()=>theme==='dark
 const DARKM=isDark();
 const TILES={carto:L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${DARKM?'Dark':'Light'}_Gray_Base/MapServer/tile/{z}/{y}/{x}`,{maxNativeZoom:16,maxZoom:19}),
  amap:L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',{subdomains:'1234',maxZoom:18})};
-const BN={vector:'Схема',carto:'Улицы',amap:'Amap 高德'};
+const BN={soft:'Своя карта',vector:'Схема',carto:'Esri, серая',amap:'Amap 高德'};
+// ---------- своя мягкая карта: векторные данные OpenStreetMap (OpenFreeMap) и наш стиль ----------
+const SOFT_PAL={
+ light:{bg:'#f1f0eb',park:'#dde8d2',wood:'#d3e2c8',pitch:'#d4e5cc',sand:'#efeadc',water:'#bcdcec',edge:'#a6cde3',bld:'#e6e3dc',bldE:'#d8d4ca',road:'#ffffff',cas:'#dfdbd1',maj:'#ffffff',majC:'#d2cdc1',path:'#fcfbf8',rail:'#d2cfc6',lbl:'#8a857a',wl:'#5a8fb0',halo:'#f1f0eb'},
+ dark:{bg:'#1b1924',park:'#1d2921',wood:'#1b261f',pitch:'#1f2e27',sand:'#25222e',water:'#172a3c',edge:'#20384f',bld:'#252230',bldE:'#2d2939',road:'#2b2838',cas:'#211e2b',maj:'#37324d',majC:'#241f36',path:'#292634',rail:'#2e2a3a',lbl:'#8d89a7',wl:'#6a94b8',halo:'#1b1924'}};
+const SOFT_TJ='https://tiles.openfreemap.org/planet';
+let softUrl=(()=>{try{return localStorage.getItem('og-soft-url')}catch(e){return null}})()||'https://tiles.openfreemap.org/planet/20260913_164504_pt/{z}/{x}/{y}.pbf';
+// ширина линии по зуму: плавная интерполяция между опорными точками
+const zw=st=>z=>{if(z<=st[0][0])return st[0][1];for(let i=1;i<st.length;i++){const[z1,w1]=st[i],[z0,w0]=st[i-1];if(z<=z1)return w0*Math.pow(w1/w0,(z-z0)/(z1-z0))}return st[st.length-1][1]};
+function softRules(S){const pm=protomapsL,Poly=pm.PolygonSymbolizer,Line=pm.LineSymbolizer;
+ const has=(...a)=>(z,f)=>a.includes(f.props.class);
+ const RW={maj:zw([[11,.8],[13,2],[15,6],[17,15],[19,40]]),sec:zw([[11,.6],[13,1.6],[15,5],[17,12],[19,33]]),ter:zw([[12,.5],[14,1.8],[16,4.6],[18,12],[19,20]]),
+  min:zw([[13,.4],[15,1.6],[17,4.6],[19,14]]),svc:zw([[14,.4],[16,1.3],[18,3.6],[19,6]]),path:zw([[14,.3],[16,.8],[18,2],[19,3]])};
+ const MAJ=['motorway','trunk','primary'];
+ const rc=f=>{const c=f.props.class;return MAJ.includes(c)?'maj':c==='secondary'?'sec':c==='tertiary'?'ter':c==='minor'?'min':c==='service'?'svc':(c==='path'||c==='track')?'path':null};
+ const road=bridge=>{const ok=(f,k)=>f.props.brunnel!=='tunnel'&&(f.props.brunnel==='bridge')===bridge&&rc(f)===k,r=[];
+  for(const k of['min','ter','sec','maj'])r.push({dataLayer:'transportation',minzoom:k==='min'?13:0,symbolizer:new Line({color:k==='maj'?S.majC:S.cas,width:z=>RW[k](z)+(z>=15?1.7:1),lineCap:'round',lineJoin:'round'}),filter:(z,f)=>ok(f,k)});
+  for(const k of['path','svc','min','ter','sec','maj'])r.push({dataLayer:'transportation',minzoom:k==='path'?15:k==='svc'?14:0,symbolizer:new Line({color:k==='maj'?S.maj:k==='path'?S.path:S.road,width:RW[k],lineCap:'round',lineJoin:'round'}),filter:(z,f)=>ok(f,k)});
+  return r};
+ const paint=[
+  {dataLayer:'landuse',symbolizer:new Poly({fill:S.pitch}),filter:has('pitch','stadium','track','cemetery','playground')},
+  {dataLayer:'park',symbolizer:new Poly({fill:S.park})},
+  {dataLayer:'landcover',symbolizer:new Poly({fill:S.park}),filter:has('grass','farmland')},
+  {dataLayer:'landcover',symbolizer:new Poly({fill:S.wood}),filter:has('wood','wetland')},
+  {dataLayer:'landcover',symbolizer:new Poly({fill:S.sand}),filter:has('sand','rock')},
+  {dataLayer:'water',symbolizer:new Poly({fill:S.water}),filter:(z,f)=>f.props.class!=='swimming_pool'||z>=16},
+  {dataLayer:'waterway',symbolizer:new Line({color:S.water,lineCap:'round',lineJoin:'round',width:(z,f)=>(f.props.class==='river'?zw([[11,.6],[14,2],[17,8]]):f.props.class==='canal'?zw([[12,.4],[14,1.4],[17,5]]):zw([[13,.3],[15,.9],[17,2]]))(z)}),filter:(z,f)=>f.props.brunnel!=='tunnel'},
+  {dataLayer:'building',minzoom:14,symbolizer:new Poly({fill:S.bld})},
+  {dataLayer:'transportation',minzoom:14,symbolizer:new Line({color:S.rail,width:zw([[14,.6],[17,1.6]])}),filter:(z,f)=>(f.props.class==='rail'||f.props.class==='transit')&&f.props.brunnel!=='tunnel'},
+  ...road(false),...road(true)];
+ const FF='Rubik, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif';
+ const labels=[
+  {dataLayer:'waterway',minzoom:13,symbolizer:new pm.LineLabelSymbolizer({labelProps:['name:ru','name:en','name'],fill:S.wl,stroke:S.halo,width:2.5,fontFamily:FF,fontWeight:500,fontSize:12,fontStyle:'italic',position:pm.LineLabelPlacement.Center,repeatDistance:500}),filter:has('river','canal')},
+  {dataLayer:'water_name',minzoom:13,symbolizer:new pm.CenteredTextSymbolizer({labelProps:['name:ru','name:en','name'],fill:S.wl,stroke:S.halo,width:2.5,fontFamily:FF,fontWeight:500,fontSize:12,fontStyle:'italic'})},
+  {dataLayer:'transportation_name',minzoom:14,symbolizer:new pm.LineLabelSymbolizer({labelProps:['name'],fill:S.lbl,stroke:S.halo,width:3,fontFamily:FF,fontWeight:500,fontSize:11,position:pm.LineLabelPlacement.Center,repeatDistance:320}),filter:has('motorway','trunk','primary','secondary','tertiary')},
+  {dataLayer:'transportation_name',minzoom:16,symbolizer:new pm.LineLabelSymbolizer({labelProps:['name'],fill:S.lbl,stroke:S.halo,width:3,fontFamily:FF,fontWeight:400,fontSize:10.5,position:pm.LineLabelPlacement.Center,repeatDistance:260}),filter:has('minor','service')}];
+ return{paint,labels}}
+function softLayer(){const S=isDark()?SOFT_PAL.dark:SOFT_PAL.light,R=softRules(S);
+ const l=protomapsL.leafletLayer({url:softUrl,maxDataZoom:14,backgroundColor:S.bg,paintRules:R.paint,labelRules:R.labels,devicePixelRatio:Math.min(2,window.devicePixelRatio||1),
+  attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openfreemap.org">OpenFreeMap</a>'});
+ l._softDark=isDark();let n=0;l.on('tileerror',()=>{if(++n===8&&base==='soft')toast(`<div>Своя карта грузится плохо. Переключить на «${BN.carto}»?</div><button data-base="carto">Да</button>`)});return l}
+// свежий адрес данных (OpenFreeMap раз в неделю выпускает новую версию)
+fetch(SOFT_TJ).then(r=>r.json()).then(j=>{const u=j&&j.tiles&&j.tiles[0];if(!u||u===softUrl)return;softUrl=u;try{localStorage.setItem('og-soft-url',u)}catch(e){}if(TILES.soft)softRebuild()}).catch(()=>{});
+function softRebuild(){const on=base==='soft'&&TILES.soft&&map.hasLayer(TILES.soft);if(TILES.soft&&map.hasLayer(TILES.soft))map.removeLayer(TILES.soft);TILES.soft=softLayer();if(on)TILES.soft.addTo(map)}
+TILES.soft=softLayer();
 if(TILES[base])TILES[base].addTo(map);
 map.setView(toM(...U(me)),16);
 ['carto','amap'].forEach(k=>{let n=0;TILES[k].on('tileerror',()=>{if(++n===8&&base===k){const nx=k==='carto'?'amap':'vector';toast(`<div>Карта «${BN[k]}» грузится плохо. Переключить на «${BN[nx]}»?</div><button data-base="${nx}">Да</button>`)}})});
@@ -512,7 +558,7 @@ function buffer(line,w){const pts=line.map(a=>P(a[0],a[1])),L1=[],R1=[];for(let 
  L1.push(U({x:pts[i].x+nx,y:pts[i].y+ny}));R1.push(U({x:pts[i].x-nx,y:pts[i].y-ny}))}return L1.concat(R1.reverse())}
 const PK=[[23.1405,113.2645,520],[23.1297,113.2378,270],[23.183,113.297,1700],[23.104,113.32,230]];
 let baseLayer=null;
-function buildBase(){if(baseLayer)map.removeLayer(baseLayer);const g=L.layerGroup(),full=base==='vector',T=r=>r.map(a=>toM(a[0],a[1]));
+function buildBase(){if(baseLayer)map.removeLayer(baseLayer);{const ap=document.getElementById('app');if(ap)ap.classList.toggle('soft',base==='soft')}const g=L.layerGroup(),full=base==='vector',T=r=>r.map(a=>toM(a[0],a[1]));
  GEO.forEach(d=>d.rings.forEach(r=>L.polygon(T(r),full?{stroke:true,color:C.line,weight:1,opacity:.9,fillColor:C.land,fillOpacity:1,interactive:false}:{stroke:true,color:'#6a55e0',weight:1.2,opacity:.35,dashArray:'4 6',fill:false,interactive:false}).addTo(g)));
  if(full){PK.forEach(p=>L.circle(toM(p[0],p[1]),{radius:p[2],stroke:false,fillColor:C.park,fillOpacity:1,interactive:false}).addTo(g));
   RV.forEach(([l,w])=>L.polygon(T(buffer(l,w)),{stroke:false,fillColor:C.water,fillOpacity:1,interactive:false,smoothFactor:0}).addTo(g))}
@@ -1167,6 +1213,7 @@ window.addEventListener('online',flush);
 // ================= ТЕМА: светлая / тёмная / как в системе =================
 function applyTheme(){const r=document.documentElement;if(theme==='auto')delete r.dataset.theme;else r.dataset.theme=theme;
  const u=`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${isDark()?'Dark':'Light'}_Gray_Base/MapServer/tile/{z}/{y}/{x}`;if(TILES.carto._url!==u)TILES.carto.setUrl(u);
+ if(TILES.soft&&TILES.soft._softDark!==isDark())softRebuild();
  loadColors();try{buildBase()}catch(e){}for(const s of sheets)s.need=true;renderPop();dirty=true}
 mqDark.addEventListener('change',()=>{if(theme==='auto')applyTheme()});
 
