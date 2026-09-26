@@ -337,6 +337,53 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
 .bgs{margin:6px 0 12px;padding-left:20px;font-size:14px;line-height:1.5;color:var(--ink)}
 .bgs li{margin:6px 0}
 .bgok{display:flex;align-items:center;gap:8px;margin:8px 0 12px;padding:10px 12px;border-radius:12px;background:var(--soft);font-size:13px;color:var(--ink)}
+
+/* ---- метки: фото, форма, общие метки, оценки, правки ---- */
+.gal{display:flex;gap:8px;overflow-x:auto;margin:14px 0 2px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.gal .gph{flex:none;width:128px;height:128px;padding:0;border-radius:14px;overflow:hidden;scroll-snap-align:start;background:var(--soft)}
+.gal .gph:only-child{width:100%;height:220px}
+.gal .gph img{display:block;width:100%;height:100%;object-fit:cover}
+.phs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.phs .ph{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--soft)}
+.phs .ph img{display:block;width:100%;height:100%;object-fit:cover}
+.phs .ph button{position:absolute;right:4px;top:4px;width:26px;height:26px;border-radius:50%;background:rgba(27,18,56,.62);color:#fff;font-size:17px;line-height:26px;padding:0}
+.phs .phadd{display:grid;place-items:center;border:1.5px dashed var(--line);background:none;color:var(--muted);font-weight:700;font-size:12.5px;line-height:1.35;text-align:center;cursor:pointer}
+.lbtn{display:block;text-align:center;cursor:pointer;box-sizing:border-box}
+.ghost.ok{background:var(--vio);color:#fff}
+.sw{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:14px;background:var(--soft);cursor:pointer}
+.sw input{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:99px;background:var(--line);position:relative;flex:none;margin:0;transition:background .2s}
+.sw input::after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw input:checked{background:var(--vio)}
+.sw input:checked::after{transform:translateX(18px)}
+.sw>span{font-size:14.5px;font-weight:700;line-height:1.3}
+.sw small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:2px}
+.lbx{position:fixed;inset:0;z-index:2000;background:rgba(10,8,20,.94);display:none;place-items:center;padding:16px}
+.lbx.on{display:grid}
+.lbx img{max-width:100%;max-height:100%;border-radius:12px}
+#mvPin{position:absolute;left:50%;top:50%;z-index:630;margin:-44px 0 0 -17px;display:none;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(27,18,56,.35))}
+#app.moving #mvPin{display:block}
+#app.moving .dock,#app.moving #rt{display:none!important}
+#mvBar .acts .ghost{margin-top:0}
+.ogmk .lb .rb{font-weight:700;color:#b7791f;margin-left:4px}
+:root[data-theme="dark"] .ogmk .lb .rb{color:#ffc53d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ogmk .lb .rb{color:#ffc53d}}
+.ogmk.hot .pm{box-shadow:0 0 0 3px #ffc53d,0 0 16px 3px rgba(255,186,30,.75)}
+.ogmk.rated.hot .pm{background:#ffc53d;border-color:#fff;color:#fff}
+.ogmk.land.hot>div:first-child{filter:drop-shadow(0 0 3px #ffc53d) drop-shadow(0 0 7px rgba(255,186,30,.9))}
+.z15 .ogmk.hot .lb{display:block}
+.sec{margin:16px 4px 2px;font:700 12.5px Rubik,sans-serif;color:var(--muted)}
+.sheet .body>.sec:first-child{margin-top:4px}
+.dot.hotdot{color:#d18a00;background:#fff3cf}
+:root[data-theme="dark"] .dot.hotdot{background:rgba(255,197,61,.16);color:#ffc53d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dot.hotdot{background:rgba(255,197,61,.16);color:#ffc53d}}
+.tag.hotg{background:#ffc53d;color:#1b1238}
+.hotnote{margin-top:4px}
+.sg{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}
+.sg>b{display:block;font-size:15px}
+.sg>span{font-size:12.5px;color:var(--muted)}
+.sg ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;line-height:1.45}
+.sg p{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
+.sg .acts .ghost{margin-top:8px;padding:10px 6px;font-size:13.5px}
 </style>
 <script>try{var t=localStorage.getItem('og-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -359,10 +406,12 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
       <button class="chip" data-l="local" aria-pressed="true"><i style="background:var(--local)"></i>Локальное</button>
       <button class="chip" data-l="food" aria-pressed="true"><i style="background:var(--food)"></i>Поесть</button>
     </div>
-    <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © OpenStreetMap, OpenFreeMap, Esri · маршруты © OSRM / FOSSGIS</p>
+    <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="fogBtn">Туман</button><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © OpenStreetMap, OpenFreeMap, Esri · маршруты © OSRM / FOSSGIS</p>
   </div>
   <button id="nearPill" style="display:none" hidden></button>
   <div class="rt" id="rt" aria-live="polite"></div>
+  <div class="rt" id="mvBar" aria-live="polite"></div>
+  <svg id="mvPin" width="34" height="44" viewBox="-17 -42 34 44" aria-hidden="true"><path d="M0 0C-12-14-15-20-15-27a15 15 0 0 1 30 0c0 7-3 13-15 27z" fill="#4b2fd6" stroke="#fff" stroke-width="2.5"/><circle cx="0" cy="-27" r="5.5" fill="#fff"/></svg>
   <nav class="dock" aria-label="Действия">
     <button id="listBtn" aria-label="Все места"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"></path></svg></button>
     <button data-tabopen="mine" aria-label="Мои отметки"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v16l-5-3.5L7 20z"></path></svg></button>
@@ -464,12 +513,22 @@ let tab='near',rankSeg='p',dirty=true,changed=false;
 const MSTORE='otkroy-gorod-gz-marks';let marks=[];try{marks=JSON.parse(localStorage.getItem(MSTORE)||'[]')}catch(e){}
 marks.forEach(m=>Object.assign(m,P(m.lat,m.lon)));
 const MT={place:{e:'📍',n:'Место'},egg:{e:'✨',n:'Пасхалка'},food:{e:'🍜',n:'Еда'}};
+// ---- общие метки, оценки, правки: состояние (объявлено заранее, чтобы было доступно при запуске) ----
+const PUB_COL='#12a594',GOLD='#f5a524',POP_N=3,POP_AVG=4,MAXPH=8;
+let isAdmin=false,meUid=null,pubMarks=[],pstats=new Map(),OVR=new Map(),RATED=[],sugIn=[],sugMine=[],sugToast=false,cur=null,galList=[],moveMode=null,sdraft=null;
+let fogOn=(()=>{try{return localStorage.getItem('og-fog')!=='0'}catch(e){return true}})();
+// у метки теперь несколько фото: {d: снимок в памяти, p: путь в облаке, u: временная ссылка}
+function normMark(m){if(!Array.isArray(m.photos)){m.photos=[];if(m.photo||m.photo_path){const ph={};if(m.photo)ph.d=m.photo;if(m.photo_path)ph.p=m.photo_path;if(m.photoUrl)ph.u=m.photoUrl;m.photos.push(ph)}}delete m.photo;delete m.photo_path;delete m.photoUrl;return m}
+marks.forEach(normMark);
+try{pubMarks=JSON.parse(localStorage.getItem('og-pub')||'[]').map(r=>Object.assign(r,P(r.lat,r.lon)))}catch(e){pubMarks=[]}
+try{pstats=new Map(JSON.parse(localStorage.getItem('og-pst')||'[]').map(r=>[r.poi_id,r]))}catch(e){}
+try{OVR=new Map(JSON.parse(localStorage.getItem('og-ovr')||'[]').map(r=>[r.poi_id,r]))}catch(e){}
 const QK='og-sync-v1';let Q={cells:[],visits:[],marks:[],del:[],owner:null};try{Q=Object.assign(Q,JSON.parse(localStorage.getItem(QK)||'{}'))}catch(e){}
 const pendCells=new Set(Q.cells),pendVisits=new Set(Q.visits),pendMarks=new Set(Q.marks),pendDel=new Set(Q.del);
 function saveQ(){try{localStorage.setItem(QK,JSON.stringify({cells:[...pendCells],visits:[...pendVisits],marks:[...pendMarks],del:[...pendDel],owner:Q.owner}))}catch(e){}}
 function qCell(k){pendCells.add(k)}function qVisit(id){pendVisits.add(id);saveQ()}function qMark(id){pendMarks.add(id);pendDel.delete(id);saveQ()}function qDel(id){pendMarks.delete(id);pendDel.add(id);saveQ()}
 
-function saveMarks(){try{localStorage.setItem(MSTORE,JSON.stringify(marks.map(({x,y,photoUrl,...m})=>m)));return true}catch(e){toast('<div>Память браузера заполнена. Выгрузите отметки во вкладке «Мои» и удалите старые фото.</div>');return false}}
+function saveMarks(){try{localStorage.setItem(MSTORE,JSON.stringify(marks.map(({x,y,photoUrl,...m})=>Object.assign(m,{photos:(m.photos||[]).map(({u,tried,...r})=>r)}))));return true}catch(e){toast('<div>Память браузера заполнена. Выгрузите отметки во вкладке «Мои» и удалите старые фото.</div>');return false}}
 try{const s=JSON.parse(localStorage.getItem(STORE)||'null');
  if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['soft','carto','vector','amap'].includes(s.b))base=s.b;if(base==='carto'){let m=null;try{m=localStorage.getItem('og-soft-v1')}catch(e){}if(!m){base='soft';try{localStorage.setItem('og-soft-v1','1')}catch(e){}}}}}catch(e){}
 function save(){try{localStorage.setItem(STORE,JSON.stringify({r:[...reveal],v:[...visited],p:pts,me,b:base}))}catch(e){}changed=false}
@@ -662,7 +721,7 @@ map.getContainer().addEventListener('pointerdown',zStop,true);
 map.on('dblclick',e=>zoomTo((zA.on?zA.tz:map.getZoom())+(e.originalEvent&&e.originalEvent.shiftKey?-1:1),e.containerPoint));
 map.on('dragstart',()=>{follow=false});
 map.on('click',e=>tap(e.containerPoint.x,e.containerPoint.y));
-map.on('contextmenu',e=>{if(e.originalEvent&&e.originalEvent.preventDefault)e.originalEvent.preventDefault();const ll=fromM(e.latlng);openPin(P(ll[0],ll[1]))});
+map.on('contextmenu',e=>{if(moveMode)return;if(e.originalEvent&&e.originalEvent.preventDefault)e.originalEvent.preventDefault();const ll=fromM(e.latlng);openPin(P(ll[0],ll[1]))});
 
 // ================= СЛОИ: всё лежит внутри самой карты =================
 // Туман и линии (маршрут, метро, границы) — холсты в панели карты, значки и «я» — элементы в панели карты.
@@ -923,20 +982,22 @@ function lmPin(id,v){const S=LMS[id],u='lm'+id+(v?'v':'u'),col=v?'#4b2fd6':'#fff
 const LANDMK={canton:{svg:ctSvg,w:46,h:67,ax:23,ay:63,lx:24,ly:-26.5,dy:-27,r:30}},LMC={};
 for(const id of Object.keys(LMS))LANDMK[id]={svg:v=>lmPin(id,v),w:46,h:67,ax:23,ay:63,lx:24,ly:-26.5,dy:-27,r:30};
 function lmSvg(id,v){const k=id+(v?1:0);return LMC[k]||(LMC[k]=LANDMK[id].svg(v))}
-function poiEl(p,v){const lm=LANDMK[p.id];if(lm)return mkEl('poi land l15',45,`<div style="position:absolute;left:${-lm.ax}px;top:${-lm.ay}px;width:${lm.w}px;height:${lm.h}px">${lmSvg(p.id,v)}</div><span class="lb" style="left:${lm.lx}px;top:${lm.ly}px">${esc(p.name)}</span>`);const r=p.cat==='main'?13:11,c=(CAT[p.cat]||CAT.main).c;return mkEl('poi '+(v?'v ':'')+(p.cat==='main'?'l15':'l16'),p.cat==='main'?40:30,
- `<div class="pm" style="--c:var(${c});width:${2*r}px;height:${2*r}px;left:${-r}px;top:${-r}px">${isvg(p.ic,Math.round(r*1.12),2.3)}</div>${v?`<i class="bd" style="left:${r*.78-6}px;top:${-r*.78-6}px"></i>`:''}<span class="lb" style="left:${r+5}px">${esc(p.name)}</span>`)}
-function markEl(q){return mkEl('mark l16',50,`<div class="pm" style="--c:var(--mine);width:20px;height:20px;left:-10px;top:-10px;background:var(--mine);border-color:#fff;color:#fff">${isvg('mark',11,2.3)}</div><span class="lb" style="left:15px">${esc(q.name)}</span>`)}
-function osmEl(k,it){const L0=OLAY[k];return mkEl('osm l17',10,`<div class="pm" style="--c:${L0.col}">${isvg(L0.ic,11,2.3)}</div>${it.name!==L0.n?`<span class="lb">${esc(it.name)}</span>`:''}`)}
+function poiEl(p,v){const lm=LANDMK[p.id];if(lm)return mkEl('poi land l15'+hotc(p.id),45,`<div style="position:absolute;left:${-lm.ax}px;top:${-lm.ay}px;width:${lm.w}px;height:${lm.h}px">${lmSvg(p.id,v)}</div><span class="lb" style="left:${lm.lx}px;top:${lm.ly}px">${esc(p.name)}${rb(p.id)}</span>`);const r=p.cat==='main'?13:11,c=(CAT[p.cat]||CAT.main).c;return mkEl('poi '+(v?'v ':'')+(p.cat==='main'?'l15':'l16')+hotc(p.id),p.cat==='main'?40:30,
+ `<div class="pm" style="--c:var(${c});width:${2*r}px;height:${2*r}px;left:${-r}px;top:${-r}px">${isvg(p.ic,Math.round(r*1.12),2.3)}</div>${v?`<i class="bd" style="left:${r*.78-6}px;top:${-r*.78-6}px"></i>`:''}<span class="lb" style="left:${r+5}px">${esc(p.name)}${rb(p.id)}</span>`)}
+function markEl(q){return mkEl('mark l16'+hotc(myKey(q)),50,`<div class="pm" style="--c:var(--mine);width:20px;height:20px;left:-10px;top:-10px;background:var(--mine);border-color:#fff;color:#fff">${isvg('mark',11,2.3)}</div><span class="lb" style="left:15px">${esc(q.name)}${rb(myKey(q))}</span>`)}
+function osmEl(k,it){const L0=OLAY[k],id='osm:'+it.id;return mkEl('osm l17'+hotc(id),10,`<div class="pm" style="--c:${L0.col}">${isvg(L0.ic,11,2.3)}</div>${it.name!==L0.n||pstats.has(id)?`<span class="lb">${esc(it.name)}${rb(id)}</span>`:''}`)}
 function metroEl(s2){const ls=s2.lines.length?s2.lines.slice(0,3):[{ref:'M',col:'#2f6feb'}],n=ls.length;
  return mkEl('met l155',20,ls.map((l,i)=>`<i class="mc" style="--i:${i-(n-1)/2};background:${l.col}"><b class="${l.ref.length>2?'s':''}">${esc(l.ref)}</b></i>`).join('')+`<span class="lb">${esc(s2.name)}</span>`)}
 function pinEl(pd){return mkEl('pin',60,`<svg width="24" height="28" viewBox="-12 -13 24 28" style="position:absolute;left:-12px;top:-28px;overflow:visible;filter:drop-shadow(0 2px 3px rgba(27,18,56,.3))"><path d="M0 15C-12 2 -10 -12 0 -12C10 -12 12 2 0 15Z" fill="${pd.col||C.vio||'#4b2fd6'}"/><circle cx="0" cy="-2" r="4.5" fill="#fff"/></svg>`)}
 function mkBox(){const sz=map.getSize(),m=Math.max(sz.x,sz.y)*.6;let a=1e15,b=-1e15,c=1e15,d=-1e15;for(const q of [[-m,-m],[sz.x+m,-m],[-m,sz.y+m],[sz.x+m,sz.y+m]]){const p=P(...fromM(map.containerPointToLatLng(L.point(q[0],q[1]))));a=Math.min(a,p.x);b=Math.max(b,p.x);c=Math.min(c,p.y);d=Math.max(d,p.y)}return[a,b,c,d]}
 function mkSync(){if(!ogReady||map._animatingZoom)return;mkQ=false;mkT=performance.now();const z=map.getZoom(),bb=mkBox(),want=new Map(),inb=o=>o.x>=bb[0]&&o.x<=bb[1]&&o.y>=bb[2]&&o.y<=bb[3];
  const add=(id,o,sig,mk)=>{if(inb(o))want.set(id,{o,sig,mk})};
- if(z>=14)for(const k in OLAY){if(!OL[k]||!osmData[k])continue;for(const it of osmData[k])add('o:'+it.id,it,'o'+k,()=>osmEl(k,it))}
+ if(z>=14)for(const k in OLAY){if(!OL[k]||!osmData[k])continue;for(const it of osmData[k])add('o:'+it.id,it,'o'+k+rb('osm:'+it.id)+hotc('osm:'+it.id),()=>osmEl(k,it))}
  if(OL.metro&&metro&&z>=12)for(const s2 of metro.st)add('m:'+s2.id,s2,'m'+s2.lines.map(l=>l.ref).join(','),()=>metroEl(s2));
- for(const p of POIS){if(!layers[p.cat]||(p.dyn&&z<14))continue;const v=visited.has(p.id);add('p:'+p.id,p,'p'+(v?1:0),()=>poiEl(p,v))}
- for(const q of marks)add('k:'+q.id,q,'k'+q.name,()=>markEl(q));
+ for(const p of POIS){if(!layers[p.cat]||(p.dyn&&z<14))continue;const v=visited.has(p.id);add('p:'+p.id,p,'p'+(v?1:0)+rb(p.id)+hotc(p.id),()=>poiEl(p,v))}
+ for(const q of marks)add('k:'+q.id,q,'k'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(myKey(q))+hotc(myKey(q)),()=>markEl(q));
+ if(z>=13)for(const q of pubMarks)add('u:'+q.user_id+'/'+q.id,q,'u'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(pubKey(q))+hotc(pubKey(q)),()=>pubEl(q));
+ for(const r of RATED){const hot=isPop(r.s);if(z<(hot?12:15))continue;add('r:'+r.id,r,'r'+rb(r.id)+hot,()=>ratedEl(r))}
  const pd=pin||(route&&route.dest&&(route.dest.cat==='pin'||route.dest.cat==='osm')?route.dest:null);
  if(pd)want.set('pin',{o:pd,sig:'pin'+(pd.col||'')+Math.round(pd.x)+','+Math.round(pd.y),mk:()=>pinEl(pd)});
  if(target)want.set('tgt',{o:target,sig:'t'+Math.round(target.x)+','+Math.round(target.y),mk:()=>mkEl('tgt',55,'<div class="pm"></div>')});
@@ -970,7 +1031,7 @@ let hereCache={k:'',d:null};
 function hereD(){const hk=Math.round(me.x/50)+','+Math.round(me.y/50);if(hereCache.k!==hk)hereCache={k:hk,d:distAt(...U(me))};return hereCache.d}
 
 // ---- туман: белая вуаль, фактура привязана к карте и масштабируется вместе с ней ----
-function drawFog(g,A,bb,s){g.globalAlpha=.93;g.fillStyle=isDark()?'#161129':'#ffffff';g.fillRect(0,0,s.w,s.h);
+function drawFog(g,A,bb,s){if(!fogOn)return;g.globalAlpha=.93;g.fillStyle=isDark()?'#161129':'#ffffff';g.fillRect(0,0,s.w,s.h);
  if(!s.pat)s.pat=g.createPattern(noise,'repeat');const L1=Math.floor(s.z0),fr=s.z0-L1;
  for(const [lv,wt] of [[L1,1-fr],[L1+1,fr]]){if(wt<.03)continue;const k=Math.pow(2,s.z0-lv),per=256*k,tx=-(((s.ox%per)+per)%per),ty=-(((s.oy%per)+per)%per);
   g.save();g.globalAlpha=wt;g.translate(tx,ty);g.scale(k,k);g.fillStyle=s.pat;g.fillRect(0,0,(s.w-tx)/k+2,(s.h-ty)/k+2);g.restore()}
@@ -1018,9 +1079,11 @@ function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,
 function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
  toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cur&&p.cat==='main'?' · открыто 3 км вокруг':''}</div><button data-open="${p.id}">Читать</button>`);save()}}
  if(route&&route.dest&&dist(at,route.dest)<=Math.max(DISCOVER,40))closeRoute(true)}
-function tap(x,y){if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
+function tap(x,y){if(moveMode)return;if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
  for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
- if(best){best.type&&best.t?openMark(best):openCard(best);return}
+ if(map.getZoom()>=13)for(const q of pubMarks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
+ if(best){best.user_id?openPub(best):best.type&&best.t?openMark(best):openCard(best);return}
+ {const z=map.getZoom();let br=null,bdr=22;for(const r of RATED){if(z<(isPop(r.s)?12:15))continue;const s=S(r),d=Math.hypot(s.x-x,s.y-y);if(d<bdr){bdr=d;br=r}}if(br){openRated(br);return}}
  if(OL.metro&&metro&&map.getZoom()>=12){let bm=null,bdm=22;for(const it of metro.st){const s=S(it),d=Math.hypot(s.x-x,s.y-y);if(d<bdm){bdm=d;bm=it}}if(bm){openOsm(bm);return}}
  if(map.getZoom()>=14){let bo=null,bdo=20;for(const k in OLAY){if(!OL[k]||!osmData[k])continue;for(const it of osmData[k]){const s=S(it),d=Math.hypot(s.x-x,s.y-y);if(d<bdo){bdo=d;bo=it}}}if(bo){openOsm(bo);return}}
  if(route){return}
@@ -1067,7 +1130,7 @@ const walk=m=>Math.max(1,Math.round(m/80))+' мин';
 
 function renderSheet(){const b=$('body');let h='';
  if(tab==='mine'){h=mineHTML()}
- else if(tab==='near'){const list=POIS.filter(p=>layers[p.cat]).map(p=>({p,d:dist(me,p)})).sort((a,c)=>a.d-c.d).slice(0,14);
+ else if(tab==='near'){h+=hotHTML();const list=POIS.filter(p=>layers[p.cat]).map(p=>({p,d:dist(me,p)})).sort((a,c)=>a.d-c.d).slice(0,14);
   list.forEach(({p,d})=>{const v=visited.has(p.id),hidden=false;
    h+=`<button class="item" data-open="${p.id}"><span class="dot" style="color:var(${CAT[p.cat].c})">${isvg(p.ic,20,2)}</span><span class="t"><b>${hidden?'Неизвестная находка':p.name}</b><span>${fmtD(d)}, ${walk(d)} пешком${DIST[p.d]?' · '+DIST[p.d].n:''}</span></span>${v?'<span class="tag ok">✓</span>':`<span class="tag">+${p.pts}</span>`}</button>`});
   if(!list.length)h='<p class="note">Все слои скрыты. Включите «Главное», «Локальное» или «Поесть» над картой.</p>'}
@@ -1077,15 +1140,15 @@ function renderSheet(){const b=$('body');let h='';
  b.innerHTML=h}
 
 let nearTimer=0;
-function openCard(p){const v=visited.has(p.id),d=dist(me,p),dl=DIST[p.d]||{n:'Город'},col=`var(${CAT[p.cat].c})`;
+function openCard(p){cur={kind:'poi',obj:p,key:p.id};const v=visited.has(p.id),d=dist(me,p),dl=DIST[p.d]||{n:'Город'},col=`var(${CAT[p.cat].c})`;
  
  const cta=v?`<div class="pc-done">${isvg('check',20,2.6)}Вы здесь были, +${p.pts} получено</div>`:
   `<button class="pc-cta" data-route="${p.id}">${isvg('walk',22,2.4)}Погнали · ${walk(d)}</button>`;
  $('card').innerHTML=`<div class="pc-top"><svg class="rings" width="340" height="340" viewBox="0 0 340 340" aria-hidden="true"><circle cx="170" cy="170" r="70"></circle><circle cx="170" cy="170" r="110"></circle><circle cx="170" cy="170" r="150"></circle></svg>
  <div class="pc-bar"><button class="pc-x" data-close aria-label="Закрыть">${isvg('x',20,2.4)}</button><span class="pc-tag" style="background:${col}">${isvg(p.ic,14,2.4)}${CAT[p.cat].n}</span></div>
- <h2>${p.name}</h2><div class="pc-sub">${p.zh} · ${dl.n} · ${walk(d)} пешком</div></div>
+ <h2>${esc(p.name)}</h2><div class="pc-sub">${esc(p.zh||'')} · ${dl.n} · ${walk(d)} пешком</div></div>
  <div class="pc-body"><div class="pc-photo" id="pcPhoto" data-id="${p.id}"></div><div class="pc-stats"><div><b>${v?'✓':'+'+p.pts}</b><span>${v?'посещено':'за визит'}</span></div><div><b>${fmtD(d)}</b><span>до места</span></div><div><b>${p.d?fmtPct(areaPct(p.d)):'—'}</b><span>${dl.n} изучено</span></div></div>
- <p class="pc-story" id="pcStory">${p.s}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м${p.cur&&p.cat==='main'?', и откроется 3 км вокруг':''}</p>`}${cta}${reviewsBlock(p.id,p.name)}</div>`;
+ <p class="pc-story" id="pcStory">${esc(p.s||'')}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м${p.cur&&p.cat==='main'?', и откроется 3 км вокруг':''}</p>`}${cta}${placeActs('poi',p)}${reviewsBlock(p.id,p.name)}</div>`;
  $('card').classList.add('place','on');$('scrim').classList.add('on');loadReviews(p.id);
  if(p.dyn&&p.wk&&!p.sx){const wl=p.wk.split(':')[0],wt=p.wk.slice(p.wk.indexOf(':')+1);if(['ru','en'].includes(wl))fetch(`https://${wl}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wt)}`).then(r=>r.json()).then(j=>{if(j&&j.extract){p.sx=j.extract.slice(0,420)+(j.extract.length>420?'…':'');const el=$('pcStory');if(el&&$('pcPhoto')&&$('pcPhoto').dataset.id===p.id)el.textContent=p.sx}}).catch(()=>{})}
  if(p.sx){const el=$('pcStory');if(el)el.textContent=p.sx}
@@ -1094,7 +1157,7 @@ function closeCard(){$('card').classList.remove('on');if(pin){pin=null;dirty=tru
 function openPanel(){closePops();$('sheet').classList.add('open');$('scrim').classList.add('on');renderSheet()}
 function closePanel(){$('sheet').classList.remove('open');if(!$('card').classList.contains('on'))$('scrim').classList.remove('on')}
 function closePops(){$('pop').classList.remove('on');if($('dpick').classList.contains('on'))togglePick(false)}
-function renderPop(){$('pop').querySelectorAll('[data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===base));$('pop').querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===theme))}
+function renderPop(){{const fb=$('fogBtn');if(fb)fb.classList.toggle('on',fogOn)}$('pop').querySelectorAll('[data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===base));$('pop').querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===theme))}
 function renderNear(){return;const el=$('nearPill'),c=POIS.filter(p=>layers[p.cat]&&!visited.has(p.id)).map(p=>({p,d:dist(me,p)})).sort((a,b)=>a.d-b.d)[0];
  if(!c){el.style.display='none';return}el.style.display='';el.dataset.open=c.p.id;el.innerHTML=`<span class="e">${c.p.e}</span><b>${c.p.name}</b><span>${walk(c.d)}</span>`}
 let tt=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),4200)}
@@ -1149,24 +1212,9 @@ const fdate=t=>new Date(t).toLocaleString('ru-RU',{day:'numeric',month:'short',h
 let draft=null;
 function mineHTML(){let h=`<div class="acts"><button class="ghost" data-add>＋ Отметить это место</button><button class="ghost" data-export>Выгрузить</button></div><button class="ghost" data-import style="margin-top:8px">Импорт пройденных маршрутов</button><p class="note">Файлы GPX (Здоровье, Strava и др.), KML или JSON из Хронологии Google Карт. Туман откроется везде, где вы уже ходили.</p>`;
  if(!marks.length)return h+'<p class="note">Здесь будут ваши находки: вкусная лапшичная, необычный двор, красивый вид. Отметка ставится там, где вы стоите, с фото и заметкой, и приносит 15 очков.</p>';
- [...marks].sort((a,b)=>b.t-a.t).forEach(q=>{const d=dist(me,q);h+=`<button class="item" data-mark="${q.id}">${(q.photo||q.photoUrl)?`<img class="thumb" src="${q.photo||q.photoUrl}" alt="">`:`<span class="dot" style="box-shadow:inset 0 0 0 2px var(--mine)">${MT[q.type].e}</span>`}<span class="t"><b>${esc(q.name)}</b><span>${MT[q.type].n} · ${fmtD(d)} · ${fdate(q.t)}</span></span></button>`});
- return h+`<p class="note">Отметки хранятся только в этом браузере. Выгружайте их время от времени, чтобы не потерять.</p>`}
-function openAdd(at){draft={type:'place',photo:null,at:at&&at.x!==undefined?at:null};const hereGps=mode==='gps';
- $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><h2>Новая отметка</h2><div class="zh">${draft.at?'В выбранной точке на карте':hereGps?'Там, где вы стоите сейчас (GPS)':'В точке, где стоит ваш человечек'}</div>
- <label class="fl">Название<input id="mName" maxlength="60" placeholder="Например, лапшичная у моста"></label>
- <div class="types">${Object.entries(MT).map(([k,v])=>`<button data-mt="${k}" class="${k==='place'?'on':''}">${v.e} ${v.n}</button>`).join('')}</div>
- <label class="fl">Заметка<textarea id="mNote" rows="3" placeholder="Что здесь интересного, цены, часы работы"></textarea></label>
- <label class="photo" id="mPhotoBox"><input type="file" accept="image/*" id="mPhoto" hidden><span>📷 Добавить фото</span></label>
- <button class="cta mine" data-savemark>Сохранить отметку</button>`;
- $('card').classList.add('on');$('scrim').classList.add('on');setTimeout(()=>$('mName')&&$('mName').focus(),300)}
+ [...marks].sort((a,b)=>b.t-a.t).forEach(q=>{const d=dist(me,q);h+=`<button class="item" data-mark="${q.id}">${mThumb(q)?`<img class="thumb" src="${esc(mThumb(q))}" alt="">`:`<span class="dot" style="box-shadow:inset 0 0 0 2px var(--mine)">${MT[q.type].e}</span>`}<span class="t"><b>${esc(q.name)}</b><span>${MT[q.type].n}${q.pub?' · 🌍 видна всем':''}${(q.photos||[]).length>1?' · фото '+q.photos.length:''} · ${fmtD(d)}</span></span></button>`});
+ return h+(user?`<p class="note">Отметки и фото сохраняются в облаке. Нажмите на отметку, чтобы изменить её, добавить фото или построить маршрут.</p>`:`<p class="note">Отметки хранятся только в этом браузере. Войдите в аккаунт, чтобы они сохранялись в облаке и ими можно было делиться.</p>`)}
 function shrink(file){return new Promise((res,rej)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,720/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',.65))};img.onerror=()=>{URL.revokeObjectURL(url);rej()};img.src=url})}
-document.addEventListener('change',async e=>{if(e.target.id!=='mPhoto'||!e.target.files[0]||!draft)return;
- try{draft.photo=await shrink(e.target.files[0]);$('mPhotoBox').innerHTML=`<img src="${draft.photo}" alt="Фото отметки">`}catch(err){toast('<div>Не удалось прочитать фото. Попробуйте другой снимок.</div>')}});
-function openMark(q){const d=dist(me,q);
- $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:var(--mine)">${MT[q.type].e}</span><div><h2>${esc(q.name)}</h2><div class="zh">Ваша отметка</div></div></div>
- ${(q.photo||q.photoUrl)?`<img class="mimg" src="${q.photo||q.photoUrl}" alt="">`:''}<div class="meta"><span style="color:var(--mine)">${MT[q.type].n}</span><span>${fmtD(d)}, ${walk(d)}</span><span>${fdate(q.t)}</span></div>
- ${q.note?`<p class="story">${esc(q.note).replace(/\n/g,'<br>')}</p>`:''}<button class="ghost danger" data-delmark="${q.id}">Удалить отметку</button>`;
- $('card').classList.add('on');$('scrim').classList.add('on')}
 async function exportMarks(){try{const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;if(dl){const data=JSON.stringify({city:'Guangzhou',exported:new Date().toISOString(),coords:'WGS-84',marks:marks.map(({x,y,...m})=>m)},null,2);await dl.save({filename:'guangzhou-otmetki-'+new Date().toISOString().slice(0,10)+'.json',data});return}}catch(e){if(e&&e.code==='declined')return;if(e&&e.code&&e.code!=='unavailable'){toast('<div>Не удалось сохранить файл.</div>');return}}const data=JSON.stringify({city:'Guangzhou',exported:new Date().toISOString(),coords:'WGS-84',marks:marks.map(({x,y,...m})=>m)},null,2);
  const name='guangzhou-otmetki-'+new Date().toISOString().slice(0,10)+'.json',file=new File([data],name,{type:'application/json'});
  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Мои отметки: Гуанчжоу'});return}}catch(e){if(e&&e.name==='AbortError')return}
@@ -1180,11 +1228,7 @@ function handleMine(t){
   updateHUD();dirty=true;return true}
  if('add' in t.dataset){openAdd();return true}
  if(t.dataset.mt){draft.type=t.dataset.mt;[...t.parentNode.children].forEach(b=>b.classList.toggle('on',b===t));return true}
- if('savemark' in t.dataset){const name=$('mName').value.trim();if(!name){$('mName').focus();$('mName').placeholder='Введите название';return true}
-  const[lat,lon]=U(draft.at||me),q={id:'m'+Date.now(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),name,note:$('mNote').value.trim(),type:draft.type,photo:draft.photo,t:Date.now()};
-  Object.assign(q,P(q.lat,q.lon));marks.push(q);if(!saveMarks()){marks.pop();return true}qMark(q.id);flushSoon();
-  pts+=15;changed=true;save();updateHUD();closeCard();draft=null;tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
-  toast(`<span style="font-size:22px">${MT[q.type].e}</span><div><b>Отметка сохранена</b><br>+15 очков</div>`);return true}
+ if('savemark' in t.dataset){saveForm();return true}
  if(t.dataset.mark){const q=marks.find(m=>m.id===t.dataset.mark);if(q){follow=false;focusAt(q.lat,q.lon);openMark(q)}return true}
  if(t.dataset.delmark){if(confirm('Удалить эту отметку?')){qDel(t.dataset.delmark);marks=marks.filter(m=>m.id!==t.dataset.delmark);saveMarks();flushSoon();pts=Math.max(0,pts-15);changed=true;save();updateHUD();closeCard();renderSheet();dirty=true}return true}
  if('export' in t.dataset){if(!marks.length){toast('<div>Пока нечего выгружать: поставьте первую отметку кнопкой ＋.</div>')}else exportMarks();return true}
@@ -1234,7 +1278,7 @@ function extLinks(){const p=route.dest,[la,lo]=U(me),m=route.mode;
   google:`https://www.google.com/maps/dir/?api=1&origin=${la.toFixed(6)},${lo.toFixed(6)}&destination=${p.lat},${p.lon}&travelmode=${gg}`}}
 function renderRoute(){if(!route)return;const p=route.dest,L2=extLinks(),m=route.mode;
  const info=navInfo();
- $('rt').innerHTML=`<div class="rt-hd"><span class="rt-ic" style="background:${p.col||`var(${CAT[p.cat].c})`}">${isvg(p.ic,18,2.2)}</span><span class="rt-t"><b>${p.name}</b><span id="rtInfo">${info}</span></span><button class="rt-x" data-rtclose aria-label="Закрыть маршрут">${isvg('x',18,2.4)}</button></div>
+ $('rt').innerHTML=`<div class="rt-hd"><span class="rt-ic" style="background:${p.col||`var(${CAT[p.cat].c})`}">${isvg(p.ic,18,2.2)}</span><span class="rt-t"><b>${esc(p.name)}</b><span id="rtInfo">${info}</span></span><button class="rt-x" data-rtclose aria-label="Закрыть маршрут">${isvg('x',18,2.4)}</button></div>
  <div class="rt-modes" role="tablist">${Object.entries(RMODES).map(([k,v])=>`<button data-rtmode="${k}" role="tab" aria-selected="${k===m}" class="${k===m?'on':''}">${isvg(v.ic,19,2)}<span>${v.n}</span></button>`).join('')}</div>
  ${m==='transit'?`<p class="rt-note">Метро и автобусы лучше всего знают карты: откройте маршрут одним нажатием.</p>`:''}
  <div class="rt-acts">${mode==='sim'&&m!=='transit'&&route.pts?`<button class="rt-main" data-rtwalk>${isvg('walk',18,2.4)}Идти (демо)</button>`:''}
@@ -1287,14 +1331,14 @@ async function osmRefresh(){if(OL.metro)metroLoad();const act=Object.keys(OLAY).
   if(!j){toast(`<div>Не удалось загрузить раздел «${OLAY[k].n}». Попробуйте позже.</div>`);continue}
   osmData[k]=j.elements.map(el=>{const la=el.lat!=null?el.lat:el.center&&el.center.lat,lo=el.lon!=null?el.lon:el.center&&el.center.lon;if(la==null)return null;const t=el.tags||{};
    return Object.assign({id:el.type+'/'+el.id,lay:k,lat:la,lon:lo,tags:t,name:t['name:ru']||t['name:en']||t.name||OLAY[k].n,local:t.name||''},P(la,lo))}).filter(Boolean);
-  osmBox[k]=bb;dirty=true}}finally{osmBusy=false}}
+  osmData[k].forEach(it=>applyOvrTo(it,'osm:'+it.id));osmBox[k]=bb;dirty=true}}finally{osmBusy=false;ratedBuild()}}
 map.on('moveend',osmSchedule);
 function osmDest(it){const L0=OLAY[it.lay];return{id:'osm:'+it.id,name:it.name,zh:it.local&&it.local!==it.name?it.local:'',lat:it.lat,lon:it.lon,x:it.x,y:it.y,cat:'osm',ic:L0.ic,col:L0.col}}
 function openOsm(it){const L0=it.lines&&it.lines.length?Object.assign({},OLAY[it.lay],{col:it.lines[0].col}):OLAY[it.lay],t=it.tags,d=dist(me,it),addr=[t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' ');
- $('card').classList.remove('place');curOsm=it;
+ $('card').classList.remove('place');curOsm=it;cur={kind:'osm',obj:it,key:'osm:'+it.id};
  $('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:${L0.col};color:#fff">${isvg(L0.ic,28,2)}</span><div><h2>${esc(it.name)}</h2><div class="zh">${esc(L0.n)}${it.local&&it.local!==it.name?' · '+esc(it.local):''}</div></div></div>${it.lines&&it.lines.length?`<div class="meta">${it.lines.map(l=>`<span style="background:${l.col};color:#fff">Линия ${esc(l.ref)}</span>`).join('')}</div>`:''}
  <div class="meta"><span>${fmtD(d)}, ${walk(d)}</span>${t.opening_hours?`<span>${esc(t.opening_hours)}</span>`:''}${t.cuisine?`<span>${esc(t.cuisine.replace(/;/g,', '))}</span>`:''}${addr?`<span>${esc(addr)}</span>`:''}</div>
- <button class="cta" data-osm="route">${isvg('navi',18,2.2)} Маршрут сюда</button><button class="ghost" data-osm="mark">Поставить метку здесь</button>${reviewsBlock('osm:'+it.id,it.name)}`;
+ <button class="cta" data-osm="route">${isvg('navi',18,2.2)} Маршрут сюда</button><button class="ghost" data-osm="mark">Поставить метку здесь</button>${reviewsBlock('osm:'+it.id,it.name)}<button class="ghost" data-cur="suggest">${isAdmin?'Изменить место':'Предложить правку'}</button>`;
  $('card').classList.add('on');$('scrim').classList.add('on');loadReviews('osm:'+it.id)}
 let curOsm=null;
 function openPin(pt){pin={x:pt.x,y:pt.y};dirty=true;const d=dist(me,pt),dd=distAt(...U(pt));
@@ -1333,18 +1377,19 @@ async function saveReview(t){if(!rvDraft)return;if(!rvDraft.rating){toast('<div>
  try{let url=null;if(rvDraft.photo){const blob=await (await fetch(rvDraft.photo)).blob(),path=`${user.id}/${rvDraft.id.replace(/[^\w-]/g,'_')}-${Date.now()}.jpg`;
    const {error:ue}=await sb.storage.from('review-photos').upload(path,blob,{contentType:'image/jpeg'});if(ue)throw ue;url=sb.storage.from('review-photos').getPublicUrl(path).data.publicUrl}
   const row={user_id:user.id,poi_id:rvDraft.id,rating:rvDraft.rating,text:$('rvText').value.trim()||null,author_name:(user.email||'').split('@')[0]};if(url)row.photo_path=url;
+  {const pl=placeOf(rvDraft.id);if(pl){row.place_name=pl.name||null;row.lat=pl.lat;row.lon=pl.lon;row.kind=pl.kind||null}}
   const {error}=await sb.from('reviews').upsert(row,{onConflict:'user_id,poi_id'});if(error)throw error;
-  const back=rvDraft.back;rvDraft=null;closeCard();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
+  const back=rvDraft.back;rvDraft=null;closeCard();statsLoad();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
  catch(e){t.disabled=false;t.textContent='Опубликовать';toast(`<div>Не удалось сохранить отзыв: ${esc(e.message||'ошибка')}</div>`)}}
 function handleExtra(t){
  if(bgClick(t))return true;
- if(t.dataset.ol){const k=t.dataset.ol;OL[k]=!OL[k];if(!OL[k])delete OL[k];try{localStorage.setItem('og-ol',JSON.stringify(OL))}catch(e){}renderOL();osmWarn=false;dirty=true;if(OL[k])osmRefresh();return true}
+ if(t.dataset.ol){const k=t.dataset.ol;OL[k]=!OL[k];if(!OL[k])delete OL[k];try{localStorage.setItem('og-ol',JSON.stringify(OL))}catch(e){}renderOL();osmWarn=false;dirty=true;if(OL[k])osmRefresh();ratedBuild();return true}
  if(t.id==='wakeBtn'){wakeWant=!wakeWant;if(wakeWant)wakeOn();else{if(wakeLock)wakeLock.release();wakeLock=null;$('wakeBtn').classList.remove('on')}return true}
  if(t.dataset.pin){const pt=pin;if(!pt)return true;const a=t.dataset.pin;closeCard();
   if(a==='route')openRoute({id:'pin',name:'Выбранная точка',zh:'',lat:U(pt)[0],lon:U(pt)[1],x:pt.x,y:pt.y,cat:'pin',ic:'pin'});
   else if(a==='mark')openAdd(pt);else if(a==='walk'){target={x:pt.x,y:pt.y};follow=true;dirty=true}return true}
  if(t.dataset.osm){const it=curOsm;if(!it)return true;closeCard();if(t.dataset.osm==='route')openRoute(osmDest(it));else openAdd({x:it.x,y:it.y});return true}
- if(t.dataset.rvnew){const id=t.dataset.rvnew,name=t.dataset.name||'',p=POIS.find(q=>q.id===id),it=curOsm;openReview(id,name,p?()=>openCard(p):(it&&('osm:'+it.id)===id?()=>openOsm(it):null));return true}
+ if(t.dataset.rvnew){const id=t.dataset.rvnew,name=t.dataset.name||'',c=cur&&cur.key===id?cur:null;openReview(id,name,c?()=>openCur(c):null);return true}
  if(t.dataset.rvstar){if(!rvDraft)return true;rvDraft.rating=+t.dataset.rvstar;document.querySelectorAll('[data-rvstar]').forEach(b=>b.classList.toggle('on',+b.dataset.rvstar<=rvDraft.rating));return true}
  if('rvsave' in t.dataset){saveReview(t);return true}
  return false}
@@ -1383,8 +1428,8 @@ function dynTypeOf(t){if(t.leisure==='park'||t.leisure==='garden')return['local'
  if(t.tourism==='attraction')return['local','star',20,70,'Достопримечательность'];
  if(t.amenity==='cafe')return['food','cup',10,40,'Кафе'];return null}
 function dynAdd(list,persist){let n=0;for(const r of list){if(POIS.find(p=>p.id===r.id))continue;const p=Object.assign({},r,P(r.lat,r.lon));
-  if(POIS.some(q=>q.cur&&dist(q,p)<80))continue;p.d=distAt(p.lat,p.lon);POIS.push(p);n++}
- if(persist){try{localStorage.setItem(DYN_KEY,JSON.stringify(POIS.filter(p=>p.dyn).slice(-600).map(({x,y,d,sx,...r})=>r)))}catch(e){}}if(n){dirty=true;updateHUD();renderSheet()}return n}
+  if(POIS.some(q=>q.cur&&dist(q,p)<80))continue;applyOvrTo(p,p.id);p.d=distAt(p.lat,p.lon);POIS.push(p);n++}
+ if(persist){try{localStorage.setItem(DYN_KEY,JSON.stringify(POIS.filter(p=>p.dyn).slice(-600).map(({x,y,d,sx,...r})=>r)))}catch(e){}}if(n){dirty=true;ratedBuild();updateHUD();renderSheet()}return n}
 try{dynAdd(JSON.parse(localStorage.getItem(DYN_KEY)||'[]'),false)}catch(e){}
 try{dynCenters=JSON.parse(localStorage.getItem('og-dync2')||'[]')}catch(e){}
 let dynFailAt=0;function dynMaybe(){if(dynBusy||Date.now()-dynFailAt<60000)return;if(dynCenters.some(c=>dist(c,me)<1200))return;dynFetch(me)}
@@ -1417,12 +1462,14 @@ async function flush(){if(!sb||!user||syncing||!navigator.onLine)return;if(!pend
     const {error}=await sb.from('fog_cells').upsert(part.map(c=>({user_id:uid,cell:c})),{onConflict:'user_id,cell',ignoreDuplicates:true});if(error)throw error;part.forEach(c=>pendCells.delete(c));saveQ()}}
   if(pendVisits.size){const all=[...pendVisits];const {error}=await sb.from('visits').upsert(all.map(v=>({user_id:uid,poi_id:v})),{onConflict:'user_id,poi_id',ignoreDuplicates:true});if(error)throw error;all.forEach(v=>pendVisits.delete(v));saveQ()}
   for(const id of [...pendMarks]){const m=marks.find(x=>x.id===id);if(!m){pendMarks.delete(id);continue}
-   if(m.photo&&m.photo.startsWith('data:')&&!m.photo_path){const blob=await (await fetch(m.photo)).blob(),path=`${uid}/${m.id}.jpg`;
-    const {error:ue}=await sb.storage.from('photos').upload(path,blob,{contentType:'image/jpeg',upsert:true});if(ue)throw ue;m.photo_path=path;saveMarks()}
-   const {error}=await sb.from('marks').upsert({id:m.id,user_id:uid,name:m.name,note:m.note||null,type:m.type,lat:m.lat,lon:m.lon,photo_path:m.photo_path||null,created_at:new Date(m.t||Date.now()).toISOString()},{onConflict:'user_id,id'});
+   for(const ph of m.photos||[]){if(ph.d&&!ph.p){const blob=await (await fetch(ph.d)).blob(),path=`${uid}/${m.id}-${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}.jpg`;
+    const {error:ue}=await sb.storage.from('photos').upload(path,blob,{contentType:'image/jpeg',upsert:true});if(ue)throw ue;ph.p=path;ph.u=ph.d;delete ph.d;saveMarks()}}
+   if(m.rm&&m.rm.length){try{await sb.storage.from('photos').remove(m.rm)}catch(e){}m.rm=[];saveMarks()}
+   const paths=(m.photos||[]).map(ph=>ph.p).filter(Boolean);
+   const {error}=await sb.from('marks').upsert({id:m.id,user_id:uid,name:m.name,note:m.note||null,type:m.type,lat:m.lat,lon:m.lon,photo_path:paths[0]||null,photos:paths,is_public:!!m.pub,author_name:uname(),updated_at:new Date(m.u||m.t||Date.now()).toISOString(),created_at:new Date(m.t||Date.now()).toISOString()},{onConflict:'user_id,id'});
    if(error)throw error;pendMarks.delete(id);saveQ()}
-  for(const id of [...pendDel]){try{await sb.storage.from('photos').remove([`${uid}/${id}.jpg`])}catch(e){}
-   const {error}=await sb.from('marks').delete().eq('id',id);if(error)throw error;pendDel.delete(id);saveQ()}
+  for(const id of [...pendDel]){try{const {data:r0}=await sb.from('marks').select('photos,photo_path').eq('id',id).eq('user_id',uid).maybeSingle();const ps=[...new Set([...((r0&&r0.photos)||[]),...(r0&&r0.photo_path?[r0.photo_path]:[]),`${uid}/${id}.jpg`])];await sb.storage.from('photos').remove(ps)}catch(e){}
+   const {error}=await sb.from('marks').delete().eq('id',id).eq('user_id',uid);if(error)throw error;pendDel.delete(id);saveQ()}
   await sb.from('profiles').update({points:pts}).eq('id',uid);
   setSync('ok')}catch(e){console.warn(e);setSync('err',e.message||String(e))}finally{syncing=false}}
 async function pull(){if(!sb||!user)return;const uid=user.id;setSync('sync');
@@ -1432,22 +1479,24 @@ async function pull(){if(!sb||!user)return;const uid=user.id;setSync('sync');
   quiet=true;for(const k of server)addCell(k);quiet=false;for(const k of reveal)if(!server.has(k))pendCells.add(k);
   const {data:vs,error:ve}=await sb.from('visits').select('poi_id');if(ve)throw ve;const sv=new Set(vs.map(r=>r.poi_id));
   sv.forEach(id=>visited.add(id));for(const id of visited)if(!sv.has(id))pendVisits.add(id);
-  const {data:ms,error:mse}=await sb.from('marks').select('*');if(mse)throw mse;const sm=new Set();
-  for(const r of ms){sm.add(r.id);let q=marks.find(m=>m.id===r.id);if(!q){q={id:r.id,lat:r.lat,lon:r.lon,name:r.name,note:r.note||'',type:MT[r.type]?r.type:'place',photo:null,t:Date.parse(r.created_at)};Object.assign(q,P(q.lat,q.lon));marks.push(q)}q.photo_path=r.photo_path}
+  const {data:ms,error:mse}=await sb.from('marks').select('*').eq('user_id',uid);if(mse)throw mse;const sm=new Set();
+  for(const r of ms){sm.add(r.id);let q=marks.find(m=>m.id===r.id);const paths=r.photos&&r.photos.length?r.photos:(r.photo_path?[r.photo_path]:[]);
+   if(!q){q={id:r.id,t:Date.parse(r.created_at),photos:[]};marks.push(q)}
+   if(!pendMarks.has(r.id)){Object.assign(q,{lat:r.lat,lon:r.lon,name:r.name,note:r.note||'',type:MT[r.type]?r.type:'place',pub:!!r.is_public,u:Date.parse(r.updated_at||r.created_at)},P(r.lat,r.lon));
+    const old=q.photos||[];q.photos=paths.map(p=>old.find(o=>o.p===p)||{p});for(const o of old)if(!o.p&&o.d)q.photos.push(o)}}
   for(const m of marks)if(!sm.has(m.id)&&!pendDel.has(m.id))pendMarks.add(m.id);
   saveMarks();recomputePts();save();saveQ();updateHUD();renderSheet();dirty=true;
-  const need=marks.filter(m=>!m.photo&&m.photo_path);
-  if(need.length){const {data}=await sb.storage.from('photos').createSignedUrls(need.map(m=>m.photo_path),604800);(data||[]).forEach((d,i)=>{if(d&&d.signedUrl)need[i].photoUrl=d.signedUrl})}
+  await signPaths(marks.flatMap(m=>m.photos||[]));renderSheet();dirty=true;
   setSync('ok');await flush()}catch(e){console.warn(e);setSync('err',e.message||String(e))}}
 async function serverReset(){if(!sb||!user)return;try{await sb.from('fog_cells').delete().eq('user_id',user.id);await sb.from('visits').delete().eq('user_id',user.id);for(const k of reveal)pendCells.add(k);saveQ();flushSoon()}catch(e){setSync('err',e.message)}}
 function importMarks(txt){let o;try{o=JSON.parse(txt)}catch(e){return false}if(!o||!Array.isArray(o.marks)||!o.marks.length||!o.marks[0].name)return false;
- let n=0;for(const r of o.marks){if(!r.id||marks.find(m=>m.id===r.id)||!isFinite(r.lat)||!isFinite(r.lon))continue;const q={id:r.id,lat:+r.lat,lon:+r.lon,name:String(r.name).slice(0,60),note:r.note||'',type:MT[r.type]?r.type:'place',photo:r.photo||null,t:r.t||Date.now()};Object.assign(q,P(q.lat,q.lon));marks.push(q);qMark(q.id);n++}
+ let n=0;for(const r of o.marks){if(!r.id||marks.find(m=>m.id===r.id)||!isFinite(r.lat)||!isFinite(r.lon))continue;const q={id:r.id,lat:+r.lat,lon:+r.lon,name:String(r.name).slice(0,60),note:r.note||'',type:MT[r.type]?r.type:'place',photos:Array.isArray(r.photos)?r.photos.filter(p=>p&&p.d).map(p=>({d:p.d})):(r.photo?[{d:r.photo}]:[]),t:r.t||Date.now()};Object.assign(q,P(q.lat,q.lon));marks.push(q);qMark(q.id);n++}
  saveMarks();recomputePts();save();updateHUD();renderSheet();dirty=true;flushSoon();toast(`<div>Загружено отметок: <b>${n}</b></div>`);return true}
 function profileHTML(){const vs=POIS.filter(p=>visited.has(p.id)).length;
  let h=`<div class="pf"><span class="pf-av">${user&&user.email?esc(user.email[0].toUpperCase()):'?'}</span><span class="pf-t"><b>${user?esc(user.email||''):'Гость'}</b><span>${syncText()}</span></span></div>
  <div class="pc-stats" style="margin:12px 0"><div><b>${pts}</b><span>очков</span></div><div><b>${vs}/${POIS.length}</b><span>мест</span></div><div><b>${km(area.size)}</b><span>км² пройдено</span></div></div>`;
  h+=user?`<button class="ghost" data-syncnow>Синхронизировать сейчас</button><button class="ghost" data-logout>Выйти из аккаунта</button>`:`<button class="cta" data-login>Войти и сохранять в облако</button>`;
- return h+`<p class="note">Рейтинг игроков появится, когда подключатся друзья.</p><button class="ghost" id="reset">Сбросить прогресс</button>`}
+ return h+sugHTML()+`<p class="note">Рейтинг игроков появится, когда подключатся друзья.</p><button class="ghost" id="reset">Сбросить прогресс</button>`}
 const SITE='https://dimanomokonov.github.io/otkroy-gorod/';
 const AUTHERR=m=>/invalid login/i.test(m)?'Неверная почта или пароль':/not confirmed/i.test(m)?'Сначала подтвердите почту по ссылке из письма':/already registered|already exists/i.test(m)?'Такой аккаунт уже есть — нажмите «Войти»':/password should be|at least/i.test(m)?'Пароль должен быть не короче 6 символов':/rate limit|too many/i.test(m)?'Слишком много попыток, подождите немного':m;
 function openLogin(step,email){$('card').classList.remove('place');const E=esc(email||'');
@@ -1472,15 +1521,15 @@ async function handleAuth(t){
  if('lforgot' in t.dataset){const email=$('lgEmail').value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){$('lgEmail').focus();toast('<div>Введите почту, и мы пришлём ссылку для смены пароля</div>');return true}
   await busy(t,'Отправляю…',async()=>{const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:SITE});toast(error?`<div>${esc(AUTHERR(error.message))}</div>`:'<div>Отправили ссылку для смены пароля. Откройте её на этом устройстве.</div>')});return true}
  if('lnewpass' in t.dataset){const p=$('lgPass').value;if(p.length<6){$('lgPass').focus();return true}await busy(t,'Сохраняю…',async()=>{const {error}=await sb.auth.updateUser({password:p});if(error)toast(`<div>${esc(AUTHERR(error.message))}</div>`);else{closeCard();toast('<div>Пароль обновлён.</div>')}});return true}
- if('logout' in t.dataset){if(confirm('Выйти из аккаунта? Прогресс останется в облаке.')){await sb.auth.signOut();user=null;setSync('off');renderSheet()}return true}
+ if('logout' in t.dataset){if(confirm('Выйти из аккаунта? Прогресс останется в облаке.')){await sb.auth.signOut();user=null;meUid=null;isAdmin=false;sugIn=[];sugMine=[];setSync('off');pubLoad();renderSheet()}return true}
  if('syncnow' in t.dataset){pull();return true}
  return false}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-login],[data-login-open],[data-lskip],[data-lin],[data-lup],[data-lforgot],[data-lnewpass],[data-logout],[data-syncnow]');if(t&&sb)handleAuth(t)});
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(e.target.id==='lgEmail')$('lgPass')&&$('lgPass').focus();if(e.target.id==='lgPass'){const b=document.querySelector('[data-lin],[data-lnewpass]');b&&b.click()}});
-if(sb){sb.auth.onAuthStateChange((ev,sess)=>{if(ev==='PASSWORD_RECOVERY')setTimeout(()=>openLogin('newpass'),300);const nu=sess&&sess.user||null,chg=(nu&&nu.id)!==(user&&user.id);user=nu;
+if(sb){sb.auth.onAuthStateChange((ev,sess)=>{if(ev==='PASSWORD_RECOVERY')setTimeout(()=>openLogin('newpass'),300);const nu=sess&&sess.user||null,chg=(nu&&nu.id)!==(user&&user.id);user=nu;meUid=nu?nu.id:null;
   if(location.hash.includes('access_token')||location.hash.includes('error'))history.replaceState(null,'',location.pathname);
-  if(nu&&chg){setTimeout(pull,0);bgTok=null;bgLoad();setTimeout(bgPull,2500)}
-  if(!nu){setSync('off');if(ev==='INITIAL_SESSION'&&!localStorage.getItem('og-skip'))setTimeout(()=>openLogin(),600)}
+  if(nu&&chg){setTimeout(pull,0);bgTok=null;bgLoad();setTimeout(bgPull,2500);setTimeout(commOnLogin,600)}
+  if(!nu){isAdmin=false;sugIn=[];sugMine=[];setSync('off');if(ev==='INITIAL_SESSION'&&!localStorage.getItem('og-skip'))setTimeout(()=>openLogin(),600)}
   if(tab==='rank'&&$('sheet').classList.contains('open'))renderSheet()})}
 setInterval(flush,10000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});
@@ -1532,11 +1581,224 @@ bgLoad();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(bgPull,800)});
 setInterval(()=>{if(document.visibilityState==='visible')bgPull()},60000);
 
+// ================= МЕТКИ: правка и фото, общие метки, оценки, популярные места, правки мест =================
+const isPop=s=>!!s&&s.n>=POP_N&&s.avg>=POP_AVG;
+const fmtAvg=v=>(+v).toFixed(1).replace('.',',');
+const rateTxt=s=>s?`★ ${fmtAvg(s.avg)} · ${s.n}`:'';
+const rb=id=>{const s=pstats.get(id);return s?`<b class="rb">★${fmtAvg(s.avg)}</b>`:''};
+const hotc=id=>isPop(pstats.get(id))?' hot':'';
+const uname=()=>user?((user.email||'').split('@')[0]||'Путешественник'):'';
+const pubKey=q=>'mk:'+q.user_id+'/'+q.id;
+const myKey=q=>meUid?'mk:'+meUid+'/'+q.id:'';
+const ownerOf=k=>k&&k.startsWith('mk:')?k.slice(3).split('/')[0]:null;
+const phSrc=ph=>ph&&(ph.d||ph.u)||'';
+const mThumb=q=>{const ph=(q.photos||[]).find(x=>phSrc(x));return ph?phSrc(ph):''};
+
+// ---- значки на карте ----
+function pubEl(q){const k=pubKey(q);return mkEl('mark pub l16'+hotc(k),48,`<div class="pm" style="--c:${PUB_COL};width:20px;height:20px;left:-10px;top:-10px">${isvg('person',11,2.4)}</div><span class="lb" style="left:15px">${esc(q.name)}${rb(k)}</span>`)}
+function ratedEl(r){const hot=isPop(r.s),sz=hot?22:17;return mkEl('rated '+(hot?'hot l15':'l16'),hot?52:26,`<div class="pm" style="--c:${GOLD};width:${sz}px;height:${sz}px;left:${-sz/2}px;top:${-sz/2}px">${isvg('star',Math.round(sz*.62),2.4)}</div><span class="lb" style="left:${sz/2+5}px">${esc(r.name)}${rb(r.id)}</span>`)}
+
+// ---- где находится место по его id (для оценок, списка «Хвалят», маршрута) ----
+function osmFind(oid){for(const k in osmData)for(const it of osmData[k]||[])if(it.id===oid)return it;if(metro)for(const s2 of metro.st)if(s2.id===oid)return s2;return null}
+function placeOf(id){if(!id)return null;const p=POIS.find(q=>q.id===id);if(p)return{name:p.name,lat:p.lat,lon:p.lon,kind:p.cat};
+ if(id.startsWith('osm:')){const it=osmFind(id.slice(4));if(it)return{name:it.name,lat:it.lat,lon:it.lon,kind:it.lay}}
+ if(id.startsWith('mk:')){const q=pubMarks.find(q=>pubKey(q)===id)||(meUid&&marks.find(m=>myKey(m)===id));if(q)return{name:q.name,lat:q.lat,lon:q.lon,kind:'mark'}}
+ const s=pstats.get(id),o=OVR.get(id);if(s&&s.lat!=null)return{name:(o&&o.name)||s.name,lat:o&&o.lat!=null?o.lat:s.lat,lon:o&&o.lon!=null?o.lon:s.lon,kind:s.kind};return null}
+// места с оценками, которых сейчас нет на карте другим значком
+function ratedBuild(){const out=[],pk=new Set(POIS.map(p=>p.id)),mk=new Set(pubMarks.map(pubKey));if(meUid)for(const m of marks)mk.add(myKey(m));
+ const osk=new Set();for(const k in osmData)if(OL[k])for(const it of osmData[k]||[])osk.add('osm:'+it.id);
+ for(const [id,s] of pstats){if(pk.has(id)||mk.has(id)||osk.has(id))continue;const pl=placeOf(id);if(!pl||pl.lat==null)continue;
+  out.push(Object.assign({id,s,name:pl.name||s.name||'Место',lat:pl.lat,lon:pl.lon,kind:pl.kind||s.kind},P(pl.lat,pl.lon)))}
+ RATED=out;dirty=true}
+
+// ---- загрузка из облака ----
+async function statsLoad(){if(!sb)return;try{const {data,error}=await sb.from('place_stats').select('*').limit(5000);if(error)throw error;
+  pstats=new Map(data.map(r=>[r.poi_id,r]));try{localStorage.setItem('og-pst',JSON.stringify(data))}catch(e){}ratedBuild();if(tab==='near'&&$('sheet').classList.contains('open'))renderSheet()}catch(e){}}
+async function pubLoad(){if(!sb)return;try{const {data,error}=await sb.from('marks').select('id,user_id,name,note,type,lat,lon,photos,photo_path,author_name,created_at').eq('is_public',true).order('updated_at',{ascending:false}).limit(1500);if(error)throw error;
+  pubMarks=data.filter(r=>r.user_id!==meUid).map(r=>Object.assign({id:r.id,user_id:r.user_id,name:r.name,note:r.note||'',type:MT[r.type]?r.type:'place',lat:r.lat,lon:r.lon,author:r.author_name||'',t:Date.parse(r.created_at),
+   photos:(r.photos&&r.photos.length?r.photos:(r.photo_path?[r.photo_path]:[])).map(p=>({p}))},P(r.lat,r.lon)));
+  try{localStorage.setItem('og-pub',JSON.stringify(pubMarks.map(({x,y,photos,...r})=>Object.assign(r,{photos:photos.map(ph=>({p:ph.p}))}))))}catch(e){}ratedBuild()}catch(e){}}
+function ovrSave(){try{localStorage.setItem('og-ovr',JSON.stringify([...OVR.values()]))}catch(e){}}
+async function ovrLoad(){if(!sb)return;try{const {data,error}=await sb.from('place_overrides').select('*');if(error)throw error;OVR=new Map(data.map(r=>[r.poi_id,r]));ovrSave();applyOvrAll()}catch(e){}}
+async function adminLoad(){isAdmin=false;if(!sb||!user)return;try{const {data}=await sb.from('admins').select('user_id').eq('user_id',user.id).maybeSingle();isAdmin=!!data}catch(e){}}
+async function sugLoad(){if(!sb||!user)return;try{const {data,error}=await sb.from('suggestions').select('*').eq('status','new').order('created_at',{ascending:false}).limit(200);if(error)throw error;
+  sugIn=data.filter(r=>r.owner_id===user.id||(r.owner_id==null&&isAdmin));sugMine=data.filter(r=>r.user_id===user.id);
+  if(sugIn.length&&!sugToast){sugToast=true;toast(`<div>Вам предложили правки: <b>${sugIn.length}</b></div><button data-sugopen>Смотреть</button>`)}
+  if(tab==='rank'&&$('sheet').classList.contains('open'))renderSheet()}catch(e){}}
+async function commOnLogin(){await adminLoad();pubLoad();sugLoad();ratedBuild()}
+async function signPaths(list){if(!sb)return;const need=(list||[]).filter(ph=>ph&&ph.p&&!ph.d&&!ph.u&&!ph.tried);if(!need.length)return;need.forEach(ph=>ph.tried=1);
+ try{const {data}=await sb.storage.from('photos').createSignedUrls(need.map(ph=>ph.p),604800);(data||[]).forEach((r,i)=>{if(r&&r.signedUrl)need[i].u=r.signedUrl})}catch(e){}}
+
+// ---- исправления мест (главные места и OpenStreetMap правит администратор) ----
+function applyOvrTo(p,key){const o=OVR.get(key);if(!o)return false;if(o.name)p.name=o.name;if(o.story){p.s=o.story;p.sx=o.story}
+ if(o.lat!=null&&o.lon!=null&&(o.lat!==p.lat||o.lon!==p.lon)){p.lat=o.lat;p.lon=o.lon;Object.assign(p,P(o.lat,o.lon));if('d' in p)p.d=distAt(o.lat,o.lon)}return true}
+function applyOvrAll(){let n=0;for(const p of POIS)if(applyOvrTo(p,p.id))n++;for(const k in osmData)for(const it of osmData[k]||[])applyOvrTo(it,'osm:'+it.id);if(n){mkReset();updateHUD()}ratedBuild()}
+async function applyOverride(key,ch){const ex=OVR.get(key)||{};const row={poi_id:key,name:ch.name??ex.name??null,story:ch.note??ex.story??null,lat:ch.lat??ex.lat??null,lon:ch.lon??ex.lon??null,updated_at:new Date().toISOString()};
+ const {error}=await sb.from('place_overrides').upsert(row,{onConflict:'poi_id'});if(error)throw error;OVR.set(key,row);ovrSave();applyOvrAll();mkReset()}
+
+// ---- фото: лента и просмотр ----
+function galHTML(){return galList.length?`<div class="gal">${galList.map((ph,i)=>`<button class="gph" data-gph="${i}" aria-label="Фото ${i+1}"><img data-gi="${i}" ${phSrc(ph)?`src="${esc(phSrc(ph))}"`:''} alt=""></button>`).join('')}</div>`:''}
+function galFill(){document.querySelectorAll('.gal img[data-gi]').forEach(im=>{const s=phSrc(galList[+im.dataset.gi]);if(s&&im.getAttribute('src')!==s)im.src=s})}
+function lightbox(src){if(!src)return;let el=$('lbx');if(!el){el=document.createElement('div');el.id='lbx';el.className='lbx';el.innerHTML='<img alt="">';el.onclick=()=>el.classList.remove('on');document.body.appendChild(el)}el.firstChild.src=src;el.classList.add('on')}
+
+// ---- карточки ----
+function placeActs(kind,o){const v=kind==='poi'&&visited.has(o.id);return `<div class="acts">${kind!=='poi'||v?`<button class="ghost" data-cur="route">${isvg('navi',16,2.2)} Маршрут</button>`:''}<button class="ghost" data-cur="suggest">${isAdmin?'Изменить место':'Предложить правку'}</button></div>`}
+function openMark(q){const d=dist(me,q),k=myKey(q),s=k&&pstats.get(k);cur={kind:'mark',obj:q,key:k};galList=(q.photos||[]).filter(ph=>ph.d||ph.p||ph.u);
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:var(--mine)">${MT[q.type].e}</span><div><h2>${esc(q.name)}</h2><div class="zh">Ваша отметка · ${q.pub?'видна всем':'видна только вам'}</div></div></div>
+ ${galHTML()}<div class="meta"><span style="color:var(--mine)">${MT[q.type].n}</span><span>${fmtD(d)}, ${walk(d)}</span><span>${fdate(q.t)}</span>${s?`<span>${rateTxt(s)}</span>`:''}</div>
+ ${q.note?`<p class="story">${esc(q.note).replace(/\n/g,'<br>')}</p>`:''}
+ <button class="cta mine" data-cur="route">${isvg('navi',18,2.2)} Маршрут сюда</button>
+ <div class="acts"><button class="ghost" data-cur="edit">✏️ Изменить</button>${(q.photos||[]).length<MAXPH?`<label class="ghost lbtn">📷 Добавить фото<input type="file" accept="image/*" multiple id="curPhoto" hidden></label>`:''}</div>
+ ${q.pub&&k?reviewsBlock(k,q.name):''}<button class="ghost danger" data-delmark="${q.id}">Удалить отметку</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on');if(q.pub&&k)loadReviews(k);signPaths(galList).then(galFill)}
+function openPub(q){const d=dist(me,q),k=pubKey(q),s=pstats.get(k);cur={kind:'pub',obj:q,key:k};galList=q.photos||[];
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:${PUB_COL};color:#fff">${isvg('person',28,2)}</span><div><h2>${esc(q.name)}</h2><div class="zh">Метка путешественника${q.author?' · '+esc(q.author):''}</div></div></div>
+ ${galHTML()}<div class="meta"><span>${MT[q.type].e} ${MT[q.type].n}</span><span>${fmtD(d)}, ${walk(d)}</span>${q.t?`<span>${fdate(q.t)}</span>`:''}${s?`<span>${rateTxt(s)}</span>`:''}</div>
+ ${q.note?`<p class="story">${esc(q.note).replace(/\n/g,'<br>')}</p>`:''}
+ <button class="cta" data-cur="route">${isvg('navi',18,2.2)} Маршрут сюда</button>${reviewsBlock(k,q.name)}<button class="ghost" data-cur="suggest">Предложить правку</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on');loadReviews(k);signPaths(galList).then(galFill)}
+function openRated(r){const d=dist(me,r);cur={kind:'rated',obj:r,key:r.id};
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:${GOLD};color:#fff">${isvg('star',28,2)}</span><div><h2>${esc(r.name)}</h2><div class="zh">${isPop(r.s)?'Популярное у путешественников':'Место с оценками путешественников'}</div></div></div>
+ <div class="meta"><span>${rateTxt(r.s)}</span><span>${fmtD(d)}, ${walk(d)}</span></div>
+ <button class="cta" data-cur="route">${isvg('navi',18,2.2)} Маршрут сюда</button>${reviewsBlock(r.id,r.name)}<button class="ghost" data-cur="suggest">${isAdmin&&!r.id.startsWith('mk:')?'Изменить место':'Предложить правку'}</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on');loadReviews(r.id)}
+function openCur(c){if(!c)return;if(c.kind==='poi')openCard(c.obj);else if(c.kind==='osm')openOsm(c.obj);else if(c.kind==='mark')openMark(c.obj);else if(c.kind==='pub')openPub(c.obj);else if(c.kind==='rated')openRated(c.obj)}
+function ratedFromStats(id){const s=pstats.get(id),pl=placeOf(id);if(!s||!pl||pl.lat==null)return null;return Object.assign({id,s,name:pl.name||s.name||'Место',lat:pl.lat,lon:pl.lon,kind:pl.kind||s.kind},P(pl.lat,pl.lon))}
+function openPlace(id){closePanel();closePops();follow=false;const p=POIS.find(q=>q.id===id);if(p){focusAt(p.lat,p.lon);openCard(p);return}
+ if(id.startsWith('mk:')){const q=pubMarks.find(q=>pubKey(q)===id);if(q){focusAt(q.lat,q.lon);openPub(q);return}const m=meUid&&marks.find(m=>myKey(m)===id);if(m){focusAt(m.lat,m.lon);openMark(m);return}}
+ if(id.startsWith('osm:')){const it=osmFind(id.slice(4));if(it&&it.lay!=='metro'){focusAt(it.lat,it.lon);openOsm(it);return}}
+ const r=RATED.find(x=>x.id===id)||ratedFromStats(id);if(r){focusAt(r.lat,r.lon);openRated(r)}}
+function destOf(c){const o=c.obj;if(c.kind==='poi')return o;if(c.kind==='osm')return osmDest(o);
+ return{id:c.key||('mk:'+o.id),name:o.name,zh:'',lat:o.lat,lon:o.lon,x:o.x,y:o.y,cat:c.kind==='rated'?'pin':'dest',ic:c.kind==='rated'?'star':c.kind==='pub'?'person':'mark',col:c.kind==='mark'?'var(--mine)':c.kind==='pub'?PUB_COL:GOLD}}
+
+// ---- форма метки: новая и правка (название, тип, заметка, фото, место, «показать всем») ----
+function openAdd(at){draft=null;openForm(null,at)}
+function reopenForm(){openForm(draft&&draft.src!=='new'?marks.find(m=>m.id===draft.src)||null:null)}
+function formGrab(){if(!draft)return;const n=$('mName'),no=$('mNote'),pb=$('mPub');if(n)draft.name=n.value;if(no)draft.note=no.value;if(pb)draft.pub=pb.checked}
+function openForm(q,at){const ed=!!q;
+ if(!draft||draft.src!==(q?q.id:'new'))draft={src:q?q.id:'new',type:q?q.type:'place',name:q?q.name:'',note:q?q.note||'':'',photos:q?(q.photos||[]).slice():[],rm:[],pub:q?!!q.pub:false,at:at&&at.x!==undefined?{x:at.x,y:at.y}:null,moved:false};
+ const d=draft,where=d.moved?'Место уточнено на карте':d.at?'В выбранной точке на карте':ed?'':(mode==='gps'?'Там, где вы стоите сейчас (GPS)':'В точке, где стоит ваш человечек');
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><h2>${ed?'Изменить отметку':'Новая отметка'}</h2>${where?`<div class="zh">${where}</div>`:''}
+ <label class="fl">Название<input id="mName" maxlength="60" placeholder="Например, лапшичная у моста" value="${esc(d.name)}"></label>
+ <div class="types">${Object.entries(MT).map(([k,v])=>`<button data-mt="${k}" class="${k===d.type?'on':''}">${v.e} ${v.n}</button>`).join('')}</div>
+ <label class="fl">Заметка<textarea id="mNote" rows="3" placeholder="Что здесь интересного, цены, часы работы">${esc(d.note)}</textarea></label>
+ <div class="phs">${d.photos.map((ph,i)=>`<div class="ph"><img ${phSrc(ph)?`src="${esc(phSrc(ph))}"`:''} alt=""><button data-fph="${i}" aria-label="Убрать фото">×</button></div>`).join('')}${d.photos.length<MAXPH?`<label class="ph phadd"><input type="file" accept="image/*" multiple id="fPhoto" hidden><span>📷<br>Добавить фото</span></label>`:''}</div>
+ <button class="ghost" data-cur="formmove">📍 ${ed||d.at?'Передвинуть точку на карте':'Уточнить место на карте'}</button>
+ <label class="sw"><input type="checkbox" id="mPub" ${d.pub?'checked':''}><span>Показать всем<small>${user?'Метку увидят другие путешественники, смогут оценить её и предложить правку':'Войдите в аккаунт, чтобы делиться метками'}</small></span></label>
+ <button class="cta mine" data-savemark>${ed?'Сохранить изменения':'Сохранить отметку'}</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on');if(!ed&&!d.name)setTimeout(()=>$('mName')&&!$('mName').value&&$('mName').focus(),300);
+ if(d.photos.some(ph=>!phSrc(ph)&&ph.p&&!ph.tried))signPaths(d.photos).then(()=>{if(draft===d&&$('mName')){formGrab();reopenForm()}})}
+function saveForm(){formGrab();const d=draft;if(!d)return;const name=d.name.trim();if(!name){const i=$('mName');if(i){i.focus();i.placeholder='Введите название'}return}
+ if(d.pub&&!user){d.pub=false;toast('<div>Чтобы делиться метками, войдите в аккаунт. Сохраняю как личную.</div>')}
+ if(d.src==='new'){const[lat,lon]=U(d.at||me),q={id:'m'+Date.now(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),name,note:d.note.trim(),type:d.type,photos:d.photos,pub:d.pub,t:Date.now(),u:Date.now()};
+  Object.assign(q,P(q.lat,q.lon));marks.push(q);if(!saveMarks()){marks.pop();return}qMark(q.id);flushSoon();
+  pts+=15;changed=true;save();updateHUD();closeCard();draft=null;tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
+  toast(`<span style="font-size:22px">${MT[q.type].e}</span><div><b>Отметка сохранена</b><br>+15 очков${q.pub?' · видна всем':''}</div>`);return}
+ const q=marks.find(m=>m.id===d.src);if(!q){draft=null;closeCard();return}const bak=JSON.stringify(Object.assign({},q,{photos:null})),bph=q.photos;
+ q.name=name;q.note=d.note.trim();q.type=d.type;q.pub=d.pub;q.photos=d.photos;q.rm=(q.rm||[]).concat(d.rm);
+ if(d.at){const[la,lo]=U(d.at);q.lat=+la.toFixed(6);q.lon=+lo.toFixed(6);Object.assign(q,P(q.lat,q.lon))}q.u=Date.now();
+ if(!saveMarks()){Object.assign(q,JSON.parse(bak),{photos:bph});return}qMark(q.id);flushSoon();draft=null;dirty=true;renderSheet();openMark(q);toast('<div>Отметка обновлена</div>')}
+document.addEventListener('change',async e=>{const id=e.target.id;
+ if(id==='mPub'&&e.target.checked&&!user){e.target.checked=false;toast('<div>Войдите в аккаунт, чтобы делиться метками</div>');return}
+ if(id!=='fPhoto'&&id!=='curPhoto')return;const files=[...(e.target.files||[])];if(!files.length)return;
+ if(id==='fPhoto'){if(!draft)return;formGrab();for(const f of files){if(draft.photos.length>=MAXPH)break;try{draft.photos.push({d:await shrink(f)})}catch(err){toast('<div>Не удалось прочитать фото</div>')}}reopenForm();return}
+ const c=cur;if(!c||c.kind!=='mark')return;const q=c.obj;q.photos=q.photos||[];let n=0;
+ for(const f of files){if(q.photos.length>=MAXPH)break;try{q.photos.push({d:await shrink(f)});n++}catch(err){}}
+ if(n){q.u=Date.now();if(!saveMarks()){q.photos.splice(-n);return}qMark(q.id);flushSoon();openMark(q);dirty=true;renderSheet();toast(`<div>Фото добавлено${n>1?': '+n:''}</div>`)}});
+
+// ---- выбор точки на карте: карта двигается под неподвижным значком ----
+function moveStart(pt,title,cb){closeCard();closePanel();closePops();moveMode={cb};follow=false;$('app').classList.add('moving');
+ $('mvBar').innerHTML=`<div class="rt-hd"><span class="rt-ic" style="background:var(--vio)">${isvg('pin',18,2.2)}</span><span class="rt-t"><b>${esc(title)}</b><span>Двигайте карту, точка встанет под значок</span></span></div><div class="acts"><button class="ghost" data-mv="no">Отмена</button><button class="ghost ok" data-mv="ok">Готово</button></div>`;
+ $('mvBar').classList.add('on');zStop();map.setView(toM(...U(pt)),Math.max(map.getZoom(),17),{animate:true})}
+function moveEnd(ok){const m=moveMode;if(!m)return;moveMode=null;$('app').classList.remove('moving');$('mvBar').classList.remove('on');let p=null;if(ok){const ll=fromM(map.getCenter());p=P(ll[0],ll[1])}m.cb(p)}
+
+// ---- предложить правку (или сразу изменить — автору метки и администратору) ----
+function grabSug(){if(!sdraft)return;const n=$('sgName'),no=$('sgNote'),cm=$('sgCom');if(n)sdraft.name=n.value;if(no)sdraft.note=no.value;if(cm)sdraft.comment=cm.value}
+function openSuggest(){const c=cur;if(!c)return;if(!user){toast('<div>Войдите, чтобы предлагать правки</div>');openLogin();return}
+ const o=c.obj,adm=isAdmin&&!String(c.key).startsWith('mk:'),hasNote=c.kind==='pub'||c.kind==='poi';
+ const orig={name:o.name||'',note:c.kind==='pub'?(o.note||''):c.kind==='poi'?(o.s||''):'',lat:o.lat,lon:o.lon};
+ if(!sdraft||sdraft.key!==c.key)sdraft={key:c.key,name:orig.name,note:orig.note,at:null,comment:'',orig};
+ const s=sdraft,mv=s.at?Math.round(dist({x:o.x,y:o.y},s.at)):0;
+ $('card').classList.remove('place');$('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><h2>${adm?'Изменить место':'Предложить правку'}</h2><div class="zh">${esc(orig.name)} · ${adm?'изменения сразу увидят все':c.kind==='pub'||ownerOf(c.key)?'правку посмотрит автор метки':'правку посмотрит администратор'}</div>
+ <label class="fl">Название<input id="sgName" maxlength="80" value="${esc(s.name)}"></label>
+ ${hasNote?`<label class="fl">Описание<textarea id="sgNote" rows="4" maxlength="1500">${esc(s.note)}</textarea></label>`:''}
+ <button class="ghost" data-cur="sgmove">📍 ${s.at?`Точка сдвинута на ${fmtD(mv)} · изменить`:'Указать верное место на карте'}</button>
+ ${adm?'':`<label class="fl">Что не так (необязательно)<textarea id="sgCom" rows="2" maxlength="500" placeholder="Например: вход с другой улицы, место закрылось">${esc(s.comment)}</textarea></label>`}
+ <button class="cta" data-sgsend>${adm?'Сохранить':'Отправить'}</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on')}
+async function sendSuggest(t){grabSug();const c=cur,s=sdraft;if(!c||!s||!user)return;const ch={},adm=isAdmin&&!String(c.key).startsWith('mk:');
+ if(s.name.trim()&&s.name.trim()!==s.orig.name)ch.name=s.name.trim();if((c.kind==='pub'||c.kind==='poi')&&s.note.trim()!==s.orig.note.trim())ch.note=s.note.trim();
+ if(s.at){const[la,lo]=U(s.at);ch.lat=+la.toFixed(6);ch.lon=+lo.toFixed(6)}
+ if(!Object.keys(ch).length&&!(s.comment||'').trim()){toast('<div>Вы ничего не изменили</div>');return}
+ t.disabled=true;
+ try{if(adm){await applyOverride(c.key,ch);toast('<div><b>Готово.</b> Место обновлено для всех</div>')}
+  else{ch.from={name:s.orig.name,lat:s.orig.lat,lon:s.orig.lon};
+   const {error}=await sb.from('suggestions').insert({target:c.key,target_name:s.orig.name,owner_id:c.kind==='pub'?c.obj.user_id:ownerOf(c.key),user_id:user.id,author_name:uname(),changes:ch,comment:(s.comment||'').trim()||null});if(error)throw error;
+   toast(`<div><b>Спасибо!</b> ${c.kind==='pub'||ownerOf(c.key)?'Автор метки':'Администратор'} посмотрит правку</div>`);sugLoad()}
+  sdraft=null;openCur(c)}catch(e){t.disabled=false;toast(`<div>Не удалось отправить: ${esc(e.message||'ошибка')}</div>`)}}
+function sugHTML(){if(!user)return'';let h='';
+ if(sugIn.length){h+=`<h4 class="sec">Предложения правок · ${sugIn.length}</h4>`+sugIn.map(r=>{const c=r.changes||{},f=c.from||{},li=[];
+   if(c.name)li.push(`Название: «${esc(f.name||r.target_name||'')}» → «${esc(c.name)}»`);
+   if(c.lat!=null){const mvd=f.lat!=null?Math.round(dist(P(f.lat,f.lon),P(c.lat,c.lon))):null;li.push(`Место сдвинуто${mvd!=null?' на '+fmtD(mvd):''}`)}
+   if(c.note!=null)li.push('Новое описание: '+esc(c.note.slice(0,220))+(c.note.length>220?'…':''));
+   return `<div class="sg"><b>${esc(r.target_name||'Место')}</b><span>${esc(r.author_name||'Путешественник')} · ${fdate(Date.parse(r.created_at))}</span>${li.length?`<ul>${li.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${r.comment?`<p>«${esc(r.comment)}»</p>`:''}<div class="acts"><button class="ghost" data-sg="show:${r.id}">На карте</button><button class="ghost" data-sg="no:${r.id}">Отклонить</button><button class="ghost ok" data-sg="yes:${r.id}">Принять</button></div></div>`}).join('')}
+ const mine=sugMine.filter(r=>r.status==='new').length;if(mine)h+=`<p class="note">Ваши правки на проверке: ${mine}</p>`;return h}
+async function sugAct(t){const [a,id]=t.dataset.sg.split(':'),r=sugIn.find(x=>String(x.id)===id);if(!r)return;const c=r.changes||{};
+ if(a==='show'){closePanel();follow=false;const f=c.from||{},la=c.lat!=null?c.lat:f.lat,lo=c.lon!=null?c.lon:f.lon;if(la!=null){focusAt(la,lo);if(c.lat!=null){pin=P(c.lat,c.lon);dirty=true}}return}
+ t.disabled=true;
+ try{if(a==='yes'){if(r.target.startsWith('mk:')){const q=marks.find(m=>m.id===r.target.split('/')[1]);if(!q)throw new Error('метка не найдена на этом устройстве, нажмите «Синхронизировать»');
+    if(c.name)q.name=c.name;if(c.note!=null)q.note=c.note;if(c.lat!=null){q.lat=c.lat;q.lon=c.lon;Object.assign(q,P(q.lat,q.lon))}q.u=Date.now();saveMarks();qMark(q.id);flushSoon()}
+   else await applyOverride(r.target,c)}
+  const {error}=await sb.from('suggestions').update({status:a==='yes'?'accepted':'rejected',decided_at:new Date().toISOString()}).eq('id',r.id);if(error)throw error;
+  sugIn=sugIn.filter(x=>x!==r);toast(a==='yes'?'<div>Правка принята</div>':'<div>Правка отклонена</div>');renderSheet();dirty=true}
+ catch(e){t.disabled=false;toast(`<div>Не получилось: ${esc(e.message||'ошибка')}</div>`)}}
+
+// ---- «Хвалят путешественники» в списке «Рядом» ----
+function hotHTML(){const rows=[];for(const [id,s] of pstats){if(s.avg<4)continue;const pl=placeOf(id);if(!pl||pl.lat==null)continue;rows.push({id,s,name:pl.name||s.name||'Место',d:dist(me,P(pl.lat,pl.lon))})}
+ rows.sort((a,b)=>(isPop(b.s)-isPop(a.s))||(a.d-b.d));const top=rows.filter(r=>r.d<10000).slice(0,5);
+ if(!top.length)return `<p class="note hotnote">★ Ставьте местам звёзды. Когда у места набирается ${POP_N} оценки от 4 и выше, оно подсвечивается золотым на карте у всех.</p>`;
+ return `<h4 class="sec">Хвалят путешественники</h4>`+top.map(r=>`<button class="item" data-place="${esc(r.id)}"><span class="dot hotdot">${isvg('star',20,2.2)}</span><span class="t"><b>${esc(r.name)}</b><span>${fmtD(r.d)}, ${walk(r.d)} пешком</span></span><span class="tag${isPop(r.s)?' hotg':''}">★ ${fmtAvg(r.s.avg)} · ${r.s.n}</span></button>`).join('')+`<h4 class="sec">Рядом</h4>`}
+
+// ---- нажатия ----
+function commClick(t){
+ if(t.id==='fogBtn'){fogOn=!fogOn;try{localStorage.setItem('og-fog',fogOn?'1':'0')}catch(e){}renderPop();fogS.need=true;dirty=true;toast(fogOn?'<div>Туман включён</div>':'<div>Туман выключен. Прогресс по районам всё равно считается</div>');return}
+ if(t.dataset.mv){moveEnd(t.dataset.mv==='ok');return}
+ if(t.dataset.gph!==undefined){lightbox(phSrc(galList[+t.dataset.gph]));return}
+ if(t.dataset.fph!==undefined){formGrab();const ph=draft&&draft.photos.splice(+t.dataset.fph,1)[0];if(ph&&ph.p)draft.rm.push(ph.p);reopenForm();return}
+ if(t.dataset.place){openPlace(t.dataset.place);return}
+ if('sugopen' in t.dataset){$('toast').classList.remove('on');openTab('rank');return}
+ if(t.dataset.sg){sugAct(t);return}
+ if('sgsend' in t.dataset){sendSuggest(t);return}
+ if(t.dataset.cur){const a=t.dataset.cur,c=cur;
+  if(a==='formmove'){formGrab();if(!draft)return;const q=draft.src!=='new'?marks.find(m=>m.id===draft.src):null,pt=draft.at||(q?{x:q.x,y:q.y}:{x:me.x,y:me.y});moveStart(pt,'Где стоит метка?',p=>{if(p&&draft){draft.at=p;draft.moved=true}reopenForm()});return}
+  if(!c)return;
+  if(a==='route'){openRoute(destOf(c));return}
+  if(a==='edit'&&c.kind==='mark'){draft=null;openForm(c.obj);return}
+  if(a==='suggest'){sdraft=null;openSuggest();return}
+  if(a==='sgmove'){grabSug();const o=c.obj;moveStart(sdraft&&sdraft.at||{x:o.x,y:o.y},'Где на самом деле это место?',p=>{if(p&&sdraft)sdraft.at=p;openSuggest()});return}}}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-cur],[data-mv],[data-sg],[data-gph],[data-fph],[data-place],[data-sgsend],[data-sugopen],#fogBtn');if(t)commClick(t)});
+
+// ---- долгое нажатие на карту (на iPhone браузер его сам не сообщает) ----
+{let lpT=0,lpXY=null,lpFired=false;const mc=map.getContainer(),xy=t=>{const r=mc.getBoundingClientRect();return[t.clientX-r.left,t.clientY-r.top]};
+ mc.addEventListener('touchstart',e=>{clearTimeout(lpT);if(e.touches.length!==1||moveMode)return;lpXY=xy(e.touches[0]);lpFired=false;
+  lpT=setTimeout(()=>{lpFired=true;setTimeout(()=>{lpFired=false},900);const ll=fromM(map.containerPointToLatLng(lpXY));openPin(P(ll[0],ll[1]));try{navigator.vibrate&&navigator.vibrate(12)}catch(err){}},560)},{passive:true});
+ mc.addEventListener('touchmove',e=>{if(!lpXY||!e.touches[0])return;const p=xy(e.touches[0]);if(Math.hypot(p[0]-lpXY[0],p[1]-lpXY[1])>10)clearTimeout(lpT)},{passive:true});
+ mc.addEventListener('touchend',()=>clearTimeout(lpT),{passive:true});mc.addEventListener('touchcancel',()=>clearTimeout(lpT),{passive:true});
+ // палец отпустили — браузер пришлёт «нажатие», его гасим, иначе карточка сразу закроется
+ document.addEventListener('click',e=>{if(lpFired){lpFired=false;e.stopPropagation();e.preventDefault()}},true);mc.addEventListener('touchstart',()=>{},{passive:true})}
+
+// ---- запуск ----
+applyOvrAll();ratedBuild();
+setTimeout(()=>{ovrLoad();statsLoad();pubLoad()},900);
+setInterval(()=>{if(document.visibilityState==='visible'){statsLoad();pubLoad();if(user)sugLoad()}},180000);
+if(location.hostname==='test.local')window.__ogc={setStats:rows=>{pstats=new Map(rows.map(r=>[r.poi_id,r]));ratedBuild();mkReset()},setPub:rows=>{pubMarks=rows.map(r=>Object.assign({photos:[]},r,P(r.lat,r.lon)));ratedBuild();mkReset()},
+ admin:v=>{isAdmin=v},sug:()=>sugLoad(),login:u=>{user=u;meUid=u?u.id:null},marks:()=>marks,cur:()=>cur,draft:()=>draft,moving:()=>!!moveMode,fog:()=>fogOn,rated:()=>RATED.length};
+
 loadColors();try{buildBase()}catch(e){}revealAt(me);updateHUD();renderSheet();renderPop();renderOL();setTimeout(osmSchedule,1500);
 ogReady=true;try{resize()}catch(e){toast('<div>Карта не запустилась: '+esc(e.message)+'</div>')}
 try{startGps(false)}catch(e){}
 let last=performance.now(),fogSL='',linesSL='',mkSL='';
-const fogSig=()=>reveal.size+'|'+visited.size+'|'+base+'|'+isDark();
+const fogSig=()=>reveal.size+'|'+visited.size+'|'+base+'|'+isDark()+'|'+fogOn;
 const _ids=new WeakMap();let _idn=0;const oid=o=>{if(!o||typeof o!=='object')return 0;let v=_ids.get(o);if(!v){v=++_idn;_ids.set(o,v)}return v};
 const linesSig=()=>(route?[oid(route),oid(route.pts),route.idx,route.proj?Math.round(route.proj.x)+','+Math.round(route.proj.y):'',route.approx?1:0].join(','):'-')+'|'+(OL.metro?1:0)+'|'+oid(metro)+'|'+base+'|'+hereD();
 let drawFails=0;(function loop(t){const dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;
