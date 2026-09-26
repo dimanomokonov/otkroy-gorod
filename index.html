@@ -539,9 +539,77 @@ function softRules(S){const pm=protomapsL,Poly=pm.PolygonSymbolizer,Line=pm.Line
   {dataLayer:'transportation_name',minzoom:14,symbolizer:new pm.LineLabelSymbolizer({labelProps:['name'],fill:S.lbl,stroke:S.halo,width:3,fontFamily:FF,fontWeight:500,fontSize:11,position:pm.LineLabelPlacement.Center,repeatDistance:320}),filter:has('motorway','trunk','primary','secondary','tertiary')},
   {dataLayer:'transportation_name',minzoom:16,symbolizer:new pm.LineLabelSymbolizer({labelProps:['name'],fill:S.lbl,stroke:S.halo,width:3,fontFamily:FF,fontWeight:400,fontSize:10.5,position:pm.LineLabelPlacement.Center,repeatDistance:260}),filter:has('minor','service')}];
  return{paint,labels}}
-function softLayer(){const S=isDark()?SOFT_PAL.dark:SOFT_PAL.light,R=softRules(S);
- const l=protomapsL.leafletLayer({url:softUrl,maxDataZoom:14,backgroundColor:S.bg,paintRules:R.paint,labelRules:R.labels,devicePixelRatio:Math.min(2,window.devicePixelRatio||1),
-  attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openfreemap.org">OpenFreeMap</a>'});
+// ---------- отрисовка своей карты в фоновом потоке: главный поток только показывает готовые картинки ----------
+const PM_JS='https://cdn.jsdelivr.net/npm/protomaps-leaflet@5.1.0/dist/protomaps-leaflet.js';
+const SOFT_DPR=Math.min(2,window.devicePixelRatio||1);
+let softWorkerOk=(()=>{try{return typeof Worker!=='undefined'&&typeof OffscreenCanvas!=='undefined'&&'transferToImageBitmap' in OffscreenCanvas.prototype&&!!new OffscreenCanvas(1,1).getContext('2d')}catch(e){return false}})();
+let softLibText=null,softFonts=null;
+const softLib=softWorkerOk?fetch(PM_JS).then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>{softLibText=t}).catch(()=>{softWorkerOk=false;if(TILES.soft&&TILES.soft._isW)softRebuild()}):Promise.resolve();
+function softWorkerSrc(){return softLibText+'\n;const zw='+zw.toString()+';\n'+softRules.toString()+'\n('+softWorkerMain.toString()+')();'}
+// код, который выполняется внутри потока
+function softWorkerMain(){
+ let V=null,LB=null,R=null,DPR=2,BG='#fff',ready=false,lastZ=-1,busy=false,fid=0;const Q=new Map(),FP=new Map();
+ // сеть — через главный поток (там работает общий кэш браузера)
+ self.fetch=url=>new Promise((res,rej)=>{const id=++fid;FP.set(id,{res,rej});postMessage({t:'fetch',id,url})});
+ const tick=()=>new Promise(r=>setTimeout(r,0));
+ async function pump(){if(busy||!ready)return;busy=true;
+  try{for(;;){let best=null;
+    for(const r of Q.values()){if(r.z!==lastZ){Q.delete(r.k);continue}if(r.err){Q.delete(r.k);postMessage({t:'err',k:r.k});continue}if(r.pt&&(!best||r.pri<best.pri))best=r}
+    if(!best)break;Q.delete(best.k);draw(best);await tick()}}
+  finally{busy=false}}
+ function draw(r){const pt=r.pt,ptm=new Map([['',[pt]]]);LB.add(r.z,ptm);const idx=LB.getIndex(r.z);
+  const cv=new OffscreenCanvas(256*DPR,256*DPR),g=cv.getContext('2d');g.setTransform(DPR,0,0,DPR,0,0);g.fillStyle=BG;g.fillRect(0,0,256,256);
+  const bbox={minX:256*r.x-16,minY:256*r.y-16,maxX:256*(r.x+1)+16,maxY:256*(r.y+1)+16};
+  protomapsL.paint(g,r.z,ptm,idx,R.paint,bbox,new pt.origin.constructor(256*r.x,256*r.y),false);
+  const bmp=cv.transferToImageBitmap();postMessage({t:'tile',k:r.k,bmp},[bmp])}
+ onmessage=async e=>{const m=e.data;
+  if(m.t==='init'){DPR=m.dpr;BG=m.pal.bg;R=softRules(m.pal);V=protomapsL.sourcesToViews({url:m.url,maxDataZoom:14}).get('');
+   LB=new protomapsL.Labelers(new OffscreenCanvas(8,8).getContext('2d'),R.labels,16,keys=>postMessage({t:'inval',keys:[...keys]}))}
+  else if(m.t==='fonts'){try{if(self.fonts&&typeof FontFace!=='undefined')for(const f of m.faces){const ff=new FontFace('Rubik',f.buf,f.desc);self.fonts.add(ff);await ff.load()}}catch(err){}ready=true;pump()}
+  else if(m.t==='fetched'){const p=FP.get(m.id);if(!p)return;FP.delete(m.id);if(m.buf)p.res({ok:true,status:200,arrayBuffer:()=>Promise.resolve(m.buf)});else p.rej(new Error(m.err||'fetch'))}
+  else if(m.t==='req'){const old=Q.get(m.k);if(old){old.pri=m.pri;return}const r={k:m.k,z:m.z,x:m.x,y:m.y,pri:m.pri};Q.set(m.k,r);if(m.z!==lastZ)lastZ=m.z;
+   V.getDisplayTile({z:m.z,x:m.x,y:m.y}).then(pt=>{r.pt=pt;pump()},()=>{r.err=1;pump()})}
+  else if(m.t==='cancel'){Q.delete(m.k)}}}
+// шрифт Rubik для подписей внутри потока (если браузер это умеет)
+function softLoadFonts(){if(softFonts)return softFonts;
+ softFonts=fetch('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap').then(r=>r.text()).then(async css=>{const out=[];
+  const re=/\/\*\s*([\w-]+)\s*\*\/\s*@font-face\s*\{([^}]*)\}/g;let m;
+  while((m=re.exec(css))){if(!/^(latin|cyrillic)$/.test(m[1]))continue;const b=m[2],u=/url\(([^)]+)\)/.exec(b),w=/font-weight:\s*(\d+)/.exec(b),ur=/unicode-range:\s*([^;]+);/.exec(b);if(!u)continue;
+   try{const buf=await fetch(u[1].replace(/['"]/g,'')).then(r=>r.arrayBuffer());out.push({buf,desc:{weight:w?w[1]:'400',style:'normal',unicodeRange:ur?ur[1].trim():undefined}})}catch(e){}}
+  return out}).catch(()=>[]);
+ return softFonts}
+const SoftWLayer=L.GridLayer.extend({
+ options:{updateWhenZooming:false,updateWhenIdle:true,keepBuffer:2},
+ initialize(o){L.GridLayer.prototype.initialize.call(this,o);this._pend=new Map();this._errs=0},
+ _isW:true,
+ onAdd(map){L.GridLayer.prototype.onAdd.call(this,map);if(softLibText)this._startWorker();else softLib.then(()=>{if(this._map&&softLibText)this._startWorker()})},
+ onRemove(map){L.GridLayer.prototype.onRemove.call(this,map);this._stopWorker()},
+ _startWorker(){if(this._w)return;
+  let w;try{w=new Worker(URL.createObjectURL(new Blob([softWorkerSrc()],{type:'text/javascript'})))}catch(e){softWorkerOk=false;setTimeout(softRebuild,0);return}
+  this._w=w;const pal=this.options.pal;
+  w.onmessage=e=>this._msg(e.data);
+  w.onerror=()=>{if(!this._any){softWorkerOk=false;setTimeout(softRebuild,0)}};
+  w.postMessage({t:'init',url:this.options.url,pal,dpr:SOFT_DPR});
+  let sent=false;const go=faces=>{if(sent||!this._w)return;sent=true;this._w.postMessage({t:'fonts',faces},faces.map(f=>f.buf))};
+  softLoadFonts().then(f=>go(f.map(x=>({buf:x.buf.slice(0),desc:x.desc}))));setTimeout(()=>go([]),2500);
+  for(const k in this._tiles)this._req(this._tiles[k].coords,k)},
+ _stopWorker(){if(this._w){this._w.terminate();this._w=null}this._pend.clear()},
+ createTile(c,done){const el=L.DomUtil.create('canvas','leaflet-tile');el.width=el.height=256*SOFT_DPR;
+  const k=this._tileCoordsToKey(c);this._pend.set(k,done);this._req(c,k);return el},
+ _req(c,k){const m=this._map;if(!m||!this._w)return;const p=m.project(m.getCenter(),c.z).divideBy(256);this._w.postMessage({t:'req',k,z:c.z,x:c.x,y:c.y,pri:Math.hypot(c.x+.5-p.x,c.y+.5-p.y)})},
+ _removeTile(k){if(this._w)this._w.postMessage({t:'cancel',k});this._pend.delete(k);L.GridLayer.prototype._removeTile.call(this,k)},
+ _msg(m){
+  if(m.t==='tile'){this._any=true;const t=this._tiles[m.k];if(!t){if(m.bmp.close)m.bmp.close();return}const el=t.el;
+   if(el._br===undefined)el._br=el.getContext('bitmaprenderer')||null;
+   if(el._br)el._br.transferFromImageBitmap(m.bmp);else{const g=el.getContext('2d');g.drawImage(m.bmp,0,0);if(m.bmp.close)m.bmp.close()}
+   const d=this._pend.get(m.k);if(d){this._pend.delete(m.k);d(null,el)}}
+  else if(m.t==='inval'){for(const k of m.keys){const t=this._tiles[k];if(t&&!this._pend.has(k))this._req(t.coords,k)}}
+  else if(m.t==='fetch'){fetch(m.url).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.arrayBuffer()}).then(buf=>{if(this._w)this._w.postMessage({t:'fetched',id:m.id,buf},[buf])},err=>{this.fire('tileerror');if(this._w)this._w.postMessage({t:'fetched',id:m.id,err:String(err&&err.message||err)})})}
+  else if(m.t==='err'){const d=this._pend.get(m.k);if(d){this._pend.delete(m.k);d(new Error('tile'),this._tiles[m.k]&&this._tiles[m.k].el)}}}});
+function softLayer(){const S=isDark()?SOFT_PAL.dark:SOFT_PAL.light;let l;
+ const attribution='© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openfreemap.org">OpenFreeMap</a>';
+ if(softWorkerOk)l=new SoftWLayer({url:softUrl,pal:S,attribution});
+ else{const R=softRules(S);l=protomapsL.leafletLayer({url:softUrl,maxDataZoom:14,backgroundColor:S.bg,paintRules:R.paint,labelRules:R.labels,devicePixelRatio:SOFT_DPR,updateWhenZooming:false,updateWhenIdle:true,attribution})}
  l._softDark=isDark();let n=0;l.on('tileerror',()=>{if(++n===8&&base==='soft')toast(`<div>Своя карта грузится плохо. Переключить на «${BN.carto}»?</div><button data-base="carto">Да</button>`)});return l}
 // свежий адрес данных (OpenFreeMap раз в неделю выпускает новую версию)
 fetch(SOFT_TJ).then(r=>r.json()).then(j=>{const u=j&&j.tiles&&j.tiles[0];if(!u||u===softUrl)return;softUrl=u;try{localStorage.setItem('og-soft-url',u)}catch(e){}if(TILES.soft)softRebuild()}).catch(()=>{});
@@ -833,7 +901,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[dat
  else if('soon' in t.dataset)toast('<div>Команды появятся в следующей версии.</div>');
  else if(t.id==='reset'&&confirm('Сбросить весь прогресс и туман'+(user?' (и в облаке)':'')+'?')){reveal.clear();area.clear();chunks.clear();born.clear();visited.clear();pendCells.clear();pendVisits.clear();pts=marks.length*15;serverReset();me=P(23.1262,113.2628);target=null;revealAt(me);save();updateHUD();renderSheet();centerMe();dirty=true}});
 $('scrim').onclick=()=>{$('card').classList.contains('on')?closeCard():closePanel()};
-$('hintX').onclick=()=>{hideHint();save()};
+{const hx=$('hintX');if(hx)hx.onclick=()=>{hideHint();save()}}
 function openTab(t){tab=t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t===t));openPanel()}
 $('listBtn').onclick=()=>openTab('near');
 document.querySelectorAll('[data-tabopen]').forEach(b=>b.onclick=()=>openTab(b.dataset.tabopen));
