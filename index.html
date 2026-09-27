@@ -730,8 +730,13 @@ const MT={place:{e:'📍',n:'Место'},egg:{e:'✨',n:'Пасхалка'},foo
 const DIARY_IDS=['canton','chen','shamian','zhenhai','rams','sys','cathedral','beijing','liurong','yongqing','huacheng','opera','bridge','road','qilou','statues','dafo','wanmu','liwan','tianzi','taotao','panxi','nanxin','gzjj'];
 const DIARY_SET=new Set(DIARY_IDS),GKEY='og-game-v1',DIARY_V='1';
 let G=null;try{G=JSON.parse(localStorage.getItem(GKEY)||'null')}catch(e){}
-G=Object.assign({ach:{},look:{},st:{},seen:{},days:{},credit:{},rated:0,found:0,hid:0,tp:{},td:{},tasks:[],day:''},G||{});
-const GC={list:[],notes:{},at:0,busy:false};try{GC.notes=JSON.parse(localStorage.getItem('og-cnotes')||'{}')||{}}catch(e){}
+G=Object.assign({rv:{},ach:{},look:{},st:{},seen:{},days:{},credit:{},rated:0,found:0,hid:0,tp:{},td:{},tasks:[],day:''},G||{});
+const GC={list:[],notes:{},at:0,busy:false};
+// радиус, в котором место засчитывается (м): у больших мест — по их размеру; туман от этого не меняется
+const GRAD={canton:250,chen:120,shamian:350,zhenhai:130,rams:130,sys:160,cathedral:110,beijing:220,liurong:110,yongqing:170,huacheng:300,opera:160,bridge:200,road:70,qilou:220,statues:260,dafo:90,wanmu:80,liwan:250,tianzi:110,taotao:80,panxi:110,nanxin:80,gzjj:90};
+for(const p of POIS)if(GRAD[p.id])p.rad=GRAD[p.id];
+// очки дают только за достопримечательности (главные и тайные места) и за оценки/отзывы
+function gPtsOf(p){return p&&p.cat!=='food'?(p.pts||0):0}try{GC.notes=JSON.parse(localStorage.getItem('og-cnotes')||'{}')||{}}catch(e){}
 // ---- общие метки, оценки, правки: состояние (объявлено заранее, чтобы было доступно при запуске) ----
 const PUB_COL='#12a594',GOLD='#f5a524',POP_N=3,POP_AVG=4,MAXPH=8;
 let isAdmin=false,meUid=null,pubMarks=[],pstats=new Map(),OVR=new Map(),RATED=[],sugIn=[],sugMine=[],sugToast=false,cur=null,galList=[],moveMode=null,sdraft=null;
@@ -748,10 +753,11 @@ function saveQ(){try{localStorage.setItem(QK,JSON.stringify({cells:[...pendCells
 function qCell(k){pendCells.add(k)}function qVisit(id){pendVisits.add(id);saveQ()}function qMark(id){pendMarks.add(id);pendDel.delete(id);saveQ()}function qDel(id){pendMarks.delete(id);pendDel.add(id);saveQ()}
 
 function saveMarks(){try{localStorage.setItem(MSTORE,JSON.stringify(marks.map(({x,y,photoUrl,...m})=>Object.assign(m,{photos:(m.photos||[]).map(({u,tried,...r})=>r)}))));return true}catch(e){toast('<div>Память браузера заполнена. Выгрузите отметки во вкладке «Мои» и удалите старые фото.</div>');return false}}
-try{const s=JSON.parse(localStorage.getItem(STORE)||'null');
- if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['soft','carto','vector','amap'].includes(s.b))base=s.b;if(base==='carto'){let m=null;try{m=localStorage.getItem('og-soft-v1')}catch(e){}if(!m){base='soft';try{localStorage.setItem('og-soft-v1','1')}catch(e){}}}}}catch(e){}
 function save(){try{localStorage.setItem(STORE,JSON.stringify({r:[...reveal],v:[...visited],p:pts,me,b:base}))}catch(e){}changed=false}
 const CH=32,chunks=new Map(),born=new Map(),discBorn=new Map(),DISC_R=1500;let areaReady=false;let quiet=false;
+// сохранённый прогресс загружаем здесь: addCell использует chunks, объявленные строкой выше
+try{const s=JSON.parse(localStorage.getItem(STORE)||'null');
+ if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['soft','carto','vector','amap'].includes(s.b))base=s.b;if(base==='carto'){let m=null;try{m=localStorage.getItem('og-soft-v1')}catch(e){}if(!m){base='soft';try{localStorage.setItem('og-soft-v1','1')}catch(e){}}}}}catch(e){}
 function addCell(k,t){if(reveal.has(k))return false;reveal.add(k);const[i,j]=k.split(',').map(Number);const cx=(i+.5)*CELL,cy=(j+.5)*CELL;
  const ck=Math.floor(i/CH)+','+Math.floor(j/CH);let a0=chunks.get(ck);if(!a0)chunks.set(ck,a0=[]);a0.push(i,j);if(t!==undefined)born.set(k,t);
  for(let a=Math.floor((cx-REVEAL)/ACELL);a<=Math.floor((cx+REVEAL)/ACELL);a++)for(let b=Math.floor((cy-REVEAL)/ACELL);b<=Math.floor((cy+REVEAL)/ACELL);b++){
@@ -1297,7 +1303,7 @@ function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,
  me={x:me.x+(target.x-me.x)/d*mv,y:me.y+(target.y-me.y)/d*mv};revealAt(me);checkDiscover();navTick();
  dirty=true}
 function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());gStamp(p,true);if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
- toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cur&&p.cat==='main'?' · открыто 1,5 км вокруг':''}</div>${DIARY_SET.has(p.id)?`<button data-dpage="${p.id}">Дневник</button>`:`<button data-open="${p.id}">Читать</button>`}`);save()}}
+ toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>${gPtsOf(p)?'+'+gPtsOf(p)+' очков':'Печать в дневнике'}${p.cur&&p.cat==='main'?' · открыто 1,5 км вокруг':''}</div>${DIARY_SET.has(p.id)?`<button data-dpage="${p.id}">Дневник</button>`:`<button data-open="${p.id}">Читать</button>`}`);save()}}
  if(route&&route.dest&&dist(at,route.dest)<=Math.max(DISCOVER,40))closeRoute(true)}
 function tap(x,y){if(moveMode)return;if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
  for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
@@ -1331,7 +1337,7 @@ function areaBy(){const r={};for(const k in DIST)r[k]=0;for(const k of area){con
 function stats(list){const t=list.reduce((a,p)=>a+p.pts,0),vs=list.filter(p=>visited.has(p.id));return{pc:t?Math.round(vs.reduce((a,p)=>a+p.pts,0)/t*100):0,v:vs.length,n:list.length}}
 const km=n=>(n*ACELL*ACELL/1e6).toFixed(2).replace('.',',');
 let selDist='auto',lastDist=null;
-function updateHUD(){syncDiscs();const here=distAt(...U(me)),cur=selDist==='auto'?(here||'city'):selDist;let st,name,top,line;
+function updateHUD(){recomputePts();syncDiscs();const here=distAt(...U(me)),cur=selDist==='auto'?(here||'city'):selDist;let st,name,top,line;
  if(cur==='city'){st=stats(POIS);name='Гуанчжоу';top=selDist==='auto'?'Где вы сейчас ▾':'Весь город ▾';line='广州 · пройдено '+km(area.size)+' км²'}
  else{st=stats(POIS.filter(p=>p.d===cur));name=DIST[cur].n;top='Гуанчжоу · '+(selDist==='auto'?'вы здесь':'выбранный район')+' ▾';line=`места ${st.v} из ${st.n} · пройдено ${km(areaBy()[cur])} км²`}
  const apc=areaPct(cur);$('pct').textContent=fmtPct(apc);$('ringArc').style.strokeDashoffset=53.41*(1-Math.min(100,Math.max(apc,apc>0?2:0))/100);$('pts').textContent=pts;
@@ -1353,7 +1359,7 @@ function renderSheet(){const b=$('body');let h='';
  if(tab==='mine'){h=mineHTML()}
  else if(tab==='near'){h+=hotHTML();const list=POIS.filter(p=>layers[p.cat]).map(p=>({p,d:dist(me,p)})).sort((a,c)=>a.d-c.d).slice(0,14);
   list.forEach(({p,d})=>{const v=visited.has(p.id),hidden=false;
-   h+=`<button class="item" data-open="${p.id}"><span class="dot" style="color:var(${CAT[p.cat].c})">${isvg(p.ic,20,2)}</span><span class="t"><b>${hidden?'Неизвестная находка':p.name}</b><span>${fmtD(d)}, ${walk(d)} пешком${DIST[p.d]?' · '+DIST[p.d].n:''}</span></span>${v?'<span class="tag ok">✓</span>':`<span class="tag">+${p.pts}</span>`}</button>`});
+   h+=`<button class="item" data-open="${p.id}"><span class="dot" style="color:var(${CAT[p.cat].c})">${isvg(p.ic,20,2)}</span><span class="t"><b>${hidden?'Неизвестная находка':p.name}</b><span>${fmtD(d)}, ${walk(d)} пешком${DIST[p.d]?' · '+DIST[p.d].n:''}</span></span>${v?'<span class="tag ok">✓</span>':gPtsOf(p)?`<span class="tag">+${gPtsOf(p)}</span>`:''}</button>`});
   if(!list.length)h='<p class="note">Все слои скрыты. Включите «Главное», «Локальное» или «Поесть» над картой.</p>'}
  else if(tab==='dist'){Object.entries(DIST).forEach(([k,d])=>{const all=POIS.filter(p=>p.d===k),v=all.filter(p=>visited.has(p.id)).length,pcv=areaPct(k),pc=Math.min(100,Math.max(pcv,pcv>0?1.5:0));
    h+=`<div class="dist"><h3>${d.n} <span>${d.zh} · ${fmtPct(pcv)} · мест ${v} из ${all.length}</span></h3><div class="bar"><i style="width:${pc}%"></i></div><p>${d.about}</p><p><b>Жильё:</b> ${d.stay}</p></div>`})}
@@ -1363,13 +1369,13 @@ function renderSheet(){const b=$('body');let h='';
 let nearTimer=0;
 function openCard(p){cur={kind:'poi',obj:p,key:p.id};const v=visited.has(p.id),d=dist(me,p),dl=DIST[p.d]||{n:'Город'},col=`var(${CAT[p.cat].c})`;
  
- const cta=v?`<div class="pc-done">${isvg('check',20,2.6)}Вы здесь были, +${p.pts} получено</div>`:
+ const cta=v?`<div class="pc-done">${isvg('check',20,2.6)}Вы здесь были${gPtsOf(p)?', +'+gPtsOf(p)+' получено':''}</div>`:
   `<button class="pc-cta" data-route="${p.id}">${isvg('walk',22,2.4)}Погнали · ${walk(d)}</button>`;
  $('card').innerHTML=`<div class="pc-top"><svg class="rings" width="340" height="340" viewBox="0 0 340 340" aria-hidden="true"><circle cx="170" cy="170" r="70"></circle><circle cx="170" cy="170" r="110"></circle><circle cx="170" cy="170" r="150"></circle></svg>
  <div class="pc-bar"><button class="pc-x" data-close aria-label="Закрыть">${isvg('x',20,2.4)}</button><span class="pc-tag" style="background:${col}">${isvg(p.ic,14,2.4)}${CAT[p.cat].n}</span></div>
  <h2>${esc(p.name)}</h2><div class="pc-sub">${esc(p.zh||'')} · ${dl.n} · ${walk(d)} пешком</div></div>
- <div class="pc-body"><div class="pc-photo" id="pcPhoto" data-id="${p.id}"></div><div class="pc-stats"><div><b>${v?'✓':'+'+p.pts}</b><span>${v?'посещено':'за визит'}</span></div><div><b>${fmtD(d)}</b><span>до места</span></div><div><b>${p.d?fmtPct(areaPct(p.d)):'—'}</b><span>${dl.n} изучено</span></div></div>
- <p class="pc-story" id="pcStory">${esc(p.s||'')}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м${p.cur&&p.cat==='main'?', и откроется 1,5 км вокруг':''}</p>`}${cta}${DIARY_SET.has(p.id)?`<button class="g-cardbtn" data-dpage="${p.id}">${gSeal(p,{on:v})}${v?'Страница в дневнике':'Страница в дневнике · печать ждёт'}</button>`:''}${placeActs('poi',p)}${reviewsBlock(p.id,p.name)}</div>`;
+ <div class="pc-body"><div class="pc-photo" id="pcPhoto" data-id="${p.id}"></div><div class="pc-stats"><div><b>${v?'✓':gPtsOf(p)?'+'+gPtsOf(p):'★'}</b><span>${v?'посещено':gPtsOf(p)?'за визит':'оцените'}</span></div><div><b>${fmtD(d)}</b><span>до места</span></div><div><b>${p.d?fmtPct(areaPct(p.d)):'—'}</b><span>${dl.n} изучено</span></div></div>
+ <p class="pc-story" id="pcStory">${esc(p.s||'')}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${p.rad||DISCOVER} м${p.cur&&p.cat==='main'?', и откроется 1,5 км вокруг':''}</p>`}${cta}${DIARY_SET.has(p.id)?`<button class="g-cardbtn" data-dpage="${p.id}">${gSeal(p,{on:v})}${v?'Страница в дневнике':'Страница в дневнике · печать ждёт'}</button>`:''}${placeActs('poi',p)}${reviewsBlock(p.id,p.name)}</div>`;
  $('card').classList.add('place','on');$('scrim').classList.add('on');loadReviews(p.id);
  if(p.dyn&&p.wk&&!p.sx){const wl=p.wk.split(':')[0],wt=p.wk.slice(p.wk.indexOf(':')+1);if(['ru','en'].includes(wl))fetch(`https://${wl}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wt)}`).then(r=>r.json()).then(j=>{if(j&&j.extract){p.sx=j.extract.slice(0,420)+(j.extract.length>420?'…':'');const el=$('pcStory');if(el&&$('pcPhoto')&&$('pcPhoto').dataset.id===p.id)el.textContent=p.sx}}).catch(()=>{})}
  if(p.sx){const el=$('pcStory');if(el)el.textContent=p.sx}
@@ -1391,7 +1397,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[dat
  else if('close' in t.dataset)closeCard();
  else if(t.dataset.seg){rankSeg=t.dataset.seg;renderSheet()}
  else if('soon' in t.dataset)toast('<div>Команды появятся в следующей версии.</div>');
- else if(t.id==='reset'&&confirm('Сбросить весь прогресс и туман'+(user?' (и в облаке)':'')+'?')){reveal.clear();area.clear();chunks.clear();born.clear();visited.clear();pendCells.clear();pendVisits.clear();pts=marks.length*15;serverReset();me=P(23.1262,113.2628);target=null;revealAt(me);save();updateHUD();renderSheet();centerMe();dirty=true}});
+ else if(t.id==='reset'&&confirm('Сбросить весь прогресс и туман'+(user?' (и в облаке)':'')+'?')){reveal.clear();area.clear();chunks.clear();born.clear();visited.clear();pendCells.clear();pendVisits.clear();pts=0;serverReset();me=P(23.1262,113.2628);target=null;revealAt(me);save();updateHUD();renderSheet();centerMe();dirty=true}});
 $('scrim').onclick=()=>{$('card').classList.contains('on')?closeCard():closePanel()};
 
 function openTab(t){tab=t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t===t));openPanel()}
@@ -1408,7 +1414,7 @@ function startGps(user){
  if(!navigator.geolocation){if(user)toast('<div>Браузер не даёт доступ к геолокации. Работает режим прогулки по нажатию.</div>');return}
  if(!window.isSecureContext){toast('<div>GPS работает только на странице с адресом https://. Разместите файл на хостинге.</div>');return}
  mode='gps';target=null;$('gpsBtn').classList.add('on');let first=true;
- watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;if(!first&&c.accuracy>70)return;const np=P(c.latitude,c.longitude),prev=lastFix;acc=c.accuracy||0;
+ watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;if(!first&&c.accuracy>70){if(c.accuracy<=150)checkDiscover(P(c.latitude,c.longitude));return}const np=P(c.latitude,c.longitude),prev=lastFix;acc=c.accuracy||0;
   lastFix={x:np.x,y:np.y,t:pos.timestamp||Date.now()};try{localStorage.setItem('og-lastfix',JSON.stringify(lastFix))}catch(e){}me=np;if(prev){bridge(prev,np,(lastFix.t-prev.t)/1000);gWalk(prev,np,(lastFix.t-prev.t)/1000)}
   const wasFirst=first;if(first){first=false;follow=true;map.setView(toM(c.latitude,c.longitude),17,{animate:false});toast('<div>GPS включён. Идите — туман рассеивается за вами.</div>');
    if(Math.hypot(me.x,me.y)>25000)toast('<div>Туман работает везде, но точки интереса пока есть только в центре Гуанчжоу.</div>')}
@@ -1451,7 +1457,7 @@ function handleMine(t){
  if(t.dataset.mt){draft.type=t.dataset.mt;[...t.parentNode.children].forEach(b=>b.classList.toggle('on',b===t));return true}
  if('savemark' in t.dataset){saveForm();return true}
  if(t.dataset.mark){const q=marks.find(m=>m.id===t.dataset.mark);if(q){follow=false;focusAt(q.lat,q.lon);openMark(q)}return true}
- if(t.dataset.delmark){if(confirm('Удалить эту отметку?')){qDel(t.dataset.delmark);marks=marks.filter(m=>m.id!==t.dataset.delmark);saveMarks();flushSoon();pts=Math.max(0,pts-15);changed=true;save();updateHUD();closeCard();renderSheet();dirty=true}return true}
+ if(t.dataset.delmark){if(confirm('Удалить эту отметку?')){qDel(t.dataset.delmark);marks=marks.filter(m=>m.id!==t.dataset.delmark);saveMarks();flushSoon();changed=true;save();updateHUD();closeCard();renderSheet();dirty=true}return true}
  if('export' in t.dataset){if(!marks.length){toast('<div>Пока нечего выгружать: поставьте первую отметку кнопкой ＋.</div>')}else exportMarks();return true}
  return false}
 $('addBtn').onclick=()=>openAdd();
@@ -1476,7 +1482,7 @@ $('impFile').onchange=async e=>{const files=[...e.target.files];if(!files.length
  track.forEach((ll,idx)=>{const p=P(ll[0],ll[1]),t=t0+idx/total*2200;
   if(prev){const d=dist(prev,p);if(d>25&&d<400){const k=Math.ceil(d/20);for(let s2=1;s2<k;s2++)revealAt({x:prev.x+(p.x-prev.x)*s2/k,y:prev.y+(p.y-prev.y)*s2/k},t)}}
   revealAt(p,t);prev=p;n++;
-  for(const q of POIS)if(!visited.has(q.id)&&Math.abs(q.x-p.x)<DISCOVER&&Math.abs(q.y-p.y)<DISCOVER&&dist(q,p)<=DISCOVER){visited.add(q.id);qVisit(q.id);gStamp(q,false);if(q.cat==='main')discBorn.set(q.id,t);got++;gain+=q.pts}
+  for(const q of POIS)if(!visited.has(q.id)&&Math.abs(q.x-p.x)<(q.rad||DISCOVER)&&Math.abs(q.y-p.y)<(q.rad||DISCOVER)&&dist(q,p)<=(q.rad||DISCOVER)){visited.add(q.id);qVisit(q.id);gStamp(q,false);if(q.cat==='main')discBorn.set(q.id,t);got++;gain+=q.pts}
   if(ll[0]<mnLa)mnLa=ll[0];if(ll[0]>mxLa)mxLa=ll[0];if(ll[1]<mnLo)mnLo=ll[1];if(ll[1]>mxLo)mxLo=ll[1]});
  quiet=false;pts+=gain;
  changed=true;save();updateHUD();renderSheet();follow=false;
@@ -1600,7 +1606,7 @@ async function saveReview(t){if(!rvDraft)return;if(!rvDraft.rating){toast('<div>
   const row={user_id:user.id,poi_id:rvDraft.id,rating:rvDraft.rating,text:$('rvText').value.trim()||null,author_name:(user.email||'').split('@')[0]};if(url)row.photo_path=url;
   {const pl=placeOf(rvDraft.id);if(pl){row.place_name=pl.name||null;row.lat=pl.lat;row.lon=pl.lon;row.kind=pl.kind||null}}
   const {error}=await sb.from('reviews').upsert(row,{onConflict:'user_id,poi_id'});if(error)throw error;
-  const back=rvDraft.back;rvDraft=null;closeCard();gEvent('rate');statsLoad();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
+  const back=rvDraft.back;rvDraft=null;closeCard();gReview(row.poi_id,!!row.text);statsLoad();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
  catch(e){t.disabled=false;t.textContent='Опубликовать';toast(`<div>Не удалось сохранить отзыв: ${esc(e.message||'ошибка')}</div>`)}}
 function handleExtra(t){
  if(bgClick(t))return true;
@@ -1674,7 +1680,7 @@ try{sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,aut
 function setSync(st,msg){syncState=st;syncMsg=msg||'';const d=$('sdot');if(d)d.className='sdot '+st;if(tab==='rank'&&$('sheet').classList.contains('open'))renderSheet()}
 function syncText(){return !user?'Прогресс хранится только на этом телефоне':syncState==='ok'?'Всё сохранено в облаке':syncState==='sync'?'Синхронизация…':syncState==='err'?'Ошибка синхронизации: '+esc(syncMsg):'Подключаюсь к облаку…'}
 function flushSoon(){clearTimeout(flushT);flushT=setTimeout(flush,1500)}
-function recomputePts(){pts=POIS.filter(p=>visited.has(p.id)).reduce((a,p)=>a+p.pts,0)+marks.length*15}
+function recomputePts(){pts=POIS.filter(p=>visited.has(p.id)).reduce((a,p)=>a+gPtsOf(p),0)+Object.values(G.rv||{}).reduce((a,b)=>a+(+b||0),0)}
 function wipeLocal(){reveal.clear();area.clear();chunks.clear();born.clear();visited.clear();for(const k in cellCnt)delete cellCnt[k];discCells.clear();discSig='';marks=[];pendCells.clear();pendVisits.clear();pendMarks.clear();pendDel.clear();pts=0;save();saveMarks();saveQ()}
 async function flush(){if(!sb||!user||syncing||!navigator.onLine)return;if(!pendCells.size&&!pendVisits.size&&!pendMarks.size&&!pendDel.size&&syncState==='ok')return;
  syncing=true;setSync('sync');const uid=user.id;
@@ -1913,8 +1919,8 @@ function saveForm(){formGrab();const d=draft;if(!d)return;const name=d.name.trim
  if(d.pub&&!user){d.pub=false;toast('<div>Чтобы делиться метками, войдите в аккаунт. Сохраняю как личную.</div>')}
  if(d.src==='new'){const[lat,lon]=U(d.at||me),q={id:'m'+Date.now(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),name,note:d.note.trim(),type:d.type,photos:d.photos,pub:d.pub,t:Date.now(),u:Date.now()};
   Object.assign(q,P(q.lat,q.lon));marks.push(q);if(!saveMarks()){marks.pop();return}qMark(q.id);flushSoon();
-  pts+=15;changed=true;save();updateHUD();closeCard();draft=null;gEvent('mark');tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
-  toast(`<span style="font-size:22px">${MT[q.type].e}</span><div><b>Отметка сохранена</b><br>+15 очков${q.pub?' · видна всем':''}</div>`);return}
+  changed=true;save();updateHUD();closeCard();draft=null;gEvent('mark');tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
+  toast(`<span style="font-size:22px">${MT[q.type].e}</span><div><b>Отметка сохранена</b>${q.pub?'<br>Видна всем':''}</div>`);return}
  const q=marks.find(m=>m.id===d.src);if(!q){draft=null;closeCard();return}const bak=JSON.stringify(Object.assign({},q,{photos:null})),bph=q.photos;
  q.name=name;q.note=d.note.trim();q.type=d.type;q.pub=d.pub;q.photos=d.photos;q.rm=(q.rm||[]).concat(d.rm);
  if(d.at){const[la,lo]=U(d.at);q.lat=+la.toFixed(6);q.lon=+lo.toFixed(6);Object.assign(q,P(q.lat,q.lon))}q.u=Date.now();
@@ -2051,8 +2057,9 @@ async function gPull(){if(!sb||!user)return;try{const {data,error}=await sb.from
   for(const id in s.credit||{})G.credit[id]=Math.max(G.credit[id]||0,s.credit[id]||0);
   for(const k of ['rated','found','hid'])G[k]=Math.max(G[k]||0,s[k]||0);
   if(s.day===G.day){for(const k in s.tp||{})G.tp[k]=Math.max(G.tp[k]||0,s.tp[k]||0);for(const k in s.td||{})G.td[k]=G.td[k]||s.td[k];G.walk=Math.max(G.walk||0,s.walk||0);G.done=G.done||s.done}
-  if(s.rank>G.rank)G.rank=s.rank}
-  gSave();gRenderIf()}catch(e){console.warn(e)}}
+  if(s.rank>G.rank)G.rank=s.rank;for(const id in s.rv||{})G.rv[id]=Math.max(+(G.rv[id]||0),+s.rv[id]||0)}
+  {const {data:rv}=await sb.from('reviews').select('poi_id,text').eq('user_id',user.id);for(const r of rv||[])G.rv[r.poi_id]=Math.max(+(G.rv[r.poi_id]||0),r.text?15:5)}
+  gSave();updateHUD();gRenderIf()}catch(e){console.warn(e)}}
 
 // ---- день и задания ----
 const gToday=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -2068,8 +2075,8 @@ function gPick(day){let seed=gHash(day)>>>0;const rnd=()=>(seed=(seed*1103515245
  const a=move.sort(()=>rnd()-.5).slice(0,2),b=other.sort(()=>rnd()-.5)[0];return[a[0],a[1],b]}
 function gDay(){const t=gToday();if(G.day===t)return;G.day=t;G.tp={};G.td={};G.done=false;G.walk=0;G.area0=area.size;G.tasks=gPick(t);gSave()}
 function gStreak(){let n=0;const d=new Date();if(!G.days[gToday()])d.setDate(d.getDate()-1);for(;;){const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(!G.days[k])break;n++;d.setDate(d.getDate()-1)}return n}
-function gTasksCheck(){gDay();let any=false;for(const id of G.tasks){const q=TPOOL[id];if(!q||G.td[id])continue;if(q.cur()>=q.g-1e-9){G.td[id]=1;pts+=q.pts;changed=true;any=true;gToast('teal','walk'===id?'walk':q.i,'Задание дня',q.n,'+'+q.pts)}}
- if(!G.done&&G.tasks.length&&G.tasks.every(id=>G.td[id])){G.done=true;G.days[G.day]=1;pts+=50;changed=true;any=true;setTimeout(()=>gToast('on','flame','Все задания дня','Серия '+gStreak()+' '+gPlural(gStreak(),'день','дня','дней'),'+50'),700)}
+function gTasksCheck(){gDay();let any=false;for(const id of G.tasks){const q=TPOOL[id];if(!q||G.td[id])continue;if(q.cur()>=q.g-1e-9){G.td[id]=1;any=true;gToast('teal',q.i,'Задание дня выполнено',q.n,'✓')}}
+ if(!G.done&&G.tasks.length&&G.tasks.every(id=>G.td[id])){G.done=true;G.days[G.day]=1;any=true;setTimeout(()=>gToast('on','flame','Все задания дня','Серия '+gStreak()+' '+gPlural(gStreak(),'день','дня','дней'),'🔥'),700)}
  if(any){save();updateHUD();gSave()}}
 
 // ---- события из приложения ----
@@ -2078,6 +2085,15 @@ function gWalk(a,b,dt){const d=Math.hypot(b.x-a.x,b.y-a.y);if(!(dt>0)||d>400||d/
 let gLT=0;function gSaveSoonLocal(){clearTimeout(gLT);gLT=setTimeout(gSave,5000)}
 function gStamp(p,live){if(!p)return;gDay();if(!G.st[p.id])G.st[p.id]=Date.now();G.tp.stamp=(G.tp.stamp||0)+1;gSave();
  if(live&&DIARY_SET.has(p.id))gSlam(p);setTimeout(gTick,live?2200:500)}
+
+// ---- очки за оценки и отзывы (за место один раз) ----
+function gReview(id,txt){if(!id)return;const v=txt?15:5,was=+(G.rv[id]||0);gEvent('rate');if(v>was){G.rv[id]=v;gSave();updateHUD();gToast('vio','star',txt?'Отзыв':'Оценка','Спасибо! Это помогает другим','+'+(v-was))}}
+// ---- места, мимо которых вы уже прошли: засчитываем по пройденному пути (клетки 30 м) ----
+function gRetro(){const got=[];for(const p of POIS){if(visited.has(p.id))continue;const r=p.rad||DISCOVER,i0=Math.floor((p.x-r)/CELL),i1=Math.floor((p.x+r)/CELL),j0=Math.floor((p.y-r)/CELL),j1=Math.floor((p.y+r)/CELL);let hit=false;
+  for(let i=i0;i<=i1&&!hit;i++)for(let j=j0;j<=j1;j++){if(!reveal.has(i+','+j))continue;const cx=(i+.5)*CELL-p.x,cy=(j+.5)*CELL-p.y;if(cx*cx+cy*cy<=r*r){hit=true;break}}
+  if(hit){visited.add(p.id);qVisit(p.id);gStamp(p,false);got.push(p)}}
+ if(got.length){changed=true;save();updateHUD();renderSheet();dirty=true;flushSoon();const pp=got.reduce((a,p)=>a+gPtsOf(p),0);
+  gToast('seal','stamp','Засчитано по вашему пути',got.slice(0,3).map(p=>p.name).join(', ')+(got.length>3?' и ещё '+(got.length-3):''),pp?'+'+pp:'')}}
 
 // ---- печать ----
 function gSeal(p,opt={}){const on=!!opt.on,S2=LMS[p.id],zh=(p.zh||'').slice(0,6),fs=zh.length<=3?12:zh.length===4?11:zh.length===5?10:8.6,col=on?'var(--g-seal)':'var(--line)';
@@ -2091,10 +2107,10 @@ function gSlam(p){const s=document.createElement('div');s.className='g-slam';s.i
 // ---- ранги и ачивки ----
 const RANKS=[
  {n:'Турист',zh:'客',at:0,perk:'Первые печати и первые задания дня.'},
- {n:'Путник',zh:'行',at:150,perk:'Можно прятать свои тайники.'},
- {n:'Знаток',zh:'知',at:500,perk:'Ваше звание видно рядом с отзывами.'},
- {n:'Почти местный',zh:'邻',at:1000,perk:'Можно предлагать новые места для дневника.'},
- {n:'Легенда Гуанчжоу',zh:'羊',at:1800,perk:'Вершина: вы знаете город лучше многих местных.'}];
+ {n:'Путник',zh:'行',at:100,perk:'Можно прятать свои тайники.'},
+ {n:'Знаток',zh:'知',at:350,perk:'Ваше звание видно рядом с отзывами.'},
+ {n:'Почти местный',zh:'邻',at:700,perk:'Можно предлагать новые места для дневника.'},
+ {n:'Легенда Гуанчжоу',zh:'羊',at:1200,perk:'Вершина: вы знаете город лучше многих местных.'}];
 const rankOf=v=>{let i=0;RANKS.forEach((r,k)=>{if(v>=r.at)i=k});return i};
 function gEmblem(i,cls='g-emb'){return `<svg class="${cls}" viewBox="0 0 100 100" aria-hidden="true"><g filter="url(#gInk)"><rect x="8" y="8" width="84" height="84" rx="14" style="fill:var(--g-seal)"/><rect x="15" y="15" width="70" height="70" rx="9" fill="none" style="stroke:var(--panel)" stroke-width="2"/><text x="50" y="67" text-anchor="middle" style="fill:var(--panel);font:700 48px var(--g-zh)">${RANKS[i].zh}</text></g></svg>`}
 const gVisD=()=>DIARY_IDS.filter(id=>visited.has(id));
@@ -2114,13 +2130,13 @@ const ACH=[
  {id:'task_day',n:'День заданий',c:'Выполните все три задания дня',i:'tasks',ok:()=>Object.keys(G.days).length>=1},
  {id:'look',n:'Зоркий глаз',c:'Найдите всё из «Присмотритесь» в одном месте',i:'eye',ok:()=>Object.entries(G.look).some(([id,a])=>a.length>=2&&a.every(Boolean))},
  {id:'streak7',n:'Неделя подряд',c:'7 дней заданий без пропусков',i:'flame',ok:()=>gStreak()>=7}];
-function gAchCheck(){const first=!G.init;let n=0,d=0;for(const a of ACH){if(G.ach[a.id]||!a.ok())continue;G.ach[a.id]=Date.now();pts+=25;changed=true;n++;
-  if(!first){setTimeout(()=>gToast('on',a.i,'Ачивка',a.n,'+25'),d);d+=700}}
- if(first){G.init=1;if(n)setTimeout(()=>gToast('on','award','За прошлые прогулки',n+' '+gPlural(n,'ачивка','ачивки','ачивок')+' в дневнике','+'+n*25),1500)}
+function gAchCheck(){const first=!G.init;let n=0,d=0;for(const a of ACH){if(G.ach[a.id]||!a.ok())continue;G.ach[a.id]=Date.now();n++;
+  if(!first){setTimeout(()=>gToast('on',a.i,'Ачивка',a.n,''),d);d+=700}}
+ if(first){G.init=1;if(n)setTimeout(()=>gToast('on','award','За прошлые прогулки',n+' '+gPlural(n,'ачивка','ачивки','ачивок')+' в дневнике',''),1500)}
  if(n||first){save();updateHUD();gSave()}}
-function gRankCheck(){const r=rankOf(pts);if(G.rank===undefined){G.rank=r;gSave();return}if(r>G.rank){G.rank=r;gSave();setTimeout(()=>gRankUp(r),900)}}
+function gRankCheck(){const r=rankOf(pts);if(G.rank===undefined||r<G.rank){G.rank=r;gSave();return}if(r>G.rank){G.rank=r;gSave();setTimeout(()=>gRankUp(r),900)}}
 function gRankUp(i){const d=document.createElement('div');d.className='g-rup';const r=RANKS[i];d.innerHTML=`<div class="c">${gEmblem(i)}<span class="g-k">Новый ранг</span><h2>${r.n}</h2><p>${r.perk}</p><button class="g-cta" data-gclose>Дальше</button></div>`;document.body.appendChild(d);d.addEventListener('click',e=>{if(e.target.closest('[data-gclose]')||e.target===d)d.remove()})}
-function gTick(){try{gDay();gTasksCheck();gAchCheck();gRankCheck();gCredit();const b=$('gameBtn');if(b)b.classList.toggle('dot',!G.done);gRenderIf()}catch(e){console.warn(e)}}
+function gTick(){try{gRetro();gDay();gTasksCheck();gAchCheck();gRankCheck();gCredit();const b=$('gameBtn');if(b)b.classList.toggle('dot',!G.done);gRenderIf()}catch(e){console.warn(e)}}
 
 // ---- уведомления игры ----
 function gToast(md,icon,k,b,p){const t=document.createElement('div');t.className='g-toast';t.innerHTML=`<span class="g-md ${md}">${gic(icon)}</span><div><span class="k">${esc(k)}</span><b>${esc(b)}</b></div><span class="p">${esc(p||'')}</span>`;$('gToasts').appendChild(t);setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),400)},3600)}
@@ -2141,25 +2157,25 @@ function gDiaryHTML(){const vd=gVisD(),n=vd.length,all=DIARY_IDS.length;
  let h=`<div class="g-scr"><div class="g-card"><div class="g-row"><span class="g-big">${n}<small> из ${all} печатей</small></span><span class="g-sub">${gStatic('main').filter(p=>visited.has(p.id)).length}/13 главных</span></div><div class="g-bar"><i style="width:${n/all*100}%"></i></div></div>`;
  const last=vd.filter(id=>G.st[id]).sort((a,b)=>G.st[b]-G.st[a])[0]||vd[vd.length-1];
  if(last){const p=gPO(last),u=gIll(last);if(!u)diaryLoad().catch(()=>{});h+=`<button class="g-last" data-dpage="${last}">${u?`<img src="${u}" alt="">`:'<img alt="">'}<span><span class="g-k">Последняя запись</span><b>${esc(p.name)}</b><span class="g-hand">${G.st[last]?gDate(G.st[last]):'в дневнике'}</span></span></button>`}
- else h+=`<div class="g-card"><p class="g-empty" style="padding:0">Дойдите до любого места из дневника — ближе чем на ${DISCOVER} м. На странице появится печать, а картинка и рассказ откроются полностью.</p></div>`;
+ else h+=`<div class="g-card"><p class="g-empty" style="padding:0">Дойдите до любого места из дневника. На странице появится печать, а картинка и рассказ откроются полностью.</p></div>`;
  h+=`<div class="g-filters">${[['all','Все'],['main','Главное'],['local','Тайные места'],['food','Еда']].map(([k,t])=>`<button data-gf="${k}" class="${gFilter===k?'on':''}">${t}</button>`).join('')}</div>`;
  for(const d of GDIST){const ids=DIARY_IDS.filter(id=>{const p=gPO(id);return p&&p.d===d&&(gFilter==='all'||p.cat===gFilter)});if(!ids.length)continue;const allD=DIARY_IDS.filter(id=>(gPO(id)||{}).d===d),got=allD.filter(id=>visited.has(id)).length,pc=areaPct(d);
   h+=`<div class="g-card g-dist"><header><h3 class="g-h3">${DIST[d].n}<span class="zh">${DIST[d].zh}</span></h3><span class="cnt">${got}/${allD.length}</span></header>
   <div class="g-area">${gic('map',16)}<span>Туман развеян</span><div class="g-bar ${pc>=80?'g':'v'}"><i style="width:${Math.min(100,pc)}%"></i></div><b>${fmtPct(pc)}</b></div>
-  <div class="g-grid">${ids.map(id=>{const p=gPO(id),on=visited.has(id);return `<button class="g-st${on?'':' off'}" data-dpage="${id}">${gSeal(p,{on})}<span class="n"><i class="g-cat" style="background:${gCATC[p.cat]}"></i>${esc(p.name)}</span>${on?`<span class="d">${G.st[id]?gDate(G.st[id]):'в дневнике'}</span>`:`<span class="d no">+${p.pts} · ${fmtD(dist(me,p))}</span>`}</button>`}).join('')}</div></div>`}
+  <div class="g-grid">${ids.map(id=>{const p=gPO(id),on=visited.has(id);return `<button class="g-st${on?'':' off'}" data-dpage="${id}">${gSeal(p,{on})}<span class="n"><i class="g-cat" style="background:${gCATC[p.cat]}"></i>${esc(p.name)}</span>${on?`<span class="d">${G.st[id]?gDate(G.st[id]):'в дневнике'}</span>`:`<span class="d no">${gPtsOf(p)?'+'+gPtsOf(p)+' · ':''}${fmtD(dist(me,p))}</span>`}</button>`}).join('')}</div></div>`}
  return h+'</div>'}
 function gTasksHTML(){gDay();const dn=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],t=new Date(),mid=new Date(t);mid.setHours(24,0,0,0);const left=mid-t,hh=Math.floor(left/3.6e6),mm=Math.floor(left%3.6e6/6e4),st=gStreak();
  let w='';for(let k=6;k>=0;k--){const d=new Date();d.setDate(d.getDate()-k);const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),x=G.days[key];w+=`<div class="${x?'y':''}${!k&&!x?' t':''}"><i>${x||!k?gic('flame',18):''}</i>${dn[(d.getDay()+6)%7]}</div>`}
  let h=`<div class="g-scr"><div class="g-card"><div class="g-row"><h3 class="g-h3">${st?'Серия '+st+' '+gPlural(st,'день','дня','дней'):'Серия начнётся сегодня'}</h3><span class="g-sub">Новые через ${hh} ч ${mm} мин</span></div><div class="g-week">${w}</div></div>`;
  for(const id of G.tasks){const q=TPOOL[id];if(!q)continue;const v=Math.min(q.cur(),q.g),done=!!G.td[id],fm=x=>q.g<1?x.toFixed(2).replace('.',','):q.u?String(+x.toFixed(1)).replace('.',','):String(Math.floor(x));
-  h+=`<div class="g-card g-task${done?' done':''}"><span class="ic">${gic(done?'check':q.i)}</span><div><b>${q.n}</b><div class="g-bar ${done?'t':'v'}"><i style="width:${v/q.g*100}%"></i></div><div class="pr">${done?'Готово':fm(v)+' из '+fm(q.g)+(q.u||'')}</div></div><span class="rw">+${q.pts}</span></div>`}
- h+=`<div class="g-bonus">${gic('trophy')}<span>${G.done?'Все три выполнены: день засчитан в серию, <b>+50</b> получено.':'Выполните все три — ещё <b>+50</b> очков и день в серию.'}</span></div>`;
+  h+=`<div class="g-card g-task${done?' done':''}"><span class="ic">${gic(done?'check':q.i)}</span><div><b>${q.n}</b><div class="g-bar ${done?'t':'v'}"><i style="width:${v/q.g*100}%"></i></div><div class="pr">${done?'Готово':fm(v)+' из '+fm(q.g)+(q.u||'')}</div></div><span class="rw">${done?'✓':''}</span></div>`}
+ h+=`<div class="g-bonus">${gic('trophy')}<span>${G.done?'Все три выполнены: день засчитан в серию.':'Выполните все три — и день засчитается в <b>серию</b>.'}</span></div>`;
  return h+`<p class="g-sub" style="margin:0 4px">Задания меняются каждый день в полночь. Километры считаются только по GPS, туман — как угодно.</p></div>`}
 function gRankHTML(){const r=rankOf(pts),nx=RANKS[r+1],got=ACH.filter(a=>G.ach[a.id]).length,pr=nx?(pts-RANKS[r].at)/(nx.at-RANKS[r].at):1;
  let h=`<div class="g-scr"><div class="g-card g-rank">${gEmblem(r)}<div><span class="g-k">Ваш ранг</span><h2>${RANKS[r].n}</h2><div class="g-bar"><i style="width:${pr*100}%"></i></div><div class="g-sub">${nx?`Ещё ${nx.at-pts} ${gPlural(nx.at-pts,'очко','очка','очков')} до ранга «${nx.n}»`:'Высший ранг'}</div></div></div>`;
  h+=`<div class="g-ladder">${RANKS.map((x,k)=>`<div class="g-lr${k<=r?' got':''}${k===r?' cur':''}"><span class="zh">${x.zh}</span><div><b>${x.n}</b><span>${x.perk}</span></div><span class="t">${x.at}</span></div>`).join('')}</div>`;
  h+=`<div class="g-row" style="margin:6px 4px -4px"><h3 class="g-h3">Ачивки</h3><span class="g-sub">${got} из ${ACH.length}</span></div><div class="g-achs">`+ACH.map(a=>{const on=G.ach[a.id];return `<div class="g-ach${on?' on':''}"><span class="g-md ${on?'on':'off'}">${gic(a.i)}</span><div><b>${a.n}</b><span>${on?gDate(on):a.c}</span></div></div>`}).join('')+'</div>';
- h+=`<div class="g-card g-how"><h3 class="g-h3">Как получать очки</h3><ul><li>Печать в новом месте<b>+20…100</b></li><li>Задание дня<b>+20…50</b></li><li>Все три задания за день<b>+50</b></li><li>Найти тайник<b>+15</b></li><li>Кто-то нашёл ваш тайник<b>+10</b></li><li>Нашли то, что в «Присмотритесь»<b>+5</b></li><li>Ачивка<b>+25</b></li><li>Своя метка<b>+15</b></li></ul></div>`;
+ h+=`<div class="g-card g-how"><h3 class="g-h3">Как получать очки</h3><ul><li>Главная достопримечательность<b>+40…100</b></li><li>Тайное место<b>+20…30</b></li><li>Оценка звёздами<b>+5</b></li><li>Отзыв с текстом<b>+15</b></li></ul><p class="g-sub" style="margin:10px 0 0">За одно место — один раз. Задания, ачивки, тайники и заведения очков не дают: они для серии, коллекции и печатей.</p></div>`;
  return h+'</div>'}
 function gProfileHTML(){const r=rankOf(pts),nx=RANKS[r+1],pr=nx?(pts-RANKS[r].at)/(nx.at-RANKS[r].at):1,got=ACH.filter(a=>G.ach[a.id]).length;
  return `<button class="g-prof" data-game="rank">${gEmblem(r)}<span><span class="g-k">Ранг · ачивок ${got} из ${ACH.length}</span><b>${RANKS[r].n}</b><div class="g-bar"><i style="width:${pr*100}%"></i></div></span></button>`}
@@ -2172,10 +2188,10 @@ function gPage(id){const p=gPO(id);if(!p)return;gCur=id;const pg=$('gPage');
  const t=DIARY[id],on=visited.has(id),fresh=on&&!G.seen[id],lk=G.look[id]||[],d=dist(me,p);
  let h=`<div class="g-ill${on&&!fresh?'':' fogged'}" id="gIll"><img src="${gIll(id)}" alt="Иллюстрация: ${esc(p.name)}">${on&&!fresh?'':`<div class="g-fog" id="gFog"><div class="lk">${gic('lock')}${on?'':'Картинка проявится, когда вы дойдёте до места'}</div></div>`}</div>
  <button class="g-pageX" data-gpx aria-label="Закрыть">${gic('x')}</button>
- <div class="g-pb"><div class="g-tags"><span class="g-tag"><i class="g-cat" style="background:${gCATC[p.cat]}"></i>${gCATN[p.cat]}</span><span class="g-tag">${DIST[p.d]?DIST[p.d].n:'Гуанчжоу'}</span><span class="g-tag pts">+${p.pts} очков</span></div>
+ <div class="g-pb"><div class="g-tags"><span class="g-tag"><i class="g-cat" style="background:${gCATC[p.cat]}"></i>${gCATN[p.cat]}</span><span class="g-tag">${DIST[p.d]?DIST[p.d].n:'Гуанчжоу'}</span><span class="g-tag pts">${gPtsOf(p)?'+'+gPtsOf(p)+' очков':'оценка +5, отзыв +15'}</span></div>
  <div class="g-ttl"><div><h1>${esc(p.name)}</h1><div class="zh">${esc(p.zh||'')}</div><div class="py">${esc(t.pinyin)} · «${esc(t.say)}»</div></div>${on?`<div class="ps">${gSeal(p,{on:true})}<span class="g-hand">${G.st[id]?gDate(G.st[id]):''}</span></div>`:''}</div>
  <p class="g-lead">${esc(t.lead)}</p>`;
- if(!on)h+=`<div class="g-lock"><p>Полный рассказ, «Присмотритесь» и печать в дневник откроются на месте, когда вы подойдёте ближе чем на ${DISCOVER} м. Сейчас до места ${fmtD(d)}.</p><button class="g-cta" data-groute="${id}">${gic('route')} Маршрут · ${walk(d)}</button></div><button class="g-ghost" data-gtaxi>${gic('taxi')} Показать таксисту</button>`;
+ if(!on)h+=`<div class="g-lock"><p>Полный рассказ, «Присмотритесь» и печать в дневник откроются на месте, когда вы подойдёте ближе чем на ${p.rad||DISCOVER} м. Сейчас до места ${fmtD(d)}.</p><button class="g-cta" data-groute="${id}">${gic('route')} Маршрут · ${walk(d)}</button></div><button class="g-ghost" data-gtaxi>${gic('taxi')} Показать таксисту</button>`;
  else h+=`<div class="g-story">${t.story.map(s=>`<p>${esc(s)}</p>`).join('')}</div>
  <div class="g-box"><h3>Присмотритесь</h3><ul class="g-looks">${t.look.map((s,k)=>`<li><button data-glook="${k}" class="${lk[k]?'on':''}" aria-pressed="${!!lk[k]}"><span class="ck">${gic('check',16)}</span><span>${esc(s)}</span></button></li>`).join('')}</ul></div>
  <div class="g-box"><h3>Совет</h3><p>${esc(t.tip)}</p></div><div class="g-box fact"><h3>А вы знали?</h3><p>${esc(t.fact)}</p></div>
@@ -2190,7 +2206,7 @@ async function gCachesLoad(){if(!sb||GC.busy)return;GC.busy=true;try{const c=U(m
   const {data,error}=await sb.rpc('caches_near',{p_lat:la,p_lon:lo,p_km:40});if(error)throw error;
   GC.list=(data||[]).map(r=>Object.assign({cache:true},r,P(r.lat,r.lon)));GC.at=Date.now();gCredit();mkReset();gRenderIf()}catch(e){console.warn('caches',e)}finally{GC.busy=false}}
 function gCredit(){let n=0;for(const c of GC.list){if(!c.mine)continue;const was=G.credit[c.id]||0;if(c.finds>was){n+=c.finds-was;G.credit[c.id]=c.finds}}
- if(n){pts+=10*n;changed=true;save();updateHUD();gSave();gToast('vio','msg','Ваш тайник нашли',n===1?'Кто-то прочитал вашу записку':n+' '+gPlural(n,'человек','человека','человек')+' прочитали записки','+'+10*n)}}
+ if(n){gSave();gToast('vio','msg','Ваш тайник нашли',n===1?'Кто-то прочитал вашу записку':n+' '+gPlural(n,'человек','человека','человек')+' прочитали записки','')}}
 function cacheEl(c){const col=c.mine?'var(--vio)':c.found?'var(--local)':'var(--g-seal)';return mkEl('mark cache l16',47,`<div class="pm" style="--c:${col};width:22px;height:22px;left:-11px;top:-11px">${gic(c.mine||c.found?'msg':'box',12)}</div><span class="lb" style="left:15px">${c.mine?'Мой тайник':'Тайник'}</span>`)}
 function gNoteHTML(n){return n?`<div class="g-note">${esc(n.m)}${n.p?`<img src="${esc(n.p)}" alt="Фото из тайника">`:''}</div>`:''}
 async function gNoteFetch(c){if(GC.notes[c.id])return{n:GC.notes[c.id],first:false};if(!sb||!user)return null;const [la,lo]=U(me);const {data,error}=await sb.rpc('open_cache',{p_id:c.id,p_lat:la,p_lon:lo});if(error)throw error;const r=Array.isArray(data)?data[0]:data;if(!r)return null;
@@ -2206,7 +2222,7 @@ function openCache(c){cur=null;const d=dist(me,c),near=mode==='gps'&&d<=75,has=G
  if((c.mine||c.found)&&!has)gNoteFetch(c).then(r=>{const el=$('gcNote');if(el&&r)el.innerHTML=gNoteHTML(r.n)}).catch(()=>{})}
 async function gCacheOpen(id,btn){const c=GC.list.find(x=>x.id===id);if(!c)return;if(!user){closeCard();openLogin();return}btn.disabled=true;btn.textContent='Открываю…';
  try{const r=await gNoteFetch(c);if(!r)throw new Error('пусто');c.found=true;const el=$('gcNote');if(el)el.innerHTML=gNoteHTML(r.n);btn.remove();
-  if(r.first){G.found=(G.found||0)+1;pts+=15;changed=true;save();updateHUD();gEvent('cache');gToast('teal','box','Тайник открыт',c.hint||'Записка прочитана','+15')}mkReset()}
+  if(r.first){G.found=(G.found||0)+1;gEvent('cache');gToast('teal','box','Тайник открыт',c.hint||'Записка прочитана','')}mkReset()}
  catch(e){btn.disabled=false;btn.textContent='Открыть тайник';toast(`<div>Не открылся: ${/too far/.test(e.message||'')?'вы дальше 80 м от тайника':esc(e.message||'ошибка')}</div>`)}}
 function gCachesHTML(){const me2=me;const list=GC.list.map(c=>({c,d:dist(me2,c)})).sort((a,b)=>a.d-b.d),mine=list.filter(x=>x.c.mine),oth=list.filter(x=>!x.c.mine);
  let h=`<div class="g-scr"><div class="g-card"><p style="margin:0 0 12px;font-size:14.5px"><b>Тайник</b> — записка или фото, привязанные к точке на карте. Подсказку видят все, а прочитать можно, только когда стоишь рядом.</p><button class="g-cta" data-ghide>${gic('msg')} Спрятать тайник здесь</button></div>`;
@@ -2215,7 +2231,7 @@ function gCachesHTML(){const me2=me;const list=GC.list.map(c=>({c,d:dist(me2,c)}
  h+=`<div class="g-lbl">Рядом</div>`+(oth.length?oth.slice(0,30).map(row).join(''):`<p class="g-empty">${sb?'Поблизости пока нет чужих тайников. Спрячьте первый — его увидят все, кто пройдёт мимо.':'Тайники работают, когда есть интернет.'}</p>`);
  return h+'</div>'}
 function gHideSheet(){if(!user){gCloseGame();openLogin();return}
- if(rankOf(pts)<1){gToast('off','lock','Пока рано','Тайники можно прятать с ранга «Путник» — 150 очков','');return}
+ if(rankOf(pts)<1){gToast('off','lock','Пока рано','Тайники можно прятать с ранга «Путник» — 100 очков','');return}
  if(mode!=='gps'){gToast('off','pin','Нужен GPS','Включите GPS (⚙ → GPS): тайник появится там, где вы стоите','');return}
  $('gSheetBody').innerHTML=`<h3 class="g-h3" style="font-size:17px">Спрятать тайник</h3><p class="g-sub" style="margin:0 0 4px">Тайник появится там, где вы сейчас стоите. Прочитать его сможет только тот, кто подойдёт ближе чем на 80 метров.</p>
  <label class="g-f" for="ghHint">Подсказка, видна всем издалека<input id="ghHint" maxlength="80" placeholder="Например: у фонтана, со стороны библиотеки"></label>
@@ -2227,7 +2243,7 @@ async function gHideSave(btn){const msg=$('ghMsg').value.trim(),hint=$('ghHint')
  try{const [lat,lon]=U(me);let photo=null;if(gPh){const blob=await (await fetch(gPh)).blob(),path=`${user.id}/cache-${Date.now().toString(36)}${Math.random().toString(36).slice(2,8)}.jpg`;
    const {error:ue}=await sb.storage.from('review-photos').upload(path,blob,{contentType:'image/jpeg'});if(ue)throw ue;photo=sb.storage.from('review-photos').getPublicUrl(path).data.publicUrl}
   const {error}=await sb.from('caches').insert({user_id:user.id,author_name:uname(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),hint:hint||null,message:msg,photo_path:photo});if(error)throw error;
-  G.hid=(G.hid||0)+1;gSave();gPh=null;$('gSheet').classList.remove('on');gToast('vio','msg','Тайник спрятан','Когда его найдут, вы получите +10','');GC.at=0;await gCachesLoad();setTimeout(gTick,300)}
+  G.hid=(G.hid||0)+1;gSave();gPh=null;$('gSheet').classList.remove('on');gToast('vio','msg','Тайник спрятан','Вы узнаете, когда его найдут','');GC.at=0;await gCachesLoad();setTimeout(gTick,300)}
  catch(e){btn.disabled=false;btn.textContent='Спрятать здесь';gToast('off','x','Не получилось',e.message||'ошибка','')}}
 
 // ---- разметка и нажатия ----
@@ -2251,7 +2267,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('#gameBtn,[data-g
  if('gpx' in t.dataset){gClosePage();return}
  if(t.dataset.groute){const p=gPO(t.dataset.groute);gClosePage();gCloseGame();openRoute(p);return}
  if('gtaxi' in t.dataset){gTaxi();return}
- if(t.dataset.glook!==undefined){if(!visited.has(gCur))return;const k=+t.dataset.glook,a=G.look[gCur]||(G.look[gCur]=[]),n=(DIARY&&DIARY[gCur]?DIARY[gCur].look.length:3);while(a.length<n)a.push(false);a[k]=!a[k];t.classList.toggle('on',a[k]);t.setAttribute('aria-pressed',a[k]);pts+=a[k]?5:-5;changed=true;save();updateHUD();gSave();setTimeout(gTick,200);return}
+ if(t.dataset.glook!==undefined){if(!visited.has(gCur))return;const k=+t.dataset.glook,a=G.look[gCur]||(G.look[gCur]=[]),n=(DIARY&&DIARY[gCur]?DIARY[gCur].look.length:3);while(a.length<n)a.push(false);a[k]=!a[k];t.classList.toggle('on',a[k]);t.setAttribute('aria-pressed',a[k]);gSave();setTimeout(gTick,200);return}
  if('ghide' in t.dataset){gHideSheet();return}
  if('ghideok' in t.dataset){gHideSave(t);return}
  if('gsheetx' in t.dataset){$('gSheet').classList.remove('on');return}
@@ -2262,7 +2278,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('#gameBtn,[data-g
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if($('gSheet').classList.contains('on'))$('gSheet').classList.remove('on');else if(gCur)gClosePage();else if(gOn)gCloseGame()});
 gDay();setTimeout(gTick,2500);setInterval(()=>{if(document.visibilityState==='visible')gTick()},6000);
 setTimeout(gCachesLoad,1500);setInterval(()=>{if(document.visibilityState==='visible')gCachesLoad()},180000);
-if(location.hostname==='test.local')window.__ogg={G:()=>G,GC:()=>GC,pts:()=>pts,stamp:id=>{const p=gPO(id);visited.add(id);qVisit(id);pts+=p.pts;gStamp(p,true)},page:gPage,open:gOpenGame,tick:gTick,me:(la,lo)=>{me=P(la,lo)},mode:m=>{mode=m},user:u=>{user=u}};
+if(location.hostname==='test.local')window.__ogg={G:()=>G,GC:()=>GC,pts:()=>pts,stamp:id=>{const p=gPO(id);visited.add(id);qVisit(id);pts+=p.pts;gStamp(p,true)},page:gPage,open:gOpenGame,po:id=>{const p=gPO(id);return p&&{x:p.x,y:p.y,rad:p.rad,v:visited.has(id)}},rsize:()=>reveal.size,rhas:k=>reveal.has(k),retro:()=>gRetro(),tick:gTick,me:(la,lo)=>{me=P(la,lo)},mode:m=>{mode=m},user:u=>{user=u}};
 
 // ---- запуск ----
 applyOvrAll();ratedBuild();
