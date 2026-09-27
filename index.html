@@ -15,6 +15,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&text=%E4%B8%87%E4%B8%AD%E4%BA%91%E4%BA%94%E4%BA%AC%E4%BB%8E%E4%BD%9B%E4%BF%A1%E5%83%8F%E5%85%AC%E5%85%AD%E5%89%A7%E5%8C%96%E5%8C%97%E5%8D%83%E5%8D%97%E5%8F%A4%E5%93%81%E5%9B%AD%E5%9C%A3%E5%9C%BA%E5%9D%80%E5%9D%8A%E5%9F%8E%E5%9F%94%E5%A0%82%E5%A1%91%E5%A1%94%E5%A2%9E%E5%A4%A7%E5%A4%A9%E5%A4%B4%E5%A5%B6%E5%AD%97%E5%AE%81%E5%AE%A2%E5%AE%A4%E5%AE%B6%E5%AF%BA%E5%B1%85%E5%B1%B1%E5%B7%9E%E5%B9%B4%E5%B9%BF%E5%BA%86%E5%BF%83%E5%BF%B5%E6%81%A9%E6%95%99%E6%9C%A8%E6%A1%A5%E6%A5%BC%E6%A6%95%E6%B0%B8%E6%B2%99%E6%B2%B3%E6%B3%AE%E6%B5%B7%E6%B9%96%E6%B9%BE%E6%BA%AA%E7%89%9B%E7%8F%A0%E7%94%9C%E7%95%AA%E7%99%BD%E7%9F%A5%E7%9F%B3%E7%A0%81%E7%A5%A0%E7%A6%BA%E7%A7%80%E7%A7%98%E7%BA%AA%E7%BE%8A%E8%8A%B1%E8%8D%89%E8%8D%94%E8%A1%8C%E8%B6%8A%E8%B7%AF%E9%81%93%E9%81%97%E9%82%BB%E9%83%BD%E9%85%92%E9%95%87%E9%99%88%E9%99%A2%E9%99%B6%E9%9B%95%E9%9D%A2%E9%A3%9F%E9%AA%91%E9%BB%84&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{
@@ -384,6 +386,217 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
 .sg ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;line-height:1.45}
 .sg p{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
 .sg .acts .ghost{margin-top:8px;padding:10px 6px;font-size:13.5px}
+
+/* ================= игра: дневник, печати, ачивки, задания, тайники, ранги ================= */
+:root{--g-seal:#d8352c;--g-gold:#e39a12;--g-lime:#c8f43c;--g-onlime:#1b1238;--g-fogA:rgba(241,238,255,.94);--g-fogB:rgba(222,216,246,.86);
+ --g-sealSoft:color-mix(in srgb,var(--g-seal) 12%,var(--panel));--g-goldSoft:color-mix(in srgb,var(--g-gold) 16%,var(--panel));--g-vioSoft:color-mix(in srgb,var(--vio) 12%,var(--panel));--g-localSoft:color-mix(in srgb,var(--local) 14%,var(--panel));
+ --g-disp:Unbounded,Rubik,system-ui,sans-serif;--g-hand:Caveat,"Segoe Print","Bradley Hand",cursive;--g-zh:"Noto Serif SC","Songti SC","STSong","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--g-seal:#ff6a5c;--g-gold:#f5b43a;--g-fogA:rgba(28,21,53,.94);--g-fogB:rgba(46,38,84,.86)}}
+:root[data-theme="dark"]{--g-seal:#ff6a5c;--g-gold:#f5b43a;--g-fogA:rgba(28,21,53,.94);--g-fogB:rgba(46,38,84,.86)}
+.g-defs{position:absolute;width:0;height:0;overflow:hidden}
+.g-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.dock #gameBtn{position:relative;color:var(--g-seal)}
+.dock #gameBtn i{position:absolute;right:7px;top:7px;width:8px;height:8px;border-radius:50%;background:var(--g-seal);border:2px solid var(--panel);display:none}
+.dock #gameBtn.dot i{display:block}
+
+.g-wrap{position:fixed;inset:0;z-index:1500;display:flex;flex-direction:column;max-width:560px;margin:0 auto;background:var(--soft);color:var(--ink);font-family:Rubik,system-ui,sans-serif;padding-top:env(safe-area-inset-top,0px)}
+.g-wrap[hidden]{display:none}
+.g-top{display:flex;align-items:center;gap:8px;padding:12px 16px 10px}
+.g-h{flex:1;min-width:0}
+.g-k{display:block;font:600 10.5px/1 Rubik,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
+.g-top h2{margin:0;font:700 18px/1.1 var(--g-disp);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px;border-radius:99px;background:var(--panel);font-weight:700;font-size:13px;white-space:nowrap}
+.g-chip .zh{font:700 14px/1 var(--g-zh);color:var(--g-seal)}
+.g-chip b{font-variant-numeric:tabular-nums}
+.g-x{width:36px;height:36px;border-radius:50%;background:var(--panel);font-size:22px;line-height:1;display:grid;place-items:center;color:var(--ink);flex:none}
+.g-main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:2px 16px 24px}
+.g-tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.g-tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;font-size:11.5px;font-weight:600;color:var(--muted);position:relative}
+.g-tabs button.on{color:var(--ink)}
+.g-tabs button.on .g-ic{color:var(--g-seal)}
+.g-tabs button .g-bd{position:absolute;left:calc(50% + 8px);top:6px;width:8px;height:8px;border-radius:50%;background:var(--g-seal);border:2px solid var(--panel)}
+.g-scr{display:flex;flex-direction:column;gap:12px}
+.g-card{background:var(--panel);border-radius:18px;padding:14px 16px}
+.g-row{display:flex;justify-content:space-between;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
+.g-big{font:700 28px/1 var(--g-disp);font-variant-numeric:tabular-nums}
+.g-big small{font:500 14px Rubik,sans-serif;color:var(--muted)}
+.g-sub{color:var(--muted);font-size:13px}
+.g-h3{margin:0;font:700 15px/1.2 var(--g-disp)}
+.g-bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin-top:10px}
+.g-bar i{display:block;height:100%;border-radius:inherit;background:var(--g-seal);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.g-bar.v i{background:var(--vio)}.g-bar.g i{background:var(--g-gold)}.g-bar.t i{background:var(--local)}
+.g-last{display:grid;grid-template-columns:128px 1fr;gap:14px;align-items:center;background:var(--panel);border-radius:18px;padding:10px;text-align:left;width:100%}
+.g-last img{width:128px;aspect-ratio:3/2;object-fit:cover;border-radius:12px;display:block;background:var(--soft)}
+.g-last .g-k{margin:0}
+.g-last b{display:block;font:700 15px/1.25 var(--g-disp);margin:4px 0 2px}
+.g-hand{font:600 19px/1 var(--g-hand);color:var(--g-seal)}
+.g-filters{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.g-filters button{height:34px;padding:0 14px;border-radius:99px;background:var(--panel);font-weight:600;font-size:13.5px;white-space:nowrap;color:var(--muted)}
+.g-filters button.on{background:var(--ink);color:var(--panel)}
+.g-dist header{display:flex;align-items:center;gap:10px}
+.g-dist header .g-h3{flex:1}
+.g-dist header .zh{font:700 15px var(--g-zh);color:var(--muted);margin-left:6px}
+.g-dist .cnt{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
+.g-area{display:flex;align-items:center;gap:10px;margin:10px 0 2px;font-size:12.5px;color:var(--muted)}
+.g-area .g-bar{flex:1;height:6px;margin:0}
+.g-area b{color:var(--ink);font-variant-numeric:tabular-nums;min-width:40px;text-align:right}
+.g-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 6px;margin-top:8px}
+.g-st{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 10px;border-radius:14px;text-align:center;color:var(--ink)}
+.g-st:active{background:var(--soft)}
+.g-st .g-seal{width:82px;height:82px}
+.g-st .n{font-size:12.5px;line-height:1.25;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:31px}
+.g-st.off .n{color:var(--muted)}
+.g-st .d{font:600 17px/1 var(--g-hand);color:var(--g-seal)}
+.g-st .d.no{font:500 11.5px/1.4 Rubik,sans-serif;color:var(--muted)}
+.g-cat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+
+/* страница места */
+.g-page{position:fixed;inset:0;z-index:1600;max-width:560px;margin:0 auto;background:var(--panel);color:var(--ink);overflow-y:auto;overscroll-behavior:contain;transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden}
+.g-page.on{transform:none;visibility:visible}
+.g-ill{position:relative;aspect-ratio:3/2;max-width:100%;overflow:hidden;background:var(--soft)}
+.g-ill img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:filter 1.6s ease}
+.g-ill.fogged img{filter:blur(5px) saturate(.35) brightness(1.05)}
+.g-fog{position:absolute;inset:-4%;pointer-events:none;background:radial-gradient(60% 45% at 25% 35%,var(--g-fogA),transparent 70%),radial-gradient(55% 50% at 78% 60%,var(--g-fogA),transparent 72%),radial-gradient(70% 60% at 50% 90%,var(--g-fogB),transparent 75%),linear-gradient(var(--g-fogB),var(--g-fogB));
+ -webkit-mask-image:radial-gradient(circle at 50% 58%,transparent var(--hole,0%),#000 calc(var(--hole,0%) + 26%));mask-image:radial-gradient(circle at 50% 58%,transparent var(--hole,0%),#000 calc(var(--hole,0%) + 26%))}
+.g-fog .lk{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-weight:600;font-size:13px;text-align:center;width:72%}
+.g-fog .lk .g-ic{width:28px;height:28px}
+.g-pageX{position:absolute;left:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:2;width:40px;height:40px;border-radius:50%;background:rgba(15,12,30,.55);color:#fff;display:grid;place-items:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.g-pb{padding:18px 16px 40px;display:flex;flex-direction:column;gap:16px}
+.g-tags{display:flex;flex-wrap:wrap;gap:6px}
+.g-tag{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:99px;background:var(--soft);font-size:12.5px;font-weight:600;color:var(--muted)}
+.g-tag.pts{background:var(--g-vioSoft);color:var(--vio)}
+.g-ttl{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.g-ttl h1{margin:0;font:700 23px/1.18 var(--g-disp);letter-spacing:-.01em;text-wrap:balance}
+.g-ttl .zh{font:700 18px/1.3 var(--g-zh);color:var(--g-seal);margin-top:6px;letter-spacing:.06em}
+.g-ttl .py{font-size:13.5px;color:var(--muted)}
+.g-ttl .ps{display:flex;flex-direction:column;align-items:center;margin-top:-4px}
+.g-ttl .ps .g-seal{width:78px;height:78px}
+.g-lead{font-size:17.5px;line-height:1.5;font-weight:500;margin:0}
+.g-story p{margin:0 0 12px;font-size:15.5px;line-height:1.62}
+.g-lock{border:1.5px dashed var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.g-lock p{margin:0;color:var(--muted);font-size:14px}
+.g-cta{height:54px;border-radius:16px;background:var(--g-lime);color:var(--g-onlime);font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.g-cta[disabled]{opacity:.5}
+.g-ghost{min-height:46px;border-radius:14px;background:var(--soft);font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;color:var(--ink);padding:0 12px}
+.g-ghost[disabled]{opacity:.55}
+.g-box{border-radius:18px;padding:14px 16px;background:var(--soft)}
+.g-box h3{margin:0 0 8px;font:600 11.5px Rubik,sans-serif;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.g-box p{margin:0;font-size:15px;line-height:1.55}
+.g-box.fact{background:var(--g-goldSoft)}
+.g-box.fact h3{color:var(--g-gold)}
+.g-looks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.g-looks button{display:grid;grid-template-columns:26px 1fr;gap:10px;text-align:left;padding:8px 4px;border-radius:12px;width:100%;font-size:15px;line-height:1.45;color:var(--ink)}
+.g-looks .ck{width:24px;height:24px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;color:transparent;margin-top:1px;transition:.2s}
+.g-looks .ck .g-ic{width:16px;height:16px;stroke-width:3}
+.g-looks button.on .ck{background:var(--local);border-color:var(--local);color:#fff}
+.g-looks button.on span:last-child{color:var(--muted)}
+.g-looks.locked button{pointer-events:none}
+.g-taxi{position:fixed;inset:0;z-index:1700;background:var(--panel);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+.g-taxi .zh{font:700 clamp(44px,15vw,84px)/1.15 var(--g-zh);letter-spacing:.04em;word-break:break-all}
+.g-taxi .py{font-size:20px;color:var(--muted)}
+.g-load{padding:30px 0;text-align:center;color:var(--muted)}
+
+/* удар печати */
+.g-slam{position:fixed;inset:0;z-index:1800;display:grid;place-items:center;background:rgba(15,10,35,.28);pointer-events:none;animation:gFade .5s ease 1.7s forwards}
+.g-slam .g-seal{width:min(62vw,250px);height:auto;animation:gSlam .55s cubic-bezier(.3,1.4,.5,1) both;filter:drop-shadow(0 12px 20px rgba(0,0,0,.2))}
+@keyframes gSlam{0%{transform:scale(2.4) rotate(-24deg);opacity:0}55%{transform:scale(.9) rotate(var(--rot,0deg));opacity:1}100%{transform:scale(1) rotate(var(--rot,0deg));opacity:1}}
+@keyframes gFade{to{opacity:0}}
+
+/* уведомления */
+.g-toasts{position:fixed;left:0;right:0;top:calc(124px + env(safe-area-inset-top,0px));z-index:1900;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+.g-toast{max-width:440px;width:100%;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--panel);color:var(--ink);border-radius:16px;padding:10px 14px 10px 10px;box-shadow:0 10px 30px rgba(27,18,56,.18);animation:gIn .45s cubic-bezier(.2,1.2,.4,1) both;pointer-events:auto}
+.g-toast.out{animation:gOut .35s ease forwards}
+.g-toast .k{font:600 11px Rubik,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--g-gold)}
+.g-toast b{display:block;font-size:15px;line-height:1.25}
+.g-toast .p{font-weight:800;color:var(--vio);font-variant-numeric:tabular-nums}
+@keyframes gIn{from{transform:translateY(-24px) scale(.96);opacity:0}}
+@keyframes gOut{to{transform:translateY(-16px);opacity:0}}
+.g-md{display:grid;place-items:center;border-radius:50%;color:#fff;width:44px;height:44px;flex:none}
+.g-md .g-ic{width:52%;height:52%;stroke-width:2.1}
+.g-md.on{background:radial-gradient(circle at 35% 30%,#ffd572,var(--g-gold) 60%,#b4700a);box-shadow:inset 0 -3px 0 rgba(0,0,0,.14),0 0 0 3px var(--g-goldSoft)}
+.g-md.off{background:var(--soft);color:var(--muted);box-shadow:inset 0 0 0 2px var(--line)}
+.g-md.seal{background:var(--g-seal)}.g-md.vio{background:var(--vio)}.g-md.teal{background:var(--local)}
+
+/* ранг */
+.g-rank{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.g-emb{width:82px;height:82px}
+.g-rank h2{font:700 21px/1.15 var(--g-disp);margin:4px 0 0}
+.g-rank .g-sub{margin-top:8px}
+.g-ladder{background:var(--panel);border-radius:18px;padding:6px 0}
+.g-lr{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:10px 16px}
+.g-lr+.g-lr{border-top:1px solid var(--line)}
+.g-lr .zh{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font:700 18px var(--g-zh);background:var(--soft);color:var(--muted)}
+.g-lr.got .zh{background:var(--g-sealSoft);color:var(--g-seal)}
+.g-lr.cur{background:linear-gradient(90deg,var(--g-sealSoft),transparent 80%)}
+.g-lr b{display:block;font-size:14.5px}
+.g-lr span{font-size:12.5px;color:var(--muted)}
+.g-lr .t{font-variant-numeric:tabular-nums;font-weight:700;font-size:13px;color:var(--muted)}
+.g-achs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.g-ach{background:var(--panel);border-radius:16px;padding:12px;display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center}
+.g-ach b{display:block;font-size:13.5px;line-height:1.25}
+.g-ach span{font-size:12px;color:var(--muted);line-height:1.3;display:block;margin-top:2px}
+.g-ach.on span{color:var(--g-gold);font-weight:600}
+.g-how ul{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.g-how li{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.g-how li b{color:var(--vio);font-variant-numeric:tabular-nums;white-space:nowrap}
+.g-prof{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;background:var(--soft);border-radius:18px;padding:12px 14px;margin-bottom:12px;text-align:left;width:100%;color:var(--ink)}
+.g-prof .g-emb{width:56px;height:56px}
+.g-prof b{display:block;font:700 16px/1.2 var(--g-disp)}
+.g-prof .g-bar{height:6px;margin-top:8px;background:var(--panel)}
+
+/* задания */
+.g-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;margin-top:14px}
+.g-week div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);font-weight:600}
+.g-week i{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--muted)}
+.g-week i .g-ic{width:18px;height:18px}
+.g-week .y i{background:var(--g-seal);color:#fff}
+.g-week .t i{box-shadow:inset 0 0 0 2px var(--g-seal);background:none;color:var(--g-seal)}
+.g-task{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center}
+.g-task .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--g-vioSoft);color:var(--vio)}
+.g-task.done .ic{background:var(--local);color:#fff}
+.g-task b{display:block;font-size:15px;line-height:1.3}
+.g-task .g-bar{height:6px;margin-top:8px}
+.g-task .pr{font-size:12.5px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.g-task .rw{font-weight:800;color:var(--vio);font-size:14px}
+.g-task.done .rw{color:var(--local)}
+.g-bonus{border:1.5px dashed var(--line);border-radius:18px;padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:14px}
+.g-bonus b{color:var(--vio)}
+
+/* тайники */
+.g-cache .hd{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center}
+.g-env{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--g-sealSoft);color:var(--g-seal)}
+.g-cache.open .g-env{background:var(--local);color:#fff}
+.g-cache.mine .g-env{background:var(--g-vioSoft);color:var(--vio)}
+.g-cache b{display:block;font-size:15px;line-height:1.3}
+.g-cache .m{font-size:12.5px;color:var(--muted)}
+.g-cache .dst{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;white-space:nowrap}
+.g-cache .g-ghost{margin-top:10px}
+.g-note{background:var(--soft);border-radius:14px;padding:12px 14px 12px 16px;font:600 21px/1.25 var(--g-hand);color:var(--ink);animation:gUnfold .6s cubic-bezier(.2,1,.3,1) both;transform-origin:top;margin-top:10px;overflow-wrap:anywhere}
+.g-note img{display:block;width:100%;border-radius:10px;margin-top:10px}
+@keyframes gUnfold{from{transform:scaleY(.2);opacity:0}}
+.g-lbl{font:600 11.5px Rubik,sans-serif;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:6px 4px -4px}
+.g-empty{color:var(--muted);font-size:14px;margin:0;padding:4px 4px}
+.g-sheet{position:fixed;inset:0;z-index:1650;display:flex;align-items:flex-end;justify-content:center;background:rgba(15,10,35,.4);opacity:0;pointer-events:none;transition:opacity .25s}
+.g-sheet.on{opacity:1;pointer-events:auto}
+.g-sb{width:100%;max-width:560px;background:var(--panel);color:var(--ink);border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;transform:translateY(30px);transition:transform .3s cubic-bezier(.2,.8,.2,1);max-height:88%;overflow-y:auto}
+.g-sheet.on .g-sb{transform:none}
+.g-f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:13px;color:var(--muted)}
+.g-f input,.g-f textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--soft);border:1.5px solid transparent;border-radius:12px;padding:11px 12px;resize:none}
+.g-phbtn{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:12px;border:1.5px dashed var(--line);font-weight:700;font-size:14px;color:var(--muted);cursor:pointer}
+.g-phprev{width:100%;border-radius:12px}
+.g-cardbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin-top:10px;border-radius:16px;background:var(--g-sealSoft);color:var(--g-seal);font-weight:800;font-size:15px}
+.g-cardbtn .g-seal{width:30px;height:30px}
+/* тайник на карте */
+.ogmk.cache .pm{background:var(--g-seal)}
+.ogmk.cache.found .pm{background:var(--local)}
+.ogmk.cache.mine .pm{background:var(--vio)}
+/* новый ранг */
+.g-rup{position:fixed;inset:0;z-index:1850;display:grid;place-items:center;background:rgba(15,10,35,.55);padding:24px;animation:gIn .3s ease both}
+.g-rup .c{background:var(--panel);color:var(--ink);border-radius:24px;padding:26px 22px 18px;max-width:340px;width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.g-rup .g-emb{width:120px;height:120px;animation:gSlam .6s cubic-bezier(.3,1.4,.5,1) both;--rot:-6deg}
+.g-rup h2{font:700 24px/1.15 var(--g-disp);margin:0}
+.g-rup p{margin:0 0 6px;color:var(--muted);font-size:14.5px}
+@media (prefers-reduced-motion:reduce){.g-slam .g-seal,.g-rup .g-emb,.g-toast,.g-note{animation-duration:.01ms!important}.g-page,.g-sb{transition-duration:.01ms!important}}
 </style>
 <script>try{var t=localStorage.getItem('og-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -454,7 +667,7 @@ const DIST={
  hd:{n:'Хуаду',zh:'花都',about:'Северный пригород, старые деревни и храмы.',stay:'далеко от центра.'},
  ch:{n:'Цунхуа',zh:'从化',about:'Горы, горячие источники и сады личи.',stay:'загородный отдых.'},
  zc:{n:'Цзэнчэн',zh:'增城',about:'Восточный пригород: сельские пейзажи, горячие источники Байшуйчжай.',stay:'загородный отдых.'},
- ly:{n:'Лиуань',zh:'荔湾',about:'Старый Кантон: квартал Сигуань, аркады-цилоу, утренний чай, остров Шамянь.',stay:'атмосферно и дешевле, для тех, кто едет за колоритом.'},
+ ly:{n:'Ливань',zh:'荔湾',about:'Старый Кантон: квартал Сигуань, аркады-цилоу, утренний чай, остров Шамянь.',stay:'атмосферно и дешевле, для тех, кто едет за колоритом.'},
  yx:{n:'Юэсю',zh:'越秀',about:'Исторический центр: храмы, улица Бэйцзинлу, парк Юэсю, метро на каждом шагу.',stay:'лучший баланс для первой поездки, всё в пешей доступности.'},
  th:{n:'Тяньхэ',zh:'天河',about:'Новый город: небоскрёбы, оперный театр, торговые центры, вечерние виды на башню.',stay:'современные отели, дороже, удобно для деловых поездок.'},
  hz:{n:'Хайчжу',zh:'海珠',about:'Южный берег Жемчужной реки: Кантон-Тауэр, набережные, спокойнее центра.',stay:'виды на реку и тишина, до центра — метро.'}
@@ -464,11 +677,11 @@ const POIS=[
  {id:'canton',cat:'main',e:'🗼',name:'Кантон-Тауэр',zh:'广州塔',lat:23.10902,lon:113.31915,d:'hz',pts:100,s:'Телебашня высотой 600 метров, открытая в 2010 году к Азиатским играм. Её «талию» образует перекрученная сетчатая оболочка, а по краю крыши ходит колесо обозрения с прозрачными кабинками.'},
  {id:'chen',cat:'main',e:'🏯',name:'Храм предков семьи Чэнь',zh:'陈家祠',lat:23.1298,lon:113.2401,d:'ly',pts:80,s:'Построен в 1890-х годах на средства рода Чэнь со всей провинции как родовой храм и школа для молодёжи, готовившейся к экзаменам. Главное здесь — резьба по дереву и камню и керамические фигурки на коньках крыш. Сейчас это Музей народного искусства Гуандуна.'},
  {id:'shamian',cat:'main',e:'🌳',name:'Остров Шамянь',zh:'沙面',lat:23.1095,lon:113.2393,d:'ly',pts:80,s:'После Опиумных войн остров стал британской и французской концессией. Отсюда колониальные особняки, церкви и тенистые аллеи вековых баньянов — одно из самых спокойных мест в городе.'},
- {id:'zhenhai',cat:'main',e:'🏮',name:'Башня Чжэньхай',zh:'镇海楼',lat:23.1406,lon:113.2603,d:'yx',pts:70,s:'Пятиэтажная башня 1380 года, эпоха Мин. Название переводится как «Башня, усмиряющая море». Сейчас внутри Музей Гуанчжоу.'},
- {id:'rams',cat:'main',e:'🐐',name:'Статуя Пяти козлов',zh:'五羊石像',lat:23.1407,lon:113.2575,d:'yx',pts:70,s:'Символ города, установлен в 1959 году. По легенде, пять небожителей спустились на козлах с колосьями риса и избавили край от голода. Поэтому Гуанчжоу называют «Городом козлов» — 羊城.'},
+ {id:'zhenhai',cat:'main',e:'🏮',name:'Башня Чжэньхай',zh:'镇海楼',lat:23.1406,lon:113.2603,d:'yx',pts:70,s:'Пятиэтажная башня 1380 года, эпоха Мин. Сначала она звалась «Башней, откуда смотрят на море», а нынешнее имя переводится как «Башня, усмиряющая море». Сейчас внутри Музей Гуанчжоу.'},
+ {id:'rams',cat:'main',e:'🐐',name:'Статуя Пяти козлов',zh:'五羊石像',lat:23.1407,lon:113.2575,d:'yx',pts:70,s:'Символ города, установлен в 1960 году. По легенде, пять небожителей спустились на козлах с колосьями риса и избавили край от голода. Поэтому Гуанчжоу называют «Городом козлов» — 羊城.'},
  {id:'sys',cat:'main',e:'🏛️',name:'Мемориальный зал Сунь Ятсена',zh:'中山纪念堂',lat:23.1356,lon:113.2594,d:'yx',pts:60,s:'Восьмиугольный зал 1931 года в память об основателе Китайской Республики. Огромное пространство внутри перекрыто без единой колонны.'},
  {id:'cathedral',cat:'main',e:'⛪',name:'Собор Святейшего Сердца',zh:'石室圣心大教堂',lat:23.1174,lon:113.2548,d:'yx',pts:70,s:'Неоготический собор, целиком сложенный из гранита во второй половине XIX века. Местные зовут его просто «Каменный дом».'},
- {id:'beijing',cat:'main',e:'🛍️',name:'Улица Бэйцзинлу',zh:'北京路',lat:23.1245,lon:113.264,d:'yx',pts:50,s:'Главная торговая улица города, которая остаётся ею уже больше двух тысяч лет. Днём — магазины, вечером — уличная еда и толпы.'},
+ {id:'beijing',cat:'main',e:'🛍️',name:'Улица Бэйцзинлу',zh:'北京路',lat:23.1245,lon:113.264,d:'yx',pts:50,s:'Улица на древней оси Гуанчжоу: она идёт по линии, заложенной при основании города больше двух тысяч лет назад. Днём — магазины, вечером — уличная еда и толпы.'},
  {id:'liurong',cat:'main',e:'🛕',name:'Храм Шести баньянов',zh:'六榕寺',lat:23.1306,lon:113.2546,d:'yx',pts:60,s:'Буддийский храм с полуторатысячелетней историей. Название ему дал поэт Су Ши, увидевший во дворе шесть баньянов. Над храмом поднимается многоярусная Цветочная пагода.'},
  {id:'yongqing',cat:'main',e:'🏘️',name:'Квартал Юнцинфан',zh:'永庆坊',lat:23.1175,lon:113.2335,d:'ly',pts:60,s:'Отреставрированный кусок старого Сигуаня: переулки, мастерские, кофейни и родовой дом семьи Брюса Ли.'},
  {id:'huacheng',cat:'main',e:'🌆',name:'Площадь Хуачэн',zh:'花城广场',lat:23.1221,lon:113.31858,d:'th',pts:50,s:'Зелёная ось нового делового района Чжуцзян. С неё открывается лучший вид на Кантон-Тауэр за рекой, особенно вечером.'},
@@ -480,13 +693,13 @@ const POIS=[
  {id:'statues',cat:'local',e:'🗿',name:'Бронзовые фигуры Шамяня',zh:'沙面雕塑',lat:23.11,lon:113.2375,d:'ly',pts:20,s:'По острову расставлены бронзовые скульптуры сценок из прошлого: фотограф со старой камерой, дамы на прогулке. Попробуйте найти их все.'},
  {id:'dafo',cat:'local',e:'🪷',name:'Храм Большого Будды',zh:'大佛寺',lat:23.1251,lon:113.2627,d:'yx',pts:30,s:'Прячется в двух шагах от торговой суеты Бэйцзинлу. Внутри — огромные бронзовые статуи Будды и неожиданная тишина.'},
  {id:'wanmu',cat:'local',e:'📜',name:'Школа «Ваньму Цаотан»',zh:'万木草堂',lat:23.1281,lon:113.2665,d:'yx',pts:25,s:'Частная школа реформатора Кан Ювэя конца XIX века, где учился Лян Цичао. Маленький дворик, о котором знают немногие.'},
- {id:'liwan',cat:'local',e:'🛶',name:'Парк у озера Лиуань',zh:'荔湾湖公园',lat:23.1242,lon:113.228,d:'ly',pts:25,s:'Каналы, мостики и лодки в самом сердце старого города. Утром здесь занимаются тайцзи и поют кантонскую оперу.'},
+ {id:'liwan',cat:'local',e:'🛶',name:'Парк у озера Ливань',zh:'荔湾湖公园',lat:23.1242,lon:113.228,d:'ly',pts:25,s:'Каналы, мостики и лодки в самом сердце старого города. Утром здесь занимаются тайцзи и пишут иероглифы водой по плитам.'},
  {id:'tianzi',cat:'local',e:'⚓',name:'Причал Тяньцзы',zh:'天字码头',lat:23.1172,lon:113.2659,d:'yx',pts:25,s:'Исторический причал, откуда отправляются вечерние круизы по Жемчужной реке с видом на подсвеченные берега.'},
 
  {id:'taotao',cat:'food',e:'🥟',name:'Таотаоцзюй',zh:'陶陶居',lat:23.116,lon:113.2371,d:'ly',pts:30,s:'Чайный дом с конца XIX века. Место для классического утреннего чая с димсамами — приходите до обеда.'},
- {id:'panxi',cat:'food',e:'🍵',name:'Паньси',zh:'泮溪酒家',lat:23.124,lon:113.2307,d:'ly',pts:30,s:'Ресторан-сад на берегу озера Лиуань: павильоны, пруды и кантонская кухня.'},
- {id:'nanxin',cat:'food',e:'🍮',name:'Наньсинь',zh:'南信牛奶甜品',lat:23.1162,lon:113.2376,d:'ly',pts:20,s:'Знаменитая десертная. Закажите двойной молочный пудинг 双皮奶 — главный десерт Гуанчжоу.'},
- {id:'gzjj',cat:'food',e:'🦆',name:'Гуанчжоу Цзюцзя',zh:'广州酒家',lat:23.1165,lon:113.2406,d:'ly',pts:30,s:'Классический ресторан кантонской кухни с 1930-х годов. Жареный гусь, димсамы, большие шумные залы.'}
+ {id:'panxi',cat:'food',e:'🍵',name:'Паньси',zh:'泮溪酒家',lat:23.124,lon:113.2307,d:'ly',pts:30,s:'Ресторан-сад на берегу озера Ливань: павильоны, галереи над водой и кантонская кухня. Открыт с 1947 года.'},
+ {id:'nanxin',cat:'food',e:'🍮',name:'Наньсинь',zh:'南信牛奶甜品',lat:23.1162,lon:113.2376,d:'ly',pts:20,s:'Десертная на Дишипулу, работает с 1934 года. Закажите двойной молочный пудинг 双皮奶 — классику кантонских десертов.'},
+ {id:'gzjj',cat:'food',e:'🦆',name:'Гуанчжоу Цзюцзя',zh:'广州酒家',lat:23.1165,lon:113.2406,d:'ly',pts:30,s:'Классический ресторан кантонской кухни, открыт в 1935 году. После реконструкции в конце 2025 года внутри появился музей кантонской кухни. Фирменное блюдо — курица «Вэньчан».'}
 ];
 POIS.forEach(p=>{Object.assign(p,P(p.lat,p.lon));p.cur=true});
 const IC={"temple": "M4 9h16M6 9l6-5 6 5M7 9v10M17 9v10M5 19h14M10 19v-5h4v5", "tower": "M12 2v4M9 22l2-16h2l2 16M8.5 12h7M9.8 17h4.4", "columns": "M3 9l9-5 9 5M5 9v9M9.5 9v9M14.5 9v9M19 9v9M3 20h18", "church": "M12 2v5M10 4h4M6 21V11l6-4 6 4v10M10 21v-4h4v4", "tree": "M12 21v-5M6 16h12L12 4z", "bag": "M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0", "bridge": "M2 16h20M4 16c2-6 14-6 16 0M7.5 16v-3M12 16v-4.5M16.5 16v-3", "star": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z", "houses": "M3 21V10l5-4 5 4v11M13 21v-8l4-3 4 3v8M2 21h20", "opera": "M3 18c3-8 7-10 9-10s6 3 9 10zM2 18h20", "skyline": "M4 21V11h4v10M10 21V4h5v17M17 21V9h4v12M2 21h20", "search": "M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8", "arcade": "M3 20V9l9-5 9 5v11M7 20v-5a2 2 0 0 1 4 0v5M13 20v-5a2 2 0 0 1 4 0v5", "person": "M12 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM8 22l1-8-2-3 5-3 5 3-2 3 1 8", "lotus": "M12 20c-4 0-7-3-7-6 3 0 5 1 7 3 2-2 4-3 7-3 0 3-3 6-7 6zM12 17c-2-3-2-6 0-10 2 4 2 7 0 10z", "scroll": "M8 4h11v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-1h11v1a3 3 0 0 0 3 3M8 4a2 2 0 0 0-2 2v9M11 8h5M11 12h5", "boat": "M3 15h18l-3 5H6zM12 4v11M12 4l6 8h-6", "anchor": "M12 8v13M5 13a7 7 0 0 0 14 0M9 11h6M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "bowl": "M4 11h16a8 8 0 0 1-16 0zM9 7l1-3M13 7l1-3", "cup": "M6 8h12l-1.5 12h-9zM5 8h14M10 8V5a2 2 0 0 1 4 0v3", "mark": "M7 4h10v16l-5-3.5L7 20z", "check": "m5 12 5 5 9-10", "walk": "M13 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9 21l2.5-7L9 11l3-3 3 3 3 1M11.5 14 14 17v4", "x": "M6 6l12 12M18 6 6 18"};const ICM={"canton": "tower", "chen": "temple", "shamian": "tree", "zhenhai": "temple", "rams": "star", "sys": "columns", "cathedral": "church", "beijing": "bag", "liurong": "temple", "yongqing": "houses", "huacheng": "skyline", "opera": "opera", "bridge": "bridge", "road": "search", "qilou": "arcade", "statues": "person", "dafo": "lotus", "wanmu": "scroll", "liwan": "boat", "tianzi": "anchor", "taotao": "bowl", "panxi": "bowl", "nanxin": "cup", "gzjj": "bowl"};POIS.forEach(p=>p.ic=ICM[p.id]||'star');
@@ -513,6 +726,12 @@ let tab='near',rankSeg='p',dirty=true,changed=false;
 const MSTORE='otkroy-gorod-gz-marks';let marks=[];try{marks=JSON.parse(localStorage.getItem(MSTORE)||'[]')}catch(e){}
 marks.forEach(m=>Object.assign(m,P(m.lat,m.lon)));
 const MT={place:{e:'📍',n:'Место'},egg:{e:'✨',n:'Пасхалка'},food:{e:'🍜',n:'Еда'}};
+// ---- игра: состояние (объявлено заранее, чтобы было доступно при запуске) ----
+const DIARY_IDS=['canton','chen','shamian','zhenhai','rams','sys','cathedral','beijing','liurong','yongqing','huacheng','opera','bridge','road','qilou','statues','dafo','wanmu','liwan','tianzi','taotao','panxi','nanxin','gzjj'];
+const DIARY_SET=new Set(DIARY_IDS),GKEY='og-game-v1',DIARY_V='1';
+let G=null;try{G=JSON.parse(localStorage.getItem(GKEY)||'null')}catch(e){}
+G=Object.assign({ach:{},look:{},st:{},seen:{},days:{},credit:{},rated:0,found:0,hid:0,tp:{},td:{},tasks:[],day:''},G||{});
+const GC={list:[],notes:{},at:0,busy:false};try{GC.notes=JSON.parse(localStorage.getItem('og-cnotes')||'{}')||{}}catch(e){}
 // ---- общие метки, оценки, правки: состояние (объявлено заранее, чтобы было доступно при запуске) ----
 const PUB_COL='#12a594',GOLD='#f5a524',POP_N=3,POP_AVG=4,MAXPH=8;
 let isAdmin=false,meUid=null,pubMarks=[],pstats=new Map(),OVR=new Map(),RATED=[],sugIn=[],sugMine=[],sugToast=false,cur=null,galList=[],moveMode=null,sdraft=null;
@@ -998,6 +1217,7 @@ function mkSync(){if(!ogReady||map._animatingZoom)return;mkQ=false;mkT=performan
  for(const q of marks)add('k:'+q.id,q,'k'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(myKey(q))+hotc(myKey(q)),()=>markEl(q));
  if(z>=13)for(const q of pubMarks)add('u:'+q.user_id+'/'+q.id,q,'u'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(pubKey(q))+hotc(pubKey(q)),()=>pubEl(q));
  for(const r of RATED){const hot=isPop(r.s);if(z<(hot?12:15))continue;add('r:'+r.id,r,'r'+rb(r.id)+hot,()=>ratedEl(r))}
+ if(z>=13)for(const c of GC.list)add('c:'+c.id,c,'c'+(c.mine?2:c.found||GC.notes[c.id]?1:0),()=>cacheEl(c));
  const pd=pin||(route&&route.dest&&(route.dest.cat==='pin'||route.dest.cat==='osm')?route.dest:null);
  if(pd)want.set('pin',{o:pd,sig:'pin'+(pd.col||'')+Math.round(pd.x)+','+Math.round(pd.y),mk:()=>pinEl(pd)});
  if(target)want.set('tgt',{o:target,sig:'t'+Math.round(target.x)+','+Math.round(target.y),mk:()=>mkEl('tgt',55,'<div class="pm"></div>')});
@@ -1076,13 +1296,14 @@ function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,
  if(d<.5){if(walkPath&&walkPath.length){target=walkPath.shift();return}target=null;walkPath=null;changed=true;dirty=true;return}
  me={x:me.x+(target.x-me.x)/d*mv,y:me.y+(target.y-me.y)/d*mv};revealAt(me);checkDiscover();navTick();
  dirty=true}
-function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
- toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cur&&p.cat==='main'?' · открыто 1,5 км вокруг':''}</div><button data-open="${p.id}">Читать</button>`);save()}}
+function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());gStamp(p,true);if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
+ toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cur&&p.cat==='main'?' · открыто 1,5 км вокруг':''}</div>${DIARY_SET.has(p.id)?`<button data-dpage="${p.id}">Дневник</button>`:`<button data-open="${p.id}">Читать</button>`}`);save()}}
  if(route&&route.dest&&dist(at,route.dest)<=Math.max(DISCOVER,40))closeRoute(true)}
 function tap(x,y){if(moveMode)return;if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
  for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
  if(map.getZoom()>=13)for(const q of pubMarks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
- if(best){best.user_id?openPub(best):best.type&&best.t?openMark(best):openCard(best);return}
+ if(map.getZoom()>=13)for(const q of GC.list){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
+ if(best){best.cache?openCache(best):best.user_id?openPub(best):best.type&&best.t?openMark(best):openCard(best);return}
  {const z=map.getZoom();let br=null,bdr=22;for(const r of RATED){if(z<(isPop(r.s)?12:15))continue;const s=S(r),d=Math.hypot(s.x-x,s.y-y);if(d<bdr){bdr=d;br=r}}if(br){openRated(br);return}}
  if(OL.metro&&metro&&map.getZoom()>=12){let bm=null,bdm=22;for(const it of metro.st){const s=S(it),d=Math.hypot(s.x-x,s.y-y);if(d<bdm){bdm=d;bm=it}}if(bm){openOsm(bm);return}}
  if(map.getZoom()>=14){let bo=null,bdo=20;for(const k in OLAY){if(!OL[k]||!osmData[k])continue;for(const it of osmData[k]){const s=S(it),d=Math.hypot(s.x-x,s.y-y);if(d<bdo){bdo=d;bo=it}}}if(bo){openOsm(bo);return}}
@@ -1136,7 +1357,7 @@ function renderSheet(){const b=$('body');let h='';
   if(!list.length)h='<p class="note">Все слои скрыты. Включите «Главное», «Локальное» или «Поесть» над картой.</p>'}
  else if(tab==='dist'){Object.entries(DIST).forEach(([k,d])=>{const all=POIS.filter(p=>p.d===k),v=all.filter(p=>visited.has(p.id)).length,pcv=areaPct(k),pc=Math.min(100,Math.max(pcv,pcv>0?1.5:0));
    h+=`<div class="dist"><h3>${d.n} <span>${d.zh} · ${fmtPct(pcv)} · мест ${v} из ${all.length}</span></h3><div class="bar"><i style="width:${pc}%"></i></div><p>${d.about}</p><p><b>Жильё:</b> ${d.stay}</p></div>`})}
- else{h+=profileHTML()}
+ else{h+=gProfileHTML()+profileHTML()}
  b.innerHTML=h}
 
 let nearTimer=0;
@@ -1148,7 +1369,7 @@ function openCard(p){cur={kind:'poi',obj:p,key:p.id};const v=visited.has(p.id),d
  <div class="pc-bar"><button class="pc-x" data-close aria-label="Закрыть">${isvg('x',20,2.4)}</button><span class="pc-tag" style="background:${col}">${isvg(p.ic,14,2.4)}${CAT[p.cat].n}</span></div>
  <h2>${esc(p.name)}</h2><div class="pc-sub">${esc(p.zh||'')} · ${dl.n} · ${walk(d)} пешком</div></div>
  <div class="pc-body"><div class="pc-photo" id="pcPhoto" data-id="${p.id}"></div><div class="pc-stats"><div><b>${v?'✓':'+'+p.pts}</b><span>${v?'посещено':'за визит'}</span></div><div><b>${fmtD(d)}</b><span>до места</span></div><div><b>${p.d?fmtPct(areaPct(p.d)):'—'}</b><span>${dl.n} изучено</span></div></div>
- <p class="pc-story" id="pcStory">${esc(p.s||'')}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м${p.cur&&p.cat==='main'?', и откроется 1,5 км вокруг':''}</p>`}${cta}${placeActs('poi',p)}${reviewsBlock(p.id,p.name)}</div>`;
+ <p class="pc-story" id="pcStory">${esc(p.s||'')}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м${p.cur&&p.cat==='main'?', и откроется 1,5 км вокруг':''}</p>`}${cta}${DIARY_SET.has(p.id)?`<button class="g-cardbtn" data-dpage="${p.id}">${gSeal(p,{on:v})}${v?'Страница в дневнике':'Страница в дневнике · печать ждёт'}</button>`:''}${placeActs('poi',p)}${reviewsBlock(p.id,p.name)}</div>`;
  $('card').classList.add('place','on');$('scrim').classList.add('on');loadReviews(p.id);
  if(p.dyn&&p.wk&&!p.sx){const wl=p.wk.split(':')[0],wt=p.wk.slice(p.wk.indexOf(':')+1);if(['ru','en'].includes(wl))fetch(`https://${wl}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wt)}`).then(r=>r.json()).then(j=>{if(j&&j.extract){p.sx=j.extract.slice(0,420)+(j.extract.length>420?'…':'');const el=$('pcStory');if(el&&$('pcPhoto')&&$('pcPhoto').dataset.id===p.id)el.textContent=p.sx}}).catch(()=>{})}
  if(p.sx){const el=$('pcStory');if(el)el.textContent=p.sx}
@@ -1188,7 +1409,7 @@ function startGps(user){
  if(!window.isSecureContext){toast('<div>GPS работает только на странице с адресом https://. Разместите файл на хостинге.</div>');return}
  mode='gps';target=null;$('gpsBtn').classList.add('on');let first=true;
  watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;if(!first&&c.accuracy>70)return;const np=P(c.latitude,c.longitude),prev=lastFix;acc=c.accuracy||0;
-  lastFix={x:np.x,y:np.y,t:pos.timestamp||Date.now()};try{localStorage.setItem('og-lastfix',JSON.stringify(lastFix))}catch(e){}me=np;if(prev)bridge(prev,np,(lastFix.t-prev.t)/1000);
+  lastFix={x:np.x,y:np.y,t:pos.timestamp||Date.now()};try{localStorage.setItem('og-lastfix',JSON.stringify(lastFix))}catch(e){}me=np;if(prev){bridge(prev,np,(lastFix.t-prev.t)/1000);gWalk(prev,np,(lastFix.t-prev.t)/1000)}
   const wasFirst=first;if(first){first=false;follow=true;map.setView(toM(c.latitude,c.longitude),17,{animate:false});toast('<div>GPS включён. Идите — туман рассеивается за вами.</div>');
    if(Math.hypot(me.x,me.y)>25000)toast('<div>Туман работает везде, но точки интереса пока есть только в центре Гуанчжоу.</div>')}
   meFix(wasFirst);revealAt(me);checkDiscover();navTick();dynMaybe();dirty=true;if(tab==='near')renderSheet()},
@@ -1255,7 +1476,7 @@ $('impFile').onchange=async e=>{const files=[...e.target.files];if(!files.length
  track.forEach((ll,idx)=>{const p=P(ll[0],ll[1]),t=t0+idx/total*2200;
   if(prev){const d=dist(prev,p);if(d>25&&d<400){const k=Math.ceil(d/20);for(let s2=1;s2<k;s2++)revealAt({x:prev.x+(p.x-prev.x)*s2/k,y:prev.y+(p.y-prev.y)*s2/k},t)}}
   revealAt(p,t);prev=p;n++;
-  for(const q of POIS)if(!visited.has(q.id)&&Math.abs(q.x-p.x)<DISCOVER&&Math.abs(q.y-p.y)<DISCOVER&&dist(q,p)<=DISCOVER){visited.add(q.id);qVisit(q.id);if(q.cat==='main')discBorn.set(q.id,t);got++;gain+=q.pts}
+  for(const q of POIS)if(!visited.has(q.id)&&Math.abs(q.x-p.x)<DISCOVER&&Math.abs(q.y-p.y)<DISCOVER&&dist(q,p)<=DISCOVER){visited.add(q.id);qVisit(q.id);gStamp(q,false);if(q.cat==='main')discBorn.set(q.id,t);got++;gain+=q.pts}
   if(ll[0]<mnLa)mnLa=ll[0];if(ll[0]>mxLa)mxLa=ll[0];if(ll[1]<mnLo)mnLo=ll[1];if(ll[1]>mxLo)mxLo=ll[1]});
  quiet=false;pts+=gain;
  changed=true;save();updateHUD();renderSheet();follow=false;
@@ -1379,7 +1600,7 @@ async function saveReview(t){if(!rvDraft)return;if(!rvDraft.rating){toast('<div>
   const row={user_id:user.id,poi_id:rvDraft.id,rating:rvDraft.rating,text:$('rvText').value.trim()||null,author_name:(user.email||'').split('@')[0]};if(url)row.photo_path=url;
   {const pl=placeOf(rvDraft.id);if(pl){row.place_name=pl.name||null;row.lat=pl.lat;row.lon=pl.lon;row.kind=pl.kind||null}}
   const {error}=await sb.from('reviews').upsert(row,{onConflict:'user_id,poi_id'});if(error)throw error;
-  const back=rvDraft.back;rvDraft=null;closeCard();statsLoad();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
+  const back=rvDraft.back;rvDraft=null;closeCard();gEvent('rate');statsLoad();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
  catch(e){t.disabled=false;t.textContent='Опубликовать';toast(`<div>Не удалось сохранить отзыв: ${esc(e.message||'ошибка')}</div>`)}}
 function handleExtra(t){
  if(bgClick(t))return true;
@@ -1528,7 +1749,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-login],[da
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(e.target.id==='lgEmail')$('lgPass')&&$('lgPass').focus();if(e.target.id==='lgPass'){const b=document.querySelector('[data-lin],[data-lnewpass]');b&&b.click()}});
 if(sb){sb.auth.onAuthStateChange((ev,sess)=>{if(ev==='PASSWORD_RECOVERY')setTimeout(()=>openLogin('newpass'),300);const nu=sess&&sess.user||null,chg=(nu&&nu.id)!==(user&&user.id);user=nu;meUid=nu?nu.id:null;
   if(location.hash.includes('access_token')||location.hash.includes('error'))history.replaceState(null,'',location.pathname);
-  if(nu&&chg){setTimeout(pull,0);bgTok=null;bgLoad();setTimeout(bgPull,2500);setTimeout(commOnLogin,600)}
+  if(nu&&chg){setTimeout(pull,0);bgTok=null;bgLoad();setTimeout(bgPull,2500);setTimeout(commOnLogin,600);setTimeout(gPull,1200);setTimeout(()=>{GC.at=0;gCachesLoad()},1500)}
   if(!nu){isAdmin=false;sugIn=[];sugMine=[];setSync('off');if(ev==='INITIAL_SESSION'&&!localStorage.getItem('og-skip'))setTimeout(()=>openLogin(),600)}
   if(tab==='rank'&&$('sheet').classList.contains('open'))renderSheet()})}
 setInterval(flush,10000);
@@ -1692,7 +1913,7 @@ function saveForm(){formGrab();const d=draft;if(!d)return;const name=d.name.trim
  if(d.pub&&!user){d.pub=false;toast('<div>Чтобы делиться метками, войдите в аккаунт. Сохраняю как личную.</div>')}
  if(d.src==='new'){const[lat,lon]=U(d.at||me),q={id:'m'+Date.now(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),name,note:d.note.trim(),type:d.type,photos:d.photos,pub:d.pub,t:Date.now(),u:Date.now()};
   Object.assign(q,P(q.lat,q.lon));marks.push(q);if(!saveMarks()){marks.pop();return}qMark(q.id);flushSoon();
-  pts+=15;changed=true;save();updateHUD();closeCard();draft=null;tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
+  pts+=15;changed=true;save();updateHUD();closeCard();draft=null;gEvent('mark');tab='mine';[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t==='mine'));renderSheet();dirty=true;
   toast(`<span style="font-size:22px">${MT[q.type].e}</span><div><b>Отметка сохранена</b><br>+15 очков${q.pub?' · видна всем':''}</div>`);return}
  const q=marks.find(m=>m.id===d.src);if(!q){draft=null;closeCard();return}const bak=JSON.stringify(Object.assign({},q,{photos:null})),bph=q.photos;
  q.name=name;q.note=d.note.trim();q.type=d.type;q.pub=d.pub;q.photos=d.photos;q.rm=(q.rm||[]).concat(d.rm);
@@ -1786,6 +2007,262 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-cur],[data
  mc.addEventListener('touchend',()=>clearTimeout(lpT),{passive:true});mc.addEventListener('touchcancel',()=>clearTimeout(lpT),{passive:true});
  // палец отпустили — браузер пришлёт «нажатие», его гасим, иначе карточка сразу закроется
  document.addEventListener('click',e=>{if(lpFired){lpFired=false;e.stopPropagation();e.preventDefault()}},true);mc.addEventListener('touchstart',()=>{},{passive:true})}
+
+
+// ================= ИГРА: дневник с печатями, ачивки, задания дня, тайники, ранги =================
+LMS.canton={b:'M14 37.4Q20.75 23 16.6 9.4L23.4 9.4Q19.25 23 26 37.4Z'+'M19.3 1.2h1.4v8.4h-1.4Z'+'M15.6 8.4h8.8v1.6h-8.8Z'+'M11 36.4h18v2h-18Z',d:'M15.4 30L24.6 30M16.7 24L23.3 24M16.9 18L23.1 18M16.6 13L23.4 13M15.2 35L22.6 11M24.8 35L17.4 11',h:''};
+const GI={
+ book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+ tasks:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+ box:'<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+ award:'<circle cx="12" cy="8" r="6"/><path d="M15.5 13.9L17 22l-5-3-5 3 1.5-8.1"/>',
+ x:'<path d="M18 6L6 18M6 6l12 12"/>',
+ lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+ pin:'<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+ flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+ star:'<path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/>',
+ walk:'<circle cx="13" cy="4" r="1.6"/><path d="M9 21l2.5-6 3 3v3M8 12l2.5-4 4 1 2.5 3M11.5 15l-1-4"/>',
+ stamp:'<path d="M5 21h14M4 17h16v-2a2 2 0 0 0-2-2h-3V9.5a3 3 0 1 0-6 0V13H6a2 2 0 0 0-2 2z"/>',
+ eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+ map:'<path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3zM9 3v15M15 6v15"/>',
+ bowl:'<path d="M3 11h18a9 9 0 0 1-18 0zM8 7.5c0-1.5 1-2 1-3.5M12 7.5c0-1.5 1-2 1-3.5M16 7.5c0-1.5 1-2 1-3.5"/>',
+ key:'<circle cx="7.5" cy="15.5" r="3.5"/><path d="M10 13l9-9M16 7l2 2M14 9l2 2"/>',
+ trophy:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+ compass:'<circle cx="12" cy="12" r="9.5"/><path d="M16 8l-2.3 5.7L8 16l2.3-5.7z"/>',
+ msg:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+ check:'<path d="M20 6L9 17l-5-5"/>',
+ taxi:'<path d="M5 17h14v-4l-1.8-4.5A2 2 0 0 0 15.3 7H8.7a2 2 0 0 0-1.9 1.5L5 13zM5 13h14M9 4h6"/><circle cx="8" cy="17.5" r="1.6"/><circle cx="16" cy="17.5" r="1.6"/>',
+ cam:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+ route:'<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7"/>'};
+const gic=(n,sz=22,cls='g-ic')=>`<svg class="${cls}" viewBox="0 0 24 24" width="${sz}" height="${sz}" style="width:${sz}px;height:${sz}px" aria-hidden="true">${GI[n]}</svg>`;
+const gHash=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return h};
+const gMON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+const gDate=t=>{const d=new Date(t);return d.getDate()+' '+gMON[d.getMonth()]};
+const gPlural=(n,a,b,c)=>{const m=n%10,h=n%100;return m===1&&h!==11?a:m>=2&&m<=4&&(h<12||h>14)?b:c};
+const gPO=id=>POIS.find(p=>p.id===id);
+const gCATN={main:'Главное место',local:'Тайное место',food:'Еда'},gCATC={main:'var(--main)',local:'var(--local)',food:'var(--food)'};
+const GDIST=['yx','ly','th','hz'];
+function gSave(){G.u=Date.now();try{localStorage.setItem(GKEY,JSON.stringify(G))}catch(e){}gPushSoon()}
+let gPushT=0;function gPushSoon(){clearTimeout(gPushT);gPushT=setTimeout(gPush,4000)}
+async function gPush(){if(!sb||!user||!navigator.onLine)return;try{const {error}=await sb.from('game_state').upsert({user_id:user.id,state:G,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)console.warn(error)}catch(e){console.warn(e)}}
+async function gPull(){if(!sb||!user)return;try{const {data,error}=await sb.from('game_state').select('state').eq('user_id',user.id).maybeSingle();if(error)throw error;const s=data&&data.state;if(s){
+  for(const k of ['ach','st','seen','days'])for(const id in s[k]||{}){const a=G[k][id],b=s[k][id];G[k][id]=a&&typeof a==='number'&&typeof b==='number'?Math.min(a,b):(a||b)}
+  for(const id in s.look||{}){const a=G.look[id]||[],b=s.look[id]||[];G.look[id]=b.map((x,i)=>!!(x||a[i]))}
+  for(const id in s.credit||{})G.credit[id]=Math.max(G.credit[id]||0,s.credit[id]||0);
+  for(const k of ['rated','found','hid'])G[k]=Math.max(G[k]||0,s[k]||0);
+  if(s.day===G.day){for(const k in s.tp||{})G.tp[k]=Math.max(G.tp[k]||0,s.tp[k]||0);for(const k in s.td||{})G.td[k]=G.td[k]||s.td[k];G.walk=Math.max(G.walk||0,s.walk||0);G.done=G.done||s.done}
+  if(s.rank>G.rank)G.rank=s.rank}
+  gSave();gRenderIf()}catch(e){console.warn(e)}}
+
+// ---- день и задания ----
+const gToday=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const TPOOL={
+ stamp:{n:'Отметьтесь в новом месте',g:1,pts:50,i:'stamp',cur:()=>G.tp.stamp||0},
+ walk:{n:'Пройдите 3 км с включённым GPS',g:3,u:' км',pts:30,i:'walk',cur:()=>(G.walk||0)/1000},
+ fog:{n:'Развейте туман на 0,2 км²',g:.2,u:' км²',pts:30,i:'compass',cur:()=>Math.max(0,area.size-(G.area0||0))*ACELL*ACELL/1e6},
+ rate:{n:'Оцените любое место',g:1,pts:20,i:'star',cur:()=>G.tp.rate||0},
+ mark:{n:'Поставьте свою метку',g:1,pts:20,i:'pin',cur:()=>G.tp.mark||0},
+ cache:{n:'Откройте тайник',g:1,pts:30,i:'box',cur:()=>G.tp.cache||0}};
+function gPick(day){let seed=gHash(day)>>>0;const rnd=()=>(seed=(seed*1103515245+12345)>>>0)/4294967296;
+ const move=['stamp','fog','walk'],other=['rate','mark'];if(GC.list.some(c=>!c.mine&&!c.found))other.push('cache');
+ const a=move.sort(()=>rnd()-.5).slice(0,2),b=other.sort(()=>rnd()-.5)[0];return[a[0],a[1],b]}
+function gDay(){const t=gToday();if(G.day===t)return;G.day=t;G.tp={};G.td={};G.done=false;G.walk=0;G.area0=area.size;G.tasks=gPick(t);gSave()}
+function gStreak(){let n=0;const d=new Date();if(!G.days[gToday()])d.setDate(d.getDate()-1);for(;;){const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(!G.days[k])break;n++;d.setDate(d.getDate()-1)}return n}
+function gTasksCheck(){gDay();let any=false;for(const id of G.tasks){const q=TPOOL[id];if(!q||G.td[id])continue;if(q.cur()>=q.g-1e-9){G.td[id]=1;pts+=q.pts;changed=true;any=true;gToast('teal','walk'===id?'walk':q.i,'Задание дня',q.n,'+'+q.pts)}}
+ if(!G.done&&G.tasks.length&&G.tasks.every(id=>G.td[id])){G.done=true;G.days[G.day]=1;pts+=50;changed=true;any=true;setTimeout(()=>gToast('on','flame','Все задания дня','Серия '+gStreak()+' '+gPlural(gStreak(),'день','дня','дней'),'+50'),700)}
+ if(any){save();updateHUD();gSave()}}
+
+// ---- события из приложения ----
+function gEvent(k,n=1){gDay();G.tp[k]=(G.tp[k]||0)+n;if(k==='rate')G.rated=(G.rated||0)+1;gSave();setTimeout(gTick,300)}
+function gWalk(a,b,dt){const d=Math.hypot(b.x-a.x,b.y-a.y);if(!(dt>0)||d>400||d/dt>3.3||(acc&&acc>40))return;gDay();G.walk=(G.walk||0)+d;gSaveSoonLocal()}
+let gLT=0;function gSaveSoonLocal(){clearTimeout(gLT);gLT=setTimeout(gSave,5000)}
+function gStamp(p,live){if(!p)return;gDay();if(!G.st[p.id])G.st[p.id]=Date.now();G.tp.stamp=(G.tp.stamp||0)+1;gSave();
+ if(live&&DIARY_SET.has(p.id))gSlam(p);setTimeout(gTick,live?2200:500)}
+
+// ---- печать ----
+function gSeal(p,opt={}){const on=!!opt.on,S2=LMS[p.id],zh=(p.zh||'').slice(0,6),fs=zh.length<=3?12:zh.length===4?11:zh.length===5?10:8.6,col=on?'var(--g-seal)':'var(--line)';
+ let core;
+ if(S2)core=`<g transform="translate(24 17.5) scale(1.3)"><path d="${S2.b}" style="fill:${col}"/>${S2.h?`<path d="${S2.h}" style="fill:var(--panel)"/>`:''}${S2.d?`<path d="${S2.d}" fill="none" style="stroke:${col}" stroke-width=".55" stroke-linecap="round"/>`:''}</g>`;
+ else core=`<text x="50" y="61" text-anchor="middle" style="fill:${col};font:700 ${p.cat==='food'?34:32}px var(--g-zh)">${p.cat==='food'?'食':'秘'}</text>`;
+ const rot=opt.rot!==undefined?opt.rot:(on?gHash(p.id)%11:0);
+ return `<svg class="g-seal" viewBox="0 0 100 100" style="transform:rotate(${rot}deg)" aria-hidden="true"><g ${on?'filter="url(#gInk)"':''}><circle cx="50" cy="50" r="46" fill="none" style="stroke:${col}" stroke-width="${on?4.2:2}" ${on?'':'stroke-dasharray="4 5"'}/>${on?`<circle cx="50" cy="50" r="40.5" fill="none" style="stroke:${col}" stroke-width="1.3"/>`:''}${core}<text style="fill:${on?'var(--g-seal)':'var(--muted)'};font:700 ${fs}px var(--g-zh);letter-spacing:1px;opacity:${on?1:.55}"><textPath href="#gArc" startOffset="50%" text-anchor="middle">${zh}</textPath></text></g></svg>`}
+function gSlam(p){const s=document.createElement('div');s.className='g-slam';s.innerHTML=`<div style="--rot:${gHash(p.id)%11}deg">${gSeal(p,{on:true,rot:0})}</div>`;document.body.appendChild(s);try{navigator.vibrate&&navigator.vibrate([18,40,28])}catch(e){}setTimeout(()=>s.remove(),2300)}
+
+// ---- ранги и ачивки ----
+const RANKS=[
+ {n:'Турист',zh:'客',at:0,perk:'Первые печати и первые задания дня.'},
+ {n:'Путник',zh:'行',at:150,perk:'Можно прятать свои тайники.'},
+ {n:'Знаток',zh:'知',at:500,perk:'Ваше звание видно рядом с отзывами.'},
+ {n:'Почти местный',zh:'邻',at:1000,perk:'Можно предлагать новые места для дневника.'},
+ {n:'Легенда Гуанчжоу',zh:'羊',at:1800,perk:'Вершина: вы знаете город лучше многих местных.'}];
+const rankOf=v=>{let i=0;RANKS.forEach((r,k)=>{if(v>=r.at)i=k});return i};
+function gEmblem(i,cls='g-emb'){return `<svg class="${cls}" viewBox="0 0 100 100" aria-hidden="true"><g filter="url(#gInk)"><rect x="8" y="8" width="84" height="84" rx="14" style="fill:var(--g-seal)"/><rect x="15" y="15" width="70" height="70" rx="9" fill="none" style="stroke:var(--panel)" stroke-width="2"/><text x="50" y="67" text-anchor="middle" style="fill:var(--panel);font:700 48px var(--g-zh)">${RANKS[i].zh}</text></g></svg>`}
+const gVisD=()=>DIARY_IDS.filter(id=>visited.has(id));
+const gStatic=c=>POIS.filter(p=>!p.dyn&&p.cat===c);
+const ACH=[
+ {id:'first_main',n:'Первая достопримечательность',c:'Печать у главного места',i:'map',ok:()=>gStatic('main').some(p=>visited.has(p.id))},
+ {id:'first_rate',n:'Первая оценка',c:'Поставьте звёзды любому месту',i:'star',ok:()=>G.rated>=1},
+ {id:'dist80',n:'Район открыт на 80%',c:'Развейте туман в любом районе',i:'compass',ok:()=>Object.keys(DIST).some(d=>areaPct(d)>=80)},
+ {id:'first_local',n:'Первое тайное место',c:'Место, о котором знают немногие',i:'key',ok:()=>gStatic('local').some(p=>visited.has(p.id))},
+ {id:'first_food',n:'Первый вкус',c:'Печать в заведении с местной кухней',i:'bowl',ok:()=>gStatic('food').some(p=>visited.has(p.id))},
+ {id:'five',n:'Пять печатей',c:'Соберите 5 печатей в дневник',i:'stamp',ok:()=>gVisD().length>=5},
+ {id:'ten',n:'Десять печатей',c:'Соберите 10 печатей в дневник',i:'stamp',ok:()=>gVisD().length>=10},
+ {id:'dist_all',n:'Весь район',c:'Все печати Юэсю или Ливаня',i:'pin',ok:()=>['yx','ly'].some(d=>DIARY_IDS.filter(id=>(gPO(id)||{}).d===d).every(id=>visited.has(id)))},
+ {id:'all_main',n:'Все главные места',c:'Все 13 печатей главных мест',i:'trophy',ok:()=>gStatic('main').every(p=>visited.has(p.id))},
+ {id:'cache_found',n:'Первый тайник',c:'Найдите и откройте тайник',i:'box',ok:()=>G.found>=1},
+ {id:'cache_hid',n:'Свой тайник',c:'Спрячьте записку для других',i:'msg',ok:()=>G.hid>=1},
+ {id:'task_day',n:'День заданий',c:'Выполните все три задания дня',i:'tasks',ok:()=>Object.keys(G.days).length>=1},
+ {id:'look',n:'Зоркий глаз',c:'Найдите всё из «Присмотритесь» в одном месте',i:'eye',ok:()=>Object.entries(G.look).some(([id,a])=>a.length>=2&&a.every(Boolean))},
+ {id:'streak7',n:'Неделя подряд',c:'7 дней заданий без пропусков',i:'flame',ok:()=>gStreak()>=7}];
+function gAchCheck(){const first=!G.init;let n=0,d=0;for(const a of ACH){if(G.ach[a.id]||!a.ok())continue;G.ach[a.id]=Date.now();pts+=25;changed=true;n++;
+  if(!first){setTimeout(()=>gToast('on',a.i,'Ачивка',a.n,'+25'),d);d+=700}}
+ if(first){G.init=1;if(n)setTimeout(()=>gToast('on','award','За прошлые прогулки',n+' '+gPlural(n,'ачивка','ачивки','ачивок')+' в дневнике','+'+n*25),1500)}
+ if(n||first){save();updateHUD();gSave()}}
+function gRankCheck(){const r=rankOf(pts);if(G.rank===undefined){G.rank=r;gSave();return}if(r>G.rank){G.rank=r;gSave();setTimeout(()=>gRankUp(r),900)}}
+function gRankUp(i){const d=document.createElement('div');d.className='g-rup';const r=RANKS[i];d.innerHTML=`<div class="c">${gEmblem(i)}<span class="g-k">Новый ранг</span><h2>${r.n}</h2><p>${r.perk}</p><button class="g-cta" data-gclose>Дальше</button></div>`;document.body.appendChild(d);d.addEventListener('click',e=>{if(e.target.closest('[data-gclose]')||e.target===d)d.remove()})}
+function gTick(){try{gDay();gTasksCheck();gAchCheck();gRankCheck();gCredit();const b=$('gameBtn');if(b)b.classList.toggle('dot',!G.done);gRenderIf()}catch(e){console.warn(e)}}
+
+// ---- уведомления игры ----
+function gToast(md,icon,k,b,p){const t=document.createElement('div');t.className='g-toast';t.innerHTML=`<span class="g-md ${md}">${gic(icon)}</span><div><span class="k">${esc(k)}</span><b>${esc(b)}</b></div><span class="p">${esc(p||'')}</span>`;$('gToasts').appendChild(t);setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),400)},3600)}
+
+// ---- экран игры ----
+let gTab='diary',gFilter='all',gOn=false;
+const GTT={diary:'Дневник',tasks:'Задания дня',caches:'Тайники',rank:'Ранг'};
+function gOpenGame(t){if(t)gTab=t;gOn=true;$('game').hidden=false;closeCard();closePanel();gDay();gRender();if(sb&&Date.now()-GC.at>60000)gCachesLoad()}
+function gCloseGame(){gOn=false;$('game').hidden=true}
+function gRenderIf(){if(gOn)gRender()}
+function gRender(){const r=rankOf(pts);$('gTitle').textContent=GTT[gTab];$('gRank').innerHTML=`<span class="zh">${RANKS[r].zh}</span>${RANKS[r].n}`;$('gPts').innerHTML=`<b>${pts}</b> ★`;
+ const m=$('gMain'),y=m.scrollTop;m.innerHTML=gTab==='diary'?gDiaryHTML():gTab==='tasks'?gTasksHTML():gTab==='caches'?gCachesHTML():gRankHTML();m.scrollTop=y;
+ [...$('gTabs').children].forEach(b=>{b.classList.toggle('on',b.dataset.gt===gTab);const bd=b.querySelector('.g-bd');if(bd)bd.hidden=!(b.dataset.gt==='tasks'&&!G.done)})}
+const gIllU={};function gIll(id){if(gIllU[id])return gIllU[id];if(!DIARY||!DIARY[id])return'';return gIllU[id]=URL.createObjectURL(new Blob([DIARY[id].svg],{type:'image/svg+xml'}))}
+let DIARY=null,diaryP=null;
+function diaryLoad(){if(DIARY)return Promise.resolve(DIARY);if(diaryP)return diaryP;diaryP=fetch('diary.json?v='+DIARY_V).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(j=>{DIARY=j;gRenderIf();return j}).catch(e=>{diaryP=null;throw e});return diaryP}
+function gDiaryHTML(){const vd=gVisD(),n=vd.length,all=DIARY_IDS.length;
+ let h=`<div class="g-scr"><div class="g-card"><div class="g-row"><span class="g-big">${n}<small> из ${all} печатей</small></span><span class="g-sub">${gStatic('main').filter(p=>visited.has(p.id)).length}/13 главных</span></div><div class="g-bar"><i style="width:${n/all*100}%"></i></div></div>`;
+ const last=vd.filter(id=>G.st[id]).sort((a,b)=>G.st[b]-G.st[a])[0]||vd[vd.length-1];
+ if(last){const p=gPO(last),u=gIll(last);if(!u)diaryLoad().catch(()=>{});h+=`<button class="g-last" data-dpage="${last}">${u?`<img src="${u}" alt="">`:'<img alt="">'}<span><span class="g-k">Последняя запись</span><b>${esc(p.name)}</b><span class="g-hand">${G.st[last]?gDate(G.st[last]):'в дневнике'}</span></span></button>`}
+ else h+=`<div class="g-card"><p class="g-empty" style="padding:0">Дойдите до любого места из дневника — ближе чем на ${DISCOVER} м. На странице появится печать, а картинка и рассказ откроются полностью.</p></div>`;
+ h+=`<div class="g-filters">${[['all','Все'],['main','Главное'],['local','Тайные места'],['food','Еда']].map(([k,t])=>`<button data-gf="${k}" class="${gFilter===k?'on':''}">${t}</button>`).join('')}</div>`;
+ for(const d of GDIST){const ids=DIARY_IDS.filter(id=>{const p=gPO(id);return p&&p.d===d&&(gFilter==='all'||p.cat===gFilter)});if(!ids.length)continue;const allD=DIARY_IDS.filter(id=>(gPO(id)||{}).d===d),got=allD.filter(id=>visited.has(id)).length,pc=areaPct(d);
+  h+=`<div class="g-card g-dist"><header><h3 class="g-h3">${DIST[d].n}<span class="zh">${DIST[d].zh}</span></h3><span class="cnt">${got}/${allD.length}</span></header>
+  <div class="g-area">${gic('map',16)}<span>Туман развеян</span><div class="g-bar ${pc>=80?'g':'v'}"><i style="width:${Math.min(100,pc)}%"></i></div><b>${fmtPct(pc)}</b></div>
+  <div class="g-grid">${ids.map(id=>{const p=gPO(id),on=visited.has(id);return `<button class="g-st${on?'':' off'}" data-dpage="${id}">${gSeal(p,{on})}<span class="n"><i class="g-cat" style="background:${gCATC[p.cat]}"></i>${esc(p.name)}</span>${on?`<span class="d">${G.st[id]?gDate(G.st[id]):'в дневнике'}</span>`:`<span class="d no">+${p.pts} · ${fmtD(dist(me,p))}</span>`}</button>`}).join('')}</div></div>`}
+ return h+'</div>'}
+function gTasksHTML(){gDay();const dn=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],t=new Date(),mid=new Date(t);mid.setHours(24,0,0,0);const left=mid-t,hh=Math.floor(left/3.6e6),mm=Math.floor(left%3.6e6/6e4),st=gStreak();
+ let w='';for(let k=6;k>=0;k--){const d=new Date();d.setDate(d.getDate()-k);const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),x=G.days[key];w+=`<div class="${x?'y':''}${!k&&!x?' t':''}"><i>${x||!k?gic('flame',18):''}</i>${dn[(d.getDay()+6)%7]}</div>`}
+ let h=`<div class="g-scr"><div class="g-card"><div class="g-row"><h3 class="g-h3">${st?'Серия '+st+' '+gPlural(st,'день','дня','дней'):'Серия начнётся сегодня'}</h3><span class="g-sub">Новые через ${hh} ч ${mm} мин</span></div><div class="g-week">${w}</div></div>`;
+ for(const id of G.tasks){const q=TPOOL[id];if(!q)continue;const v=Math.min(q.cur(),q.g),done=!!G.td[id],fm=x=>q.g<1?x.toFixed(2).replace('.',','):q.u?String(+x.toFixed(1)).replace('.',','):String(Math.floor(x));
+  h+=`<div class="g-card g-task${done?' done':''}"><span class="ic">${gic(done?'check':q.i)}</span><div><b>${q.n}</b><div class="g-bar ${done?'t':'v'}"><i style="width:${v/q.g*100}%"></i></div><div class="pr">${done?'Готово':fm(v)+' из '+fm(q.g)+(q.u||'')}</div></div><span class="rw">+${q.pts}</span></div>`}
+ h+=`<div class="g-bonus">${gic('trophy')}<span>${G.done?'Все три выполнены: день засчитан в серию, <b>+50</b> получено.':'Выполните все три — ещё <b>+50</b> очков и день в серию.'}</span></div>`;
+ return h+`<p class="g-sub" style="margin:0 4px">Задания меняются каждый день в полночь. Километры считаются только по GPS, туман — как угодно.</p></div>`}
+function gRankHTML(){const r=rankOf(pts),nx=RANKS[r+1],got=ACH.filter(a=>G.ach[a.id]).length,pr=nx?(pts-RANKS[r].at)/(nx.at-RANKS[r].at):1;
+ let h=`<div class="g-scr"><div class="g-card g-rank">${gEmblem(r)}<div><span class="g-k">Ваш ранг</span><h2>${RANKS[r].n}</h2><div class="g-bar"><i style="width:${pr*100}%"></i></div><div class="g-sub">${nx?`Ещё ${nx.at-pts} ${gPlural(nx.at-pts,'очко','очка','очков')} до ранга «${nx.n}»`:'Высший ранг'}</div></div></div>`;
+ h+=`<div class="g-ladder">${RANKS.map((x,k)=>`<div class="g-lr${k<=r?' got':''}${k===r?' cur':''}"><span class="zh">${x.zh}</span><div><b>${x.n}</b><span>${x.perk}</span></div><span class="t">${x.at}</span></div>`).join('')}</div>`;
+ h+=`<div class="g-row" style="margin:6px 4px -4px"><h3 class="g-h3">Ачивки</h3><span class="g-sub">${got} из ${ACH.length}</span></div><div class="g-achs">`+ACH.map(a=>{const on=G.ach[a.id];return `<div class="g-ach${on?' on':''}"><span class="g-md ${on?'on':'off'}">${gic(a.i)}</span><div><b>${a.n}</b><span>${on?gDate(on):a.c}</span></div></div>`}).join('')+'</div>';
+ h+=`<div class="g-card g-how"><h3 class="g-h3">Как получать очки</h3><ul><li>Печать в новом месте<b>+20…100</b></li><li>Задание дня<b>+20…50</b></li><li>Все три задания за день<b>+50</b></li><li>Найти тайник<b>+15</b></li><li>Кто-то нашёл ваш тайник<b>+10</b></li><li>Нашли то, что в «Присмотритесь»<b>+5</b></li><li>Ачивка<b>+25</b></li><li>Своя метка<b>+15</b></li></ul></div>`;
+ return h+'</div>'}
+function gProfileHTML(){const r=rankOf(pts),nx=RANKS[r+1],pr=nx?(pts-RANKS[r].at)/(nx.at-RANKS[r].at):1,got=ACH.filter(a=>G.ach[a.id]).length;
+ return `<button class="g-prof" data-game="rank">${gEmblem(r)}<span><span class="g-k">Ранг · ачивок ${got} из ${ACH.length}</span><b>${RANKS[r].n}</b><div class="g-bar"><i style="width:${pr*100}%"></i></div></span></button>`}
+
+// ---- страница места ----
+let gCur=null;
+function gPage(id){const p=gPO(id);if(!p)return;gCur=id;const pg=$('gPage');
+ if(!DIARY){pg.innerHTML=`<button class="g-pageX" data-gpx aria-label="Закрыть">${gic('x')}</button><div class="g-load" style="padding-top:90px">Открываю дневник…</div>`;requestAnimationFrame(()=>pg.classList.add('on'));
+  diaryLoad().then(()=>{if(gCur===id)gPage(id)}).catch(()=>{if(gCur===id)pg.querySelector('.g-load').textContent='Не получилось загрузить дневник. Проверьте интернет и откройте ещё раз.'});return}
+ const t=DIARY[id],on=visited.has(id),fresh=on&&!G.seen[id],lk=G.look[id]||[],d=dist(me,p);
+ let h=`<div class="g-ill${on&&!fresh?'':' fogged'}" id="gIll"><img src="${gIll(id)}" alt="Иллюстрация: ${esc(p.name)}">${on&&!fresh?'':`<div class="g-fog" id="gFog"><div class="lk">${gic('lock')}${on?'':'Картинка проявится, когда вы дойдёте до места'}</div></div>`}</div>
+ <button class="g-pageX" data-gpx aria-label="Закрыть">${gic('x')}</button>
+ <div class="g-pb"><div class="g-tags"><span class="g-tag"><i class="g-cat" style="background:${gCATC[p.cat]}"></i>${gCATN[p.cat]}</span><span class="g-tag">${DIST[p.d]?DIST[p.d].n:'Гуанчжоу'}</span><span class="g-tag pts">+${p.pts} очков</span></div>
+ <div class="g-ttl"><div><h1>${esc(p.name)}</h1><div class="zh">${esc(p.zh||'')}</div><div class="py">${esc(t.pinyin)} · «${esc(t.say)}»</div></div>${on?`<div class="ps">${gSeal(p,{on:true})}<span class="g-hand">${G.st[id]?gDate(G.st[id]):''}</span></div>`:''}</div>
+ <p class="g-lead">${esc(t.lead)}</p>`;
+ if(!on)h+=`<div class="g-lock"><p>Полный рассказ, «Присмотритесь» и печать в дневник откроются на месте, когда вы подойдёте ближе чем на ${DISCOVER} м. Сейчас до места ${fmtD(d)}.</p><button class="g-cta" data-groute="${id}">${gic('route')} Маршрут · ${walk(d)}</button></div><button class="g-ghost" data-gtaxi>${gic('taxi')} Показать таксисту</button>`;
+ else h+=`<div class="g-story">${t.story.map(s=>`<p>${esc(s)}</p>`).join('')}</div>
+ <div class="g-box"><h3>Присмотритесь</h3><ul class="g-looks">${t.look.map((s,k)=>`<li><button data-glook="${k}" class="${lk[k]?'on':''}" aria-pressed="${!!lk[k]}"><span class="ck">${gic('check',16)}</span><span>${esc(s)}</span></button></li>`).join('')}</ul></div>
+ <div class="g-box"><h3>Совет</h3><p>${esc(t.tip)}</p></div><div class="g-box fact"><h3>А вы знали?</h3><p>${esc(t.fact)}</p></div>
+ <button class="g-ghost" data-gtaxi>${gic('taxi')} Показать таксисту</button>`;
+ pg.innerHTML=h+'</div>';pg.scrollTop=0;requestAnimationFrame(()=>pg.classList.add('on'));
+ if(fresh){G.seen[id]=Date.now();gSave();const ill=$('gIll'),f=$('gFog');setTimeout(()=>{ill.classList.remove('fogged');const t0=performance.now(),step=tm=>{const k=Math.min(1,(tm-t0)/1600),e=1-Math.pow(1-k,3);f.style.setProperty('--hole',(e*120)+'%');if(k<1)requestAnimationFrame(step);else f.remove()};requestAnimationFrame(step)},450)}}
+function gClosePage(){$('gPage').classList.remove('on');gCur=null;gRenderIf()}
+function gTaxi(){const p=gPO(gCur),t=DIARY&&DIARY[gCur];if(!p)return;const d=document.createElement('div');d.className='g-taxi';d.innerHTML=`<span class="g-sub">Покажите экран водителю</span><div class="zh">${esc(p.zh||'')}</div><div class="py">${t?esc(t.pinyin):''}</div><button class="g-ghost" style="max-width:280px" data-gclose>Закрыть</button>`;document.body.appendChild(d);d.addEventListener('click',e=>{if(e.target.closest('[data-gclose]'))d.remove()})}
+
+// ---- тайники ----
+async function gCachesLoad(){if(!sb||GC.busy)return;GC.busy=true;try{const c=U(me),inCity=Math.hypot(me.x,me.y)<60000,la=inCity?c[0]:LAT0,lo=inCity?c[1]:LON0;
+  const {data,error}=await sb.rpc('caches_near',{p_lat:la,p_lon:lo,p_km:40});if(error)throw error;
+  GC.list=(data||[]).map(r=>Object.assign({cache:true},r,P(r.lat,r.lon)));GC.at=Date.now();gCredit();mkReset();gRenderIf()}catch(e){console.warn('caches',e)}finally{GC.busy=false}}
+function gCredit(){let n=0;for(const c of GC.list){if(!c.mine)continue;const was=G.credit[c.id]||0;if(c.finds>was){n+=c.finds-was;G.credit[c.id]=c.finds}}
+ if(n){pts+=10*n;changed=true;save();updateHUD();gSave();gToast('vio','msg','Ваш тайник нашли',n===1?'Кто-то прочитал вашу записку':n+' '+gPlural(n,'человек','человека','человек')+' прочитали записки','+'+10*n)}}
+function cacheEl(c){const col=c.mine?'var(--vio)':c.found?'var(--local)':'var(--g-seal)';return mkEl('mark cache l16',47,`<div class="pm" style="--c:${col};width:22px;height:22px;left:-11px;top:-11px">${gic(c.mine||c.found?'msg':'box',12)}</div><span class="lb" style="left:15px">${c.mine?'Мой тайник':'Тайник'}</span>`)}
+function gNoteHTML(n){return n?`<div class="g-note">${esc(n.m)}${n.p?`<img src="${esc(n.p)}" alt="Фото из тайника">`:''}</div>`:''}
+async function gNoteFetch(c){if(GC.notes[c.id])return{n:GC.notes[c.id],first:false};if(!sb||!user)return null;const [la,lo]=U(me);const {data,error}=await sb.rpc('open_cache',{p_id:c.id,p_lat:la,p_lon:lo});if(error)throw error;const r=Array.isArray(data)?data[0]:data;if(!r)return null;
+ const n={m:r.message,p:r.photo_path||''};GC.notes[c.id]=n;try{localStorage.setItem('og-cnotes',JSON.stringify(GC.notes))}catch(e){}return{n,first:!!r.first}}
+function openCache(c){cur=null;const d=dist(me,c),near=mode==='gps'&&d<=75,has=GC.notes[c.id];
+ $('card').classList.remove('place');
+ $('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><h2>${c.mine?'Мой тайник':'Тайник'}</h2>
+ <p class="note" style="margin:6px 0 0">${c.hint?'Подсказка: <b>'+esc(c.hint)+'</b>':'Без подсказки'}${c.author_name&&!c.mine?' · спрятал(а) '+esc(c.author_name):''} · нашли: ${c.finds||0}</p>
+ <div id="gcNote">${has?gNoteHTML(has):''}</div>
+ ${c.mine||c.found||has?'':`<button class="g-cta" style="margin-top:14px" data-gcopen="${c.id}" ${near?'':'disabled'}>${gic('box')} ${near?'Открыть тайник':'Подойдите ближе 75 м · '+fmtD(d)}</button>${mode==='gps'?'':'<p class="note" style="margin:8px 0 0">Тайник открывается только с включённым GPS: ⚙ → GPS.</p>'}`}
+ <button class="g-ghost" style="margin-top:10px" data-gcroute="${c.id}">${gic('route')} Маршрут сюда · ${fmtD(d)}</button>`;
+ $('card').classList.add('on');$('scrim').classList.add('on');
+ if((c.mine||c.found)&&!has)gNoteFetch(c).then(r=>{const el=$('gcNote');if(el&&r)el.innerHTML=gNoteHTML(r.n)}).catch(()=>{})}
+async function gCacheOpen(id,btn){const c=GC.list.find(x=>x.id===id);if(!c)return;if(!user){closeCard();openLogin();return}btn.disabled=true;btn.textContent='Открываю…';
+ try{const r=await gNoteFetch(c);if(!r)throw new Error('пусто');c.found=true;const el=$('gcNote');if(el)el.innerHTML=gNoteHTML(r.n);btn.remove();
+  if(r.first){G.found=(G.found||0)+1;pts+=15;changed=true;save();updateHUD();gEvent('cache');gToast('teal','box','Тайник открыт',c.hint||'Записка прочитана','+15')}mkReset()}
+ catch(e){btn.disabled=false;btn.textContent='Открыть тайник';toast(`<div>Не открылся: ${/too far/.test(e.message||'')?'вы дальше 80 м от тайника':esc(e.message||'ошибка')}</div>`)}}
+function gCachesHTML(){const me2=me;const list=GC.list.map(c=>({c,d:dist(me2,c)})).sort((a,b)=>a.d-b.d),mine=list.filter(x=>x.c.mine),oth=list.filter(x=>!x.c.mine);
+ let h=`<div class="g-scr"><div class="g-card"><p style="margin:0 0 12px;font-size:14.5px"><b>Тайник</b> — записка или фото, привязанные к точке на карте. Подсказку видят все, а прочитать можно, только когда стоишь рядом.</p><button class="g-cta" data-ghide>${gic('msg')} Спрятать тайник здесь</button></div>`;
+ const row=({c,d})=>{const n=GC.notes[c.id];return `<div class="g-card g-cache${c.mine?' mine':c.found||n?' open':''}"><div class="hd"><span class="g-env">${gic(c.mine||c.found||n?'msg':'lock')}</span><div><b>${esc(c.hint||'Без подсказки')}</b><span class="m">${c.mine?'Спрятан '+gDate(c.created_at)+' · нашли: '+(c.finds||0):(c.author_name?'спрятал(а) '+esc(c.author_name)+' · ':'')+(c.found||n?'открыт':'нашли: '+(c.finds||0))}</span></div><span class="dst">${fmtD(d)}</span></div>${n?gNoteHTML(n):''}<button class="g-ghost" data-gcshow="${c.id}">${gic('pin',18)} Показать на карте</button></div>`};
+ if(mine.length)h+=`<div class="g-lbl">Мои тайники</div>`+mine.map(row).join('');
+ h+=`<div class="g-lbl">Рядом</div>`+(oth.length?oth.slice(0,30).map(row).join(''):`<p class="g-empty">${sb?'Поблизости пока нет чужих тайников. Спрячьте первый — его увидят все, кто пройдёт мимо.':'Тайники работают, когда есть интернет.'}</p>`);
+ return h+'</div>'}
+function gHideSheet(){if(!user){gCloseGame();openLogin();return}
+ if(rankOf(pts)<1){gToast('off','lock','Пока рано','Тайники можно прятать с ранга «Путник» — 150 очков','');return}
+ if(mode!=='gps'){gToast('off','pin','Нужен GPS','Включите GPS (⚙ → GPS): тайник появится там, где вы стоите','');return}
+ $('gSheetBody').innerHTML=`<h3 class="g-h3" style="font-size:17px">Спрятать тайник</h3><p class="g-sub" style="margin:0 0 4px">Тайник появится там, где вы сейчас стоите. Прочитать его сможет только тот, кто подойдёт ближе чем на 80 метров.</p>
+ <label class="g-f" for="ghHint">Подсказка, видна всем издалека<input id="ghHint" maxlength="80" placeholder="Например: у фонтана, со стороны библиотеки"></label>
+ <label class="g-f" for="ghMsg">Записка, откроется на месте<textarea id="ghMsg" rows="4" maxlength="400" placeholder="Что стоит увидеть или попробовать здесь"></textarea></label>
+ <label class="g-phbtn" for="ghPh">${gic('cam',18)} Добавить фото<input type="file" id="ghPh" accept="image/*" hidden></label><img id="ghPrev" class="g-phprev" alt="" hidden>
+ <button class="g-cta" data-ghideok>${gic('pin')} Спрятать здесь</button><button class="g-ghost" data-gsheetx>Отмена</button>`;$('gSheet').classList.add('on')}
+let gPh=null;
+async function gHideSave(btn){const msg=$('ghMsg').value.trim(),hint=$('ghHint').value.trim();if(!msg){$('ghMsg').focus();return}btn.disabled=true;btn.textContent='Прячу…';
+ try{const [lat,lon]=U(me);let photo=null;if(gPh){const blob=await (await fetch(gPh)).blob(),path=`${user.id}/cache-${Date.now().toString(36)}${Math.random().toString(36).slice(2,8)}.jpg`;
+   const {error:ue}=await sb.storage.from('review-photos').upload(path,blob,{contentType:'image/jpeg'});if(ue)throw ue;photo=sb.storage.from('review-photos').getPublicUrl(path).data.publicUrl}
+  const {error}=await sb.from('caches').insert({user_id:user.id,author_name:uname(),lat:+lat.toFixed(6),lon:+lon.toFixed(6),hint:hint||null,message:msg,photo_path:photo});if(error)throw error;
+  G.hid=(G.hid||0)+1;gSave();gPh=null;$('gSheet').classList.remove('on');gToast('vio','msg','Тайник спрятан','Когда его найдут, вы получите +10','');GC.at=0;await gCachesLoad();setTimeout(gTick,300)}
+ catch(e){btn.disabled=false;btn.textContent='Спрятать здесь';gToast('off','x','Не получилось',e.message||'ошибка','')}}
+
+// ---- разметка и нажатия ----
+document.body.insertAdjacentHTML('beforeend',`<svg class="g-defs" aria-hidden="true"><defs><filter id="gInk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -3.2 0 0 0 2.75" result="a"/><feComposite in="SourceGraphic" in2="a" operator="in" result="c"/><feTurbulence type="turbulence" baseFrequency=".06" numOctaves="1" seed="2" result="w"/><feDisplacementMap in="c" in2="w" scale="1.6" xChannelSelector="R" yChannelSelector="G"/></filter><path id="gArc" d="M15 50A35 35 0 0 0 85 50"/></defs></svg>
+<section class="g-wrap" id="game" aria-label="Дневник и игра" hidden><header class="g-top"><div class="g-h"><span class="g-k">Открой город</span><h2 id="gTitle">Дневник</h2></div><span class="g-chip" id="gRank"></span><span class="g-chip" id="gPts"></span><button class="g-x" id="gClose" aria-label="Закрыть">×</button></header>
+<main class="g-main" id="gMain"></main>
+<nav class="g-tabs" id="gTabs"><button data-gt="diary">${gic('book')}Дневник</button><button data-gt="tasks">${gic('tasks')}<i class="g-bd" hidden></i>Задания</button><button data-gt="caches">${gic('box')}Тайники</button><button data-gt="rank">${gic('award')}Ранг</button></nav></section>
+<article class="g-page" id="gPage" role="dialog" aria-modal="true" aria-label="Страница дневника"></article>
+<div class="g-sheet" id="gSheet"><div class="g-sb" id="gSheetBody"></div></div>
+<div class="g-toasts" id="gToasts" aria-live="polite"></div>`);
+{const dk=document.querySelector('.dock'),cb=$('centerBtn');if(dk&&cb){const b=document.createElement('button');b.id='gameBtn';b.setAttribute('aria-label','Дневник, задания и тайники');b.innerHTML=gic('book',19)+'<i></i>';dk.insertBefore(b,cb)}}
+$('gClose').onclick=gCloseGame;
+$('gSheet').addEventListener('click',e=>{if(e.target.id==='gSheet')$('gSheet').classList.remove('on')});
+document.addEventListener('change',e=>{if(e.target.id==='ghPh'&&e.target.files[0]){shrink(e.target.files[0]).then(u=>{gPh=u;const im=$('ghPrev');im.src=u;im.hidden=false}).catch(()=>gToast('off','cam','Фото','Не удалось прочитать фото',''))}});
+document.addEventListener('click',e=>{const t=e.target.closest('#gameBtn,[data-gt],[data-gf],[data-dpage],[data-gpx],[data-groute],[data-gtaxi],[data-glook],[data-game],[data-ghide],[data-ghideok],[data-gsheetx],[data-gcopen],[data-gcroute],[data-gcshow]');if(!t)return;
+ if(t.id==='gameBtn'){gOpenGame();return}
+ if(t.dataset.gt){gTab=t.dataset.gt;gRender();$('gMain').scrollTop=0;return}
+ if(t.dataset.gf){gFilter=t.dataset.gf;gRender();return}
+ if(t.dataset.game){gOpenGame(t.dataset.game);return}
+ if(t.dataset.dpage){$('toast').classList.remove('on');gPage(t.dataset.dpage);return}
+ if('gpx' in t.dataset){gClosePage();return}
+ if(t.dataset.groute){const p=gPO(t.dataset.groute);gClosePage();gCloseGame();openRoute(p);return}
+ if('gtaxi' in t.dataset){gTaxi();return}
+ if(t.dataset.glook!==undefined){if(!visited.has(gCur))return;const k=+t.dataset.glook,a=G.look[gCur]||(G.look[gCur]=[]),n=(DIARY&&DIARY[gCur]?DIARY[gCur].look.length:3);while(a.length<n)a.push(false);a[k]=!a[k];t.classList.toggle('on',a[k]);t.setAttribute('aria-pressed',a[k]);pts+=a[k]?5:-5;changed=true;save();updateHUD();gSave();setTimeout(gTick,200);return}
+ if('ghide' in t.dataset){gHideSheet();return}
+ if('ghideok' in t.dataset){gHideSave(t);return}
+ if('gsheetx' in t.dataset){$('gSheet').classList.remove('on');return}
+ if(t.dataset.gcopen){gCacheOpen(t.dataset.gcopen,t);return}
+ if(t.dataset.gcroute){const c=GC.list.find(x=>x.id===t.dataset.gcroute);if(c)openRoute({id:'cache:'+c.id,name:c.mine?'Мой тайник':'Тайник',zh:'',lat:c.lat,lon:c.lon,x:c.x,y:c.y,cat:'pin',ic:'mark',col:'var(--g-seal)'});return}
+ if(t.dataset.gcshow){const c=GC.list.find(x=>x.id===t.dataset.gcshow);if(c){gCloseGame();follow=false;focusAt(c.lat,c.lon);setTimeout(()=>openCache(c),350)}return}
+});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if($('gSheet').classList.contains('on'))$('gSheet').classList.remove('on');else if(gCur)gClosePage();else if(gOn)gCloseGame()});
+gDay();setTimeout(gTick,2500);setInterval(()=>{if(document.visibilityState==='visible')gTick()},6000);
+setTimeout(gCachesLoad,1500);setInterval(()=>{if(document.visibilityState==='visible')gCachesLoad()},180000);
+if(location.hostname==='test.local')window.__ogg={G:()=>G,GC:()=>GC,pts:()=>pts,stamp:id=>{const p=gPO(id);visited.add(id);qVisit(id);pts+=p.pts;gStamp(p,true)},page:gPage,open:gOpenGame,tick:gTick,me:(la,lo)=>{me=P(la,lo)},mode:m=>{mode=m},user:u=>{user=u}};
 
 // ---- запуск ----
 applyOvrAll();ratedBuild();
