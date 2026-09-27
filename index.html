@@ -532,7 +532,7 @@ function saveMarks(){try{localStorage.setItem(MSTORE,JSON.stringify(marks.map(({
 try{const s=JSON.parse(localStorage.getItem(STORE)||'null');
  if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['soft','carto','vector','amap'].includes(s.b))base=s.b;if(base==='carto'){let m=null;try{m=localStorage.getItem('og-soft-v1')}catch(e){}if(!m){base='soft';try{localStorage.setItem('og-soft-v1','1')}catch(e){}}}}}catch(e){}
 function save(){try{localStorage.setItem(STORE,JSON.stringify({r:[...reveal],v:[...visited],p:pts,me,b:base}))}catch(e){}changed=false}
-const CH=32,chunks=new Map(),born=new Map(),discBorn=new Map(),DISC_R=3000;let areaReady=false;let quiet=false;
+const CH=32,chunks=new Map(),born=new Map(),discBorn=new Map(),DISC_R=1500;let areaReady=false;let quiet=false;
 function addCell(k,t){if(reveal.has(k))return false;reveal.add(k);const[i,j]=k.split(',').map(Number);const cx=(i+.5)*CELL,cy=(j+.5)*CELL;
  const ck=Math.floor(i/CH)+','+Math.floor(j/CH);let a0=chunks.get(ck);if(!a0)chunks.set(ck,a0=[]);a0.push(i,j);if(t!==undefined)born.set(k,t);
  for(let a=Math.floor((cx-REVEAL)/ACELL);a<=Math.floor((cx+REVEAL)/ACELL);a++)for(let b=Math.floor((cy-REVEAL)/ACELL);b<=Math.floor((cy+REVEAL)/ACELL);b++){
@@ -1077,7 +1077,7 @@ function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,
  me={x:me.x+(target.x-me.x)/d*mv,y:me.y+(target.y-me.y)/d*mv};revealAt(me);checkDiscover();navTick();
  dirty=true}
 function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
- toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cur&&p.cat==='main'?' · открыто 3 км вокруг':''}</div><button data-open="${p.id}">Читать</button>`);save()}}
+ toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>+${p.pts} очков${p.cur&&p.cat==='main'?' · открыто 1,5 км вокруг':''}</div><button data-open="${p.id}">Читать</button>`);save()}}
  if(route&&route.dest&&dist(at,route.dest)<=Math.max(DISCOVER,40))closeRoute(true)}
 function tap(x,y){if(moveMode)return;if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
  for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
@@ -1148,7 +1148,7 @@ function openCard(p){cur={kind:'poi',obj:p,key:p.id};const v=visited.has(p.id),d
  <div class="pc-bar"><button class="pc-x" data-close aria-label="Закрыть">${isvg('x',20,2.4)}</button><span class="pc-tag" style="background:${col}">${isvg(p.ic,14,2.4)}${CAT[p.cat].n}</span></div>
  <h2>${esc(p.name)}</h2><div class="pc-sub">${esc(p.zh||'')} · ${dl.n} · ${walk(d)} пешком</div></div>
  <div class="pc-body"><div class="pc-photo" id="pcPhoto" data-id="${p.id}"></div><div class="pc-stats"><div><b>${v?'✓':'+'+p.pts}</b><span>${v?'посещено':'за визит'}</span></div><div><b>${fmtD(d)}</b><span>до места</span></div><div><b>${p.d?fmtPct(areaPct(p.d)):'—'}</b><span>${dl.n} изучено</span></div></div>
- <p class="pc-story" id="pcStory">${esc(p.s||'')}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м${p.cur&&p.cat==='main'?', и откроется 3 км вокруг':''}</p>`}${cta}${placeActs('poi',p)}${reviewsBlock(p.id,p.name)}</div>`;
+ <p class="pc-story" id="pcStory">${esc(p.s||'')}</p>${v?'':`<p class="pc-hint">Засчитается, когда подойдёте ближе чем на ${DISCOVER} м${p.cur&&p.cat==='main'?', и откроется 1,5 км вокруг':''}</p>`}${cta}${placeActs('poi',p)}${reviewsBlock(p.id,p.name)}</div>`;
  $('card').classList.add('place','on');$('scrim').classList.add('on');loadReviews(p.id);
  if(p.dyn&&p.wk&&!p.sx){const wl=p.wk.split(':')[0],wt=p.wk.slice(p.wk.indexOf(':')+1);if(['ru','en'].includes(wl))fetch(`https://${wl}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wt)}`).then(r=>r.json()).then(j=>{if(j&&j.extract){p.sx=j.extract.slice(0,420)+(j.extract.length>420?'…':'');const el=$('pcStory');if(el&&$('pcPhoto')&&$('pcPhoto').dataset.id===p.id)el.textContent=p.sx}}).catch(()=>{})}
  if(p.sx){const el=$('pcStory');if(el)el.textContent=p.sx}
