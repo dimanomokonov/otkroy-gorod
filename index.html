@@ -875,6 +875,34 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
 .rt-acts{display:flex;gap:6px;flex-wrap:wrap}
 .rt-main{flex:1 1 100%;height:46px;border-radius:14px;background:var(--lime);color:#1b1238;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px}
 .rt-ext{flex:1;min-width:0;height:40px;border-radius:12px;background:var(--soft);color:var(--ink);font-weight:600;font-size:13px;display:grid;place-items:center;text-decoration:none;white-space:nowrap}
+#app.routing.picking .dock{display:flex}
+.rt.pick{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.rt-n{background:var(--vio);font-weight:800;font-size:16px}
+.rt-stops{display:flex;flex-direction:column;gap:2px;max-height:min(30vh,210px);overflow-y:auto;margin:0 -4px;padding:0 4px}
+.rt-st{display:flex;align-items:center;gap:10px;padding:6px 4px;border-radius:12px;min-height:38px}
+.rt-st i{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--ink);font:800 12px/1 Rubik,system-ui,sans-serif;font-style:normal}
+.rt-st span{flex:1;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rt-st button{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;color:var(--muted)}
+.rt-st button:active{background:var(--soft)}
+.rt-st.next{background:color-mix(in srgb,var(--vio) 9%,transparent)}
+.rt-st.next i{background:var(--vio);color:#fff}
+.rt-st.done span{color:var(--muted);text-decoration:line-through;font-weight:500}
+.rt-st.done i{background:var(--lime);color:#1b1238}
+.rt-opt{display:flex;align-items:center;gap:10px;padding:2px 4px;font-size:13.5px;font-weight:600;color:var(--ink);text-align:left}
+.rt-opt i{flex:none;width:34px;height:20px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
+.rt-opt i::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.rt-opt[aria-pressed="true"] i{background:var(--vio)}
+.rt-opt[aria-pressed="true"] i::after{transform:translateX(14px)}
+.rt-opt small{margin-left:auto;font-size:12px;color:var(--muted);font-weight:500}
+.rt-plus{color:var(--vio);display:flex;align-items:center;justify-content:center;gap:4px}
+.rt-addbtn{width:100%;min-height:44px;border-radius:14px;background:var(--soft);color:var(--vio);font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;padding:0 12px}
+.rt-addbtn.main{background:var(--vio);color:#fff;margin:0 0 8px}
+.rt-in{display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;color:var(--vio);font-weight:700;font-size:14px;margin-bottom:8px}
+.ogmk.rstop{pointer-events:none}
+.ogmk.rstop b{position:absolute;left:-12px;top:-44px;width:24px;height:24px;border-radius:50%;background:var(--vio,#4b2fd6);color:#fff;border:2px solid #fff;display:grid;place-items:center;font:800 12px/1 Rubik,system-ui,sans-serif;box-shadow:0 2px 6px rgba(27,18,56,.35)}
+.ogmk.rstop b::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-4px;border:4px solid transparent;border-top-color:#fff;border-bottom:0}
+.ogmk.rstop.next b{background:var(--lime,#c8f43c);color:#1b1238;transform:scale(1.15)}
+.ogmk.rstop.done b{background:#8a8f99}
 
 .pop{max-height:calc(100% - 140px);overflow-y:auto;width:258px}
 .olg{display:grid;grid-template-columns:1fr 1fr;gap:0 2px;margin-bottom:4px}
@@ -1335,6 +1363,7 @@ const POIS=[
 ];
 POIS.forEach(p=>{Object.assign(p,P(p.lat,p.lon));p.cur=true});
 const IC={"temple": "M4 9h16M6 9l6-5 6 5M7 9v10M17 9v10M5 19h14M10 19v-5h4v5", "tower": "M12 2v4M9 22l2-16h2l2 16M8.5 12h7M9.8 17h4.4", "columns": "M3 9l9-5 9 5M5 9v9M9.5 9v9M14.5 9v9M19 9v9M3 20h18", "church": "M12 2v5M10 4h4M6 21V11l6-4 6 4v10M10 21v-4h4v4", "tree": "M12 21v-5M6 16h12L12 4z", "bag": "M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0", "bridge": "M2 16h20M4 16c2-6 14-6 16 0M7.5 16v-3M12 16v-4.5M16.5 16v-3", "star": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z", "houses": "M3 21V10l5-4 5 4v11M13 21v-8l4-3 4 3v8M2 21h20", "opera": "M3 18c3-8 7-10 9-10s6 3 9 10zM2 18h20", "skyline": "M4 21V11h4v10M10 21V4h5v17M17 21V9h4v12M2 21h20", "search": "M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8", "arcade": "M3 20V9l9-5 9 5v11M7 20v-5a2 2 0 0 1 4 0v5M13 20v-5a2 2 0 0 1 4 0v5", "person": "M12 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM8 22l1-8-2-3 5-3 5 3-2 3 1 8", "lotus": "M12 20c-4 0-7-3-7-6 3 0 5 1 7 3 2-2 4-3 7-3 0 3-3 6-7 6zM12 17c-2-3-2-6 0-10 2 4 2 7 0 10z", "scroll": "M8 4h11v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-1h11v1a3 3 0 0 0 3 3M8 4a2 2 0 0 0-2 2v9M11 8h5M11 12h5", "boat": "M3 15h18l-3 5H6zM12 4v11M12 4l6 8h-6", "anchor": "M12 8v13M5 13a7 7 0 0 0 14 0M9 11h6M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "bowl": "M4 11h16a8 8 0 0 1-16 0zM9 7l1-3M13 7l1-3", "cup": "M6 8h12l-1.5 12h-9zM5 8h14M10 8V5a2 2 0 0 1 4 0v3", "mark": "M7 4h10v16l-5-3.5L7 20z", "check": "m5 12 5 5 9-10", "walk": "M13 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9 21l2.5-7L9 11l3-3 3 3 3 1M11.5 14 14 17v4", "x": "M6 6l12 12M18 6 6 18"};const ICM={"canton": "tower", "chen": "temple", "shamian": "tree", "zhenhai": "temple", "rams": "star", "sys": "columns", "cathedral": "church", "beijing": "bag", "liurong": "temple", "yongqing": "houses", "huacheng": "skyline", "opera": "opera", "gdmus": "columns", "gzlib": "scroll", "liede": "boat", "botan": "tree", "thpark": "tree", "bridge": "bridge", "road": "search", "qilou": "arcade", "statues": "person", "dafo": "lotus", "wanmu": "scroll", "liwan": "boat", "tianzi": "anchor", "taotao": "bowl", "panxi": "bowl", "nanxin": "cup", "gzjj": "bowl"};POIS.forEach(p=>p.ic=ICM[p.id]||'star');
+Object.assign(IC,{plus:'M12 5v14M5 12h14',up:'M12 19V5M6 11l6-6 6 6'});
 Object.assign(IC,{bike:'M5.5 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18.5 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5.5 15l4-7h5l4 7M9.5 8l3 7h1M12.5 5h3',car:'M5 17h14v-5l-2-5H7l-2 5zM5 12h14M7.5 17v2M16.5 17v2',bus:'M6 17V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11zM6 12h12M8 17v2M16 17v2M9 14.5h.01M15 14.5h.01'});
 Object.assign(IC,{basket:'M4 10h16l-2 10H6zM8 10l4-6 4 6',shirt:'M8 4l4 2 4-2 4 4-3 3v9H7v-9L4 8z',cart:'M3 4h2l2 11h11l2-8H6M9 20h.01M17 20h.01',metro:'M7 17h10a2 2 0 0 0 2-2V6a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v9a2 2 0 0 0 2 2zM5 11h14M9 14h.01M15 14h.01M7 17l-2 3M17 17l2 3',pill:'M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7zM7 10l7 7',card:'M3 6h18v12H3zM3 10h18M7 15h3',exchange:'M7 7h13l-4-4M17 17H4l4 4',wc:'M7 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5 9h4v6H8v6H6v-6H5zM15 9h4l1 7h-2v5h-2v-5h-2z',cross:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',phone:'M7 2h10v20H7zM11 18h2',pin:'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',navi:'M19 5 5 11l6 2 2 6z'});
 const ICP={};for(const k in IC)ICP[k]=new Path2D(IC[k]);
@@ -1901,7 +1930,8 @@ function mkSync(){if(!ogReady||map._animatingZoom)return;mkQ=false;mkT=performan
  if(z>=13)for(const q of pubMarks)add('u:'+q.user_id+'/'+q.id,q,'u'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(pubKey(q))+hotc(pubKey(q)),()=>pubEl(q));
  for(const r of RATED){const hot=isPop(r.s);if(z<(hot?12:15))continue;add('r:'+r.id,r,'r'+rb(r.id)+hot,()=>ratedEl(r))}
  if(z>=13)for(const c of GC.list)add('c:'+c.id,c,'c'+(c.mine?2:c.found||GC.notes[c.id]?1:0),()=>cacheEl(c));
- const pd=pin||(route&&route.dest&&(route.dest.cat==='pin'||route.dest.cat==='osm')?route.dest:null);
+ const pd=pin||(route&&route.stops.length<2&&route.dest&&(route.dest.cat==='pin'||route.dest.cat==='osm')?route.dest:null);
+ if(route&&route.stops.length>1)route.stops.forEach((q,i)=>{const nx=!route.picking&&q===route.dest;want.set('rs'+i,{o:q,sig:'rs'+i+(q.done?'d':'')+(nx?'n':'')+Math.round(q.x)+','+Math.round(q.y),mk:()=>mkEl('rstop'+(q.done?' done':'')+(nx?' next':''),70,`<b>${q.done?'✓':i+1}</b>`)})});
  if(pd)want.set('pin',{o:pd,sig:'pin'+(pd.col||'')+Math.round(pd.x)+','+Math.round(pd.y),mk:()=>pinEl(pd)});
  if(target)want.set('tgt',{o:target,sig:'t'+Math.round(target.x)+','+Math.round(target.y),mk:()=>mkEl('tgt',55,'<div class="pm"></div>')});
  for(const [id,o] of MK){const w=want.get(id);if(!w||w.sig!==o.sig){o.el.remove();MK.delete(id)}}
@@ -1979,9 +2009,9 @@ function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,
  if(d<.5){if(walkPath&&walkPath.length){target=walkPath.shift();return}target=null;walkPath=null;changed=true;dirty=true;return}
  me={x:me.x+(target.x-me.x)/d*mv,y:me.y+(target.y-me.y)/d*mv};revealAt(me);checkDiscover();navTick();
  dirty=true}
-function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());gStamp(p,true);if(route&&route.dest.id===p.id)closeRoute(true);pts+=p.pts;changed=true;updateHUD();renderSheet();
+function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());gStamp(p,true);if(route&&route.dest&&route.dest.id===p.id)rtArrive(at,true);pts+=p.pts;changed=true;updateHUD();renderSheet();
  toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>${gPtsOf(p)?'+'+gPtsOf(p)+' очков':'Печать в дневнике'}${p.cur&&p.cat==='main'?' · открыто 1,5 км вокруг':''}</div>${DIARY_SET.has(p.id)?`<button data-dpage="${p.id}">Дневник</button>`:`<button data-open="${p.id}">Читать</button>`}`);save()}}
- if(route&&route.dest&&dist(at,route.dest)<=Math.max(DISCOVER,40))closeRoute(true)}
+ rtArrive(at)}
 function tap(x,y){if(moveMode)return;if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
  for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
  if(map.getZoom()>=13)for(const q of pubMarks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
@@ -2067,7 +2097,7 @@ function renderNear(){return;const el=$('nearPill'),c=POIS.filter(p=>layers[p.ca
 let tt=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),4200)}
 function hideHint(){const h=$('hint');if(h){h.remove();changed=true}}
 
-document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[data-go],[data-close],[data-seg],[data-soon],[data-amap],[data-add],[data-mt],[data-savemark],[data-mark],[data-delmark],[data-export],[data-import],[data-pick],[data-base],[data-route],[data-rtmode],[data-rtclose],[data-rtext],[data-rtwalk],[data-rvnew],[data-rvstar],[data-rvsave],[data-pin],[data-osm],[data-ol],[data-theme-set],[data-bg],#wakeBtn,#bgBtn,#reset');if(!t)return;if(handleMine(t))return;
+document.addEventListener('click',e=>{const t=e.target.closest('[data-open],[data-go],[data-close],[data-seg],[data-soon],[data-amap],[data-add],[data-mt],[data-savemark],[data-mark],[data-delmark],[data-export],[data-import],[data-pick],[data-base],[data-route],[data-rtadd],[data-rtbuild],[data-rtpick],[data-rtdel],[data-rtup],[data-rtopt],[data-rtmode],[data-rtclose],[data-rtext],[data-rtwalk],[data-rvnew],[data-rvstar],[data-rvsave],[data-pin],[data-osm],[data-ol],[data-theme-set],[data-bg],#wakeBtn,#bgBtn,#reset');if(!t)return;if(handleMine(t))return;
  if(t.dataset.open){const p=POIS.find(q=>q.id===t.dataset.open);closePanel();closePops();$('toast').classList.remove('on');follow=false;focusAt(p.lat,p.lon);openCard(p)}
  else if('amap' in t.dataset){setBase('amap')}
  else if(t.dataset.go){const p=POIS.find(q=>q.id===t.dataset.go);target={x:p.x,y:p.y};follow=true;closeCard();hideHint();closePanel()}
@@ -2173,44 +2203,118 @@ if(document.fonts)document.fonts.ready.then(()=>{for(const s of sheets)s.need=tr
 let route=null,walkPath=null,rtSeq=0;
 const RMODES={walk:{n:'Пешком',ic:'walk',osrm:'routed-foot',v:80},bike:{n:'Велосипед',ic:'bike',osrm:'routed-bike',v:250},car:{n:'Авто',ic:'car',osrm:'routed-car',v:450},transit:{n:'Транспорт',ic:'bus'}};
 const fdur=s=>{const m=Math.max(1,Math.round(s/60));return m<60?m+' мин':Math.floor(m/60)+' ч '+(m%60?m%60+' мин':'')};
-function openRoute(p){closeCard();closePanel();const d=dist(me,p);route={dest:p,mode:d>3500?'transit':'walk',pts:null};walkPath=null;document.getElementById('app').classList.add('routing');renderRoute();calcRoute()}
-function closeRoute(arrived){route=null;walkPath=null;target=null;document.getElementById('app').classList.remove('routing');$('rt').classList.remove('on');dirty=true;if(arrived)toast('<div><b>Вы на месте!</b></div>')}
-function extLinks(){const p=route.dest,[la,lo]=U(me),m=route.mode;
+// ---- маршрут через несколько мест: остановки, удобный порядок, ведение от точки к точке ----
+const RT_MAX=10;
+const mest=n=>n%10===1&&n%100!==11?'место':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'места':'мест';
+const stopKey=p=>p.id||('pt:'+Math.round(p.x)+','+Math.round(p.y));
+function rtLeft(){return route&&route.stops?route.stops.filter(s=>!s.done):[]}
+function rtHas(p){return !!route&&route.stops.some(s=>!s.done&&stopKey(s)===stopKey(p))}
+function rtNew(stops,picking){closeCard();closePanel();const p=stops[0],d=dist(me,p);
+ route={stops:stops.slice(),dest:p,mode:!picking&&d>3500?'transit':'walk',pts:null,opt:true,picking:!!picking,leg:0};walkPath=null;
+ $('app').classList.add('routing');$('app').classList.toggle('picking',!!picking);dirty=true}
+function openRoute(p){rtNew([p],false);renderRoute();calcRoute()}
+function planStart(p){rtNew([p],true);renderRoute();toast(`<div>Первое место: <b>${esc(p.name)}</b>. Нажмите на следующее на карте или откройте список</div>`)}
+function rtAdd(p){if(!p)return;if(!route){planStart(p);return}
+ if(rtHas(p)){toast('<div>Это место уже в маршруте</div>');return}
+ if(rtLeft().length>=RT_MAX){toast(`<div>В маршрут помещается до ${RT_MAX} мест</div>`);return}
+ closeCard();route.stops.push(p);dirty=true;
+ if(route.picking){renderRoute();toast(`<div>Добавлено: <b>${esc(p.name)}</b> · в маршруте ${rtLeft().length} ${mest(rtLeft().length)}</div>`)}
+ else{rtBuild();toast(`<div>Добавлено в маршрут: <b>${esc(p.name)}</b></div>`)}}
+// удобный порядок: самый короткий путь от меня через все оставшиеся места (заканчиваем там, где удобнее)
+function rtOrder(){const left=rtLeft(),done=route.stops.filter(s=>s.done),n=left.length;if(n<2||!route.opt)return;
+ const D=(a,b)=>dist(a,b);let best=null,bl=1e18;
+ if(n<=8){const used=new Array(n).fill(false),cur=[];
+  const rec=(prev,len)=>{if(len>=bl)return;if(cur.length===n){bl=len;best=cur.slice();return}
+   for(let i=0;i<n;i++)if(!used[i]){used[i]=true;cur.push(i);rec(left[i],len+D(prev,left[i]));cur.pop();used[i]=false}};rec(me,0)}
+ else{const rest=[...Array(n).keys()];let prev=me;best=[];
+  while(rest.length){let bk=0,bd=1e18;rest.forEach((i,k)=>{const d=D(prev,left[i]);if(d<bd){bd=d;bk=k}});const i=rest.splice(bk,1)[0];best.push(i);prev=left[i]}
+  const len=o=>{let s=D(me,left[o[0]]);for(let k=1;k<o.length;k++)s+=D(left[o[k-1]],left[o[k]]);return s};bl=len(best);let imp=true;
+  while(imp){imp=false;for(let a=0;a<n-1;a++)for(let b=a+1;b<n;b++){const o=best.slice(0,a).concat(best.slice(a,b+1).reverse(),best.slice(b+1)),l=len(o);if(l<bl-1){bl=l;best=o;imp=true}}}}
+ route.stops=done.concat(best.map(i=>left[i]))}
+function rtBuild(){if(!route)return;if(!rtLeft().length){closeRoute();return}route.picking=false;$('app').classList.remove('picking');rtOrder();route.leg=0;route.dest=rtLeft()[0];
+ if(route.mode==='transit'&&rtLeft().length>1&&dist(me,route.dest)<3500)route.mode='walk';renderRoute();calcRoute()}
+function rtArrive(at,force){if(!route||route.picking||!route.dest)return;const nx=route.dest,R=q=>Math.max(DISCOVER,40,q.rad?Math.min(q.rad,150):0);
+ const hit=rtLeft().filter(q=>(force&&q===nx)||dist(at,q)<=R(q));if(!hit.length)return;
+ if(rtLeft().length<=hit.length){closeRoute(true);return}
+ hit.forEach(q=>q.done=true);const N=route.stops.length,k=N-rtLeft().length,onlyNext=hit.length===1&&hit[0]===nx;route.dest=rtLeft()[0];
+ toast(`<div><b>${k} из ${N}:</b> ${hit.map(q=>esc(q.name)).join(', ')} ✓<br>Дальше — ${esc(route.dest.name)}</div>`);
+ if(onlyNext&&route.legE&&route.leg+1<route.legE.length){route.leg++;navLast=0;renderRoute();navTick()}else{rtOrder();route.dest=rtLeft()[0];calcRoute(true)}dirty=true}
+function closeRoute(arrived){const multi=route&&route.stops&&route.stops.length>1;route=null;walkPath=null;target=null;$('app').classList.remove('routing','picking');$('rt').classList.remove('on','pick');dirty=true;
+ if(arrived)toast(multi?'<div><b>Маршрут пройден!</b> Все места на месте ✓</div>':'<div><b>Вы на месте!</b></div>')}
+function extLinks(){const left=rtLeft(),p=route.dest,[la,lo]=U(me),m=route.mode,ll=q=>q.lat+','+q.lon;
  const ap={walk:'w',bike:'w',car:'d',transit:'r'}[m],am={walk:'walk',bike:'ride',car:'car',transit:'bus'}[m],gg={walk:'walking',bike:'bicycling',car:'driving',transit:'transit'}[m];
- return{apple:`https://maps.apple.com/?saddr=${la.toFixed(6)},${lo.toFixed(6)}&daddr=${p.lat},${p.lon}&dirflg=${ap}`,
+ const last=left[left.length-1]||p,wp=left.length>1&&m!=='transit'?'&waypoints='+encodeURIComponent(left.slice(0,-1).map(ll).join('|')):'';
+ return{apple:`https://maps.apple.com/?saddr=${la.toFixed(6)},${lo.toFixed(6)}&daddr=${m==='transit'?ll(p):left.map(ll).join('+to:')}&dirflg=${ap}`,
   amap:`https://uri.amap.com/navigation?from=${lo.toFixed(6)},${la.toFixed(6)},${encodeURIComponent('Я здесь')}&to=${p.lon},${p.lat},${encodeURIComponent(p.zh||p.name)}&mode=${am}&coordinate=wgs84&callnative=1`,
-  google:`https://www.google.com/maps/dir/?api=1&origin=${la.toFixed(6)},${lo.toFixed(6)}&destination=${p.lat},${p.lon}&travelmode=${gg}`}}
-function renderRoute(){if(!route)return;const p=route.dest,L2=extLinks(),m=route.mode;
- const info=navInfo();
- $('rt').innerHTML=`<div class="rt-hd"><span class="rt-ic" style="background:${p.col||`var(${CAT[p.cat].c})`}">${isvg(p.ic,18,2.2)}</span><span class="rt-t"><b>${esc(p.name)}</b><span id="rtInfo">${info}</span></span><button class="rt-x" data-rtclose aria-label="Закрыть маршрут">${isvg('x',18,2.4)}</button></div>
- <div class="rt-modes" role="tablist">${Object.entries(RMODES).map(([k,v])=>`<button data-rtmode="${k}" role="tab" aria-selected="${k===m}" class="${k===m?'on':''}">${isvg(v.ic,19,2)}<span>${v.n}</span></button>`).join('')}</div>
- ${m==='transit'?`<p class="rt-note">Метро и автобусы лучше всего знают карты: откройте маршрут одним нажатием.</p>`:''}
+  google:`https://www.google.com/maps/dir/?api=1&origin=${la.toFixed(6)},${lo.toFixed(6)}&destination=${m==='transit'?ll(p):ll(last)}${wp}&travelmode=${gg}`}}
+function stopsHTML(){const s=route.stops,pk=route.picking;let nLeft=0;
+ return `<div class="rt-stops">${s.map((q,i)=>{const done=q.done;if(!done)nLeft++;const next=!pk&&q===route.dest;
+  return `<div class="rt-st${done?' done':''}${next?' next':''}"><i>${done?isvg('check',12,3.2):i+1}</i><span>${esc(q.name)}</span>${!done&&!pk&&!route.opt&&nLeft>1?`<button data-rtup="${i}" aria-label="Поставить раньше">${isvg('up',15,2.4)}</button>`:''}${!done?`<button data-rtdel="${i}" aria-label="Убрать из маршрута">${isvg('x',15,2.4)}</button>`:''}</div>`}).join('')}</div>
+ ${!pk&&rtLeft().length>1?`<button class="rt-opt" data-rtopt aria-pressed="${route.opt}"><i></i>Удобный порядок<small>${route.opt?'самый короткий путь':'как расставили вы'}</small></button>`:''}`}
+function renderRoute(){if(!route)return;const left=rtLeft(),multi=route.stops.length>1,m=route.mode,info=navInfo();
+ if(route.picking){$('rt').innerHTML=`<div class="rt-hd"><span class="rt-ic rt-n">${left.length}</span><span class="rt-t"><b>Маршрут: ${left.length} ${mest(left.length)}</b><span id="rtInfo">${info}</span></span><button class="rt-x" data-rtclose aria-label="Отменить маршрут">${isvg('x',18,2.4)}</button></div>
+  ${multi?stopsHTML():''}<div class="rt-acts"><button class="rt-main" data-rtbuild>${isvg('navi',18,2.4)}${left.length>1?'Построить маршрут':'Построить маршрут сюда'}</button></div>`;
+  $('rt').classList.add('on','pick');return}
+ $('rt').classList.remove('pick');const p=route.dest,L2=extLinks(),N=route.stops.length,k=N-left.length+1;
+ $('rt').innerHTML=`<div class="rt-hd">${multi?`<span class="rt-ic rt-n">${k}</span>`:`<span class="rt-ic" style="background:${p.col||`var(${(CAT[p.cat]||CAT.main).c})`}">${isvg(p.ic||'pin',18,2.2)}</span>`}<span class="rt-t"><b>${multi?`${k} из ${N} · `:''}${esc(p.name)}</b><span id="rtInfo">${info}</span></span><button class="rt-x" data-rtclose aria-label="Закрыть маршрут">${isvg('x',18,2.4)}</button></div>
+ <div class="rt-modes" role="tablist">${Object.entries(RMODES).map(([kk,v])=>`<button data-rtmode="${kk}" role="tab" aria-selected="${kk===m}" class="${kk===m?'on':''}">${isvg(v.ic,19,2)}<span>${v.n}</span></button>`).join('')}</div>
+ ${m==='transit'?`<p class="rt-note">${multi?'Метро и автобусы лучше знают карты: откройте путь до следующего места.':'Метро и автобусы лучше всего знают карты: откройте маршрут одним нажатием.'}</p>`:''}
+ ${multi?stopsHTML():''}
  <div class="rt-acts">${mode==='sim'&&m!=='transit'&&route.pts?`<button class="rt-main" data-rtwalk>${isvg('walk',18,2.4)}Идти (демо)</button>`:''}
- <a class="rt-ext" href="${L2.apple}" target="_blank" rel="noopener">Apple Карты</a><a class="rt-ext" href="${L2.amap}" target="_blank" rel="noopener">Amap 高德</a><a class="rt-ext" href="${L2.google}" target="_blank" rel="noopener">Google</a></div>`;
+ <button class="rt-ext rt-plus" data-rtpick>${isvg('plus',16,2.6)}Место</button><a class="rt-ext" href="${L2.apple}" target="_blank" rel="noopener">Apple</a><a class="rt-ext" href="${L2.amap}" target="_blank" rel="noopener">Amap 高德</a><a class="rt-ext" href="${L2.google}" target="_blank" rel="noopener">Google</a></div>`;
  $('rt').classList.add('on')}
-async function calcRoute(re){if(!route)return;const m=route.mode,p=route.dest,my=++rtSeq;if(!re){route.pts=null;route.dur=0;route.dist=0;route.idx=0;route.proj=null}route.approx=false;dirty=true;
- if(m==='transit'){route.loading=false;route.remain=dist(me,p);renderRoute();if(!re)fitRoute([me,p]);return}
- if(!re){route.loading=true;renderRoute()}const [la,lo]=U(me);
- try{const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),9000);
-  const r=await fetch(`https://routing.openstreetmap.de/${RMODES[m].osrm}/route/v1/driving/${lo},${la};${p.lon},${p.lat}?overview=full&geometries=geojson`,{signal:ctl.signal});clearTimeout(to);
+async function calcRoute(re){if(!route||route.picking)return;const m=route.mode,left=rtLeft(),p=left[0],my=++rtSeq;if(!p)return;route.dest=p;
+ if(!re){route.pts=null;route.dur=0;route.dist=0;route.idx=0;route.proj=null}route.approx=false;route.leg=0;route.legE=null;route.legD=null;route.remLeg=null;dirty=true;
+ const chain=[me,...left];
+ if(m==='transit'){route.loading=false;route.pts=left.length>1?chain.map(q=>({x:q.x,y:q.y})):null;route.approx=left.length>1;route.legE=left.length>1?left.map((_,i)=>i+1):null;route.remain=dist(me,p);renderRoute();if(!re)fitRoute(chain);return}
+ if(!re){route.loading=true;renderRoute()}
+ try{const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),12000);
+  const cs=chain.map(q=>{const a=U(q);return a[1].toFixed(6)+','+a[0].toFixed(6)}).join(';');
+  const r=await fetch(`https://routing.openstreetmap.de/${RMODES[m].osrm}/route/v1/driving/${cs}?overview=full&geometries=geojson`,{signal:ctl.signal});clearTimeout(to);
   const j=await r.json();if(my!==rtSeq||!route)return;if(j.code!=='Ok'||!j.routes||!j.routes[0])throw new Error(j.code||'no route');
-  const rt=j.routes[0];route.pts=rt.geometry.coordinates.map(c=>P(c[1],c[0]));route.dist=rt.distance;route.dur=rt.duration;route.idx=0;route.proj=null;if(re)toast('<div>Маршрут перестроен</div>')}
- catch(e){if(my!==rtSeq||!route)return;const d=dist(me,p);route.pts=[{x:me.x,y:me.y},{x:p.x,y:p.y}];route.approx=true;route.dist=d*1.3;route.dur=route.dist/RMODES[m].v*60}
+  const rt=j.routes[0];route.pts=rt.geometry.coordinates.map(c=>P(c[1],c[0]));route.dist=rt.distance;route.dur=rt.duration;route.idx=0;route.proj=null;
+  // где на линии заканчивается каждый отрезок между местами
+  const E=[];let from=0;for(const w of (j.waypoints||[]).slice(1)){const q=P(w.location[1],w.location[0]);let bi=from,bd=1e18;for(let i=from;i<route.pts.length;i++){const d=dist(q,route.pts[i]);if(d<bd){bd=d;bi=i}if(d<1)break}E.push(bi);from=bi}
+  route.legE=E.length===left.length?E:null;route.legD=(rt.legs||[]).map(l=>({d:l.distance,t:l.duration}));if(re)toast('<div>Маршрут перестроен</div>')}
+ catch(e){if(my!==rtSeq||!route)return;let d=0;for(let i=1;i<chain.length;i++)d+=dist(chain[i-1],chain[i]);route.pts=chain.map(q=>({x:q.x,y:q.y}));route.approx=true;route.dist=d*1.3;route.dur=route.dist/RMODES[m].v*60;route.legE=left.map((_,i)=>i+1)}
  route.loading=false;route.remain=null;navLast=0;renderRoute();if(!re)fitRoute(route.pts);navTick();dirty=true}
 let navLast=0,navRecalc=0;
-function navInfo(){if(!route)return'';const m=route.mode;if(route.loading)return'Строю маршрут…';
- if(m==='transit')return`До цели ${fmtD(route.remain!=null?route.remain:dist(me,route.dest))} по прямой`;
- if(!route.dur)return'';const rem=route.remain!=null?route.remain:route.dist,sp=route.dist/Math.max(1,route.dur);return`Осталось ${fmtD(rem)} · ${fdur(rem/sp)}${route.approx?' · примерно':''}`}
-function navTick(){if(!route||route.loading)return;const now=Date.now();if(now-navLast<900)return;navLast=now;
- if(route.mode==='transit'||!route.pts||route.approx){route.remain=dist(me,route.dest);const el=$('rtInfo');if(el)el.textContent=navInfo();return}
- const pts=route.pts;let best=1e12,bi=0,bp=pts[0];
- for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy||1;let t=((me.x-a.x)*dx+(me.y-a.y)*dy)/l2;t=Math.max(0,Math.min(1,t));const px=a.x+dx*t,py=a.y+dy*t,dd=Math.hypot(me.x-px,me.y-py);if(dd<best){best=dd;bi=i;bp={x:px,y:py}}}
+function navInfo(){if(!route)return'';const n=rtLeft().length;
+ if(route.picking)return n<2?'Нажмите на ещё одно место на карте или в списке':'Порядок подберу сам — самый короткий путь';
+ const m=route.mode,multi=n>1;if(route.loading)return'Строю маршрут…';
+ if(m==='transit'){const r=route.remain!=null?route.remain:dist(me,route.dest);return multi?`До этого места ${fmtD(r)} по прямой · дальше ещё ${n-1}`:`До цели ${fmtD(r)} по прямой`}
+ if(!route.dur)return'';const rem=route.remain!=null?route.remain:route.dist,sp=route.dist/Math.max(1,route.dur),ap=route.approx?' · примерно':'';
+ if(!multi)return`Осталось ${fmtD(rem)} · ${fdur(rem/sp)}${ap}`;
+ const lg=route.remLeg!=null?route.remLeg:(route.legD&&route.legD[route.leg]?route.legD[route.leg].d:rem);
+ return`Сюда ${fmtD(lg)} · всего ${fmtD(rem)}, ${fdur(rem/sp)}${ap}`}
+function navTick(){if(!route||route.loading||route.picking)return;const now=Date.now();if(now-navLast<900)return;navLast=now;
+ if(route.mode==='transit'||!route.pts||route.approx){route.remain=dist(me,route.dest);if(route.approx&&route.mode!=='transit'){const l=rtLeft();let r=dist(me,l[0]);route.remLeg=r;for(let i=1;i<l.length;i++)r+=dist(l[i-1],l[i]);route.remain=r*1.3;route.remLeg*=1.3}const el=$('rtInfo');if(el)el.textContent=navInfo();return}
+ const pts=route.pts,E=route.legE;let s0=E&&route.leg>0?E[route.leg-1]:0,s1=E&&E[route.leg]!=null?E[route.leg]:pts.length-1;if(s1<=s0)s1=Math.min(pts.length-1,s0+1);
+ let best=1e12,bi=s0,bp=pts[s0];
+ for(let i=s0;i<s1;i++){const a=pts[i],b=pts[i+1],dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy||1;let t=((me.x-a.x)*dx+(me.y-a.y)*dy)/l2;t=Math.max(0,Math.min(1,t));const px=a.x+dx*t,py=a.y+dy*t,dd=Math.hypot(me.x-px,me.y-py);if(dd<best){best=dd;bi=i;bp={x:px,y:py}}}
  if(best>45&&now-navRecalc>12000){navRecalc=now;calcRoute(true);return}
- route.idx=bi;route.proj=bp;let rem=dist(bp,pts[bi+1]||bp);for(let i=bi+1;i<pts.length-1;i++)rem+=dist(pts[i],pts[i+1]);route.remain=rem+Math.min(best,45);
+ route.idx=bi;route.proj=bp;let rl=dist(bp,pts[bi+1]||bp);for(let i=bi+1;i<s1;i++)rl+=dist(pts[i],pts[i+1]);let rem=rl;for(let i=s1;i<pts.length-1;i++)rem+=dist(pts[i],pts[i+1]);
+ route.remLeg=rl+Math.min(best,45);route.remain=rem+Math.min(best,45);
  const el=$('rtInfo');if(el)el.textContent=navInfo();dirty=true}
-function fitRoute(pts){try{const b=L.latLngBounds(pts.map(q=>toM(...U(q))));follow=false;zStop();map.flyToBounds(b,{paddingTopLeft:[40,80],paddingBottomRight:[40,230],maxZoom:17,duration:.7})}catch(e){}}
+function fitRoute(pts){try{const b=L.latLngBounds(pts.map(q=>toM(...U(q))));follow=false;zStop();map.flyToBounds(b,{paddingTopLeft:[40,80],paddingBottomRight:[40,rtLeft().length>1?330:230],maxZoom:17,duration:.7})}catch(e){}}
+function rtDestOf(key){if(!key)return null;if(key.startsWith('poi:'))return POIS.find(q=>q.id===key.slice(4))||null;
+ if(key==='cur')return cur?destOf(cur):null;if(key==='osm')return curOsm?osmDest(curOsm):null;
+ if(key==='pin'&&pin){const a=U(pin);return{id:'pin:'+Math.round(pin.x)+','+Math.round(pin.y),name:'Точка на карте',zh:'',lat:a[0],lon:a[1],x:pin.x,y:pin.y,cat:'pin',ic:'pin'}}return null}
+// в карточке любого места: «Добавить в маршрут» (если маршрут уже есть) или «Маршрут через несколько мест»
+function rtCardHook(){const c=$('card');if(!c||c.querySelector('[data-rtadd],.rt-in'))return;const b=c.querySelector('.pc-cta[data-route],.pc-done,[data-cur="route"],[data-osm="route"],[data-pin="route"]');if(!b)return;
+ let key=null;if(b.dataset.route)key='poi:'+b.dataset.route;else if(b.classList.contains('pc-done'))key=cur&&cur.kind==='poi'?'poi:'+cur.obj.id:null;else if(b.dataset.cur)key='cur';else if(b.dataset.osm)key='osm';else if(b.dataset.pin)key='pin';
+ const d=rtDestOf(key);if(!d)return;
+ if(route){const n=rtLeft().length;b.insertAdjacentHTML('beforebegin',rtHas(d)?`<div class="rt-in">${isvg('check',16,2.8)}Уже в маршруте</div>`:`<button class="rt-addbtn main" data-rtadd="${key}">${isvg('plus',18,2.6)}Добавить в маршрут · будет ${n+1}-е</button>`)}
+ else b.insertAdjacentHTML('afterend',`<button class="rt-addbtn" data-rtadd="${key}">${isvg('plus',16,2.6)}Маршрут через несколько мест</button>`)}
+new MutationObserver(()=>{try{rtCardHook()}catch(e){}}).observe($('card'),{childList:true});
 function handleRoute(t){
  if(t.dataset.route){const p=POIS.find(q=>q.id===t.dataset.route);if(p)openRoute(p);return true}
+ if(t.dataset.rtadd){rtAdd(rtDestOf(t.dataset.rtadd));return true}
+ if('rtbuild' in t.dataset){rtBuild();return true}
+ if('rtpick' in t.dataset){if(!route)return true;if(rtLeft().length>=RT_MAX){toast(`<div>В маршрут помещается до ${RT_MAX} мест</div>`);return true}route.picking=true;$('app').classList.add('picking');renderRoute();dirty=true;toast('<div>Нажмите на место на карте или откройте список — и «Добавить в маршрут»</div>');return true}
+ if(t.dataset.rtdel!=null){const i=+t.dataset.rtdel;if(route&&route.stops[i]){route.stops.splice(i,1);dirty=true;if(!rtLeft().length){closeRoute();return true}if(route.picking)renderRoute();else rtBuild()}return true}
+ if(t.dataset.rtup!=null){const i=+t.dataset.rtup,s=route&&route.stops;if(s&&i>0&&!s[i-1].done){[s[i-1],s[i]]=[s[i],s[i-1]];rtBuild()}return true}
+ if('rtopt' in t.dataset){if(route){route.opt=!route.opt;rtBuild()}return true}
  if(t.dataset.rtmode){if(route&&route.mode!==t.dataset.rtmode){route.mode=t.dataset.rtmode;walkPath=null;calcRoute()}return true}
  if('rtclose' in t.dataset){closeRoute();return true}
  if('rtwalk' in t.dataset){if(route&&route.pts){walkPath=route.pts.slice(1).map(q=>({x:q.x,y:q.y}));target=walkPath.shift();follow=true;hideHint()}return true}
@@ -3002,7 +3106,7 @@ try{startGps(false)}catch(e){}
 let last=performance.now(),fogSL='',linesSL='',mkSL='';
 const fogSig=()=>reveal.size+'|'+visited.size+'|'+base+'|'+isDark()+'|'+fogOn;
 const _ids=new WeakMap();let _idn=0;const oid=o=>{if(!o||typeof o!=='object')return 0;let v=_ids.get(o);if(!v){v=++_idn;_ids.set(o,v)}return v};
-const linesSig=()=>(route?[oid(route),oid(route.pts),route.idx,route.proj?Math.round(route.proj.x)+','+Math.round(route.proj.y):'',route.approx?1:0].join(','):'-')+'|'+(OL.metro?1:0)+'|'+oid(metro)+'|'+base+'|'+hereD();
+const linesSig=()=>(route?[oid(route),oid(route.pts),route.idx,route.proj?Math.round(route.proj.x)+','+Math.round(route.proj.y):'',route.approx?1:0,route.stops?route.stops.length:0,route.leg||0,route.picking?1:0].join(','):'-')+'|'+(OL.metro?1:0)+'|'+oid(metro)+'|'+base+'|'+hereD();
 let drawFails=0;(function loop(t){const dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;
  try{step(dt);meTick(t);followTick(dt);if(fmOn&&(t-fmT>300||t-fmLast>1000)){fmLast=t;if(t-fmT>300)fmOn=false;map.fire('moveend')}
   const fs=fogSig();if(fs!==fogSL){fogSL=fs;fogS.need=true}if(born.size||discBorn.size)fogS.need=true;
