@@ -628,8 +628,8 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
     <h4>Карта</h4><button class="opt" data-base="soft">Своя карта</button><button class="opt" data-base="carto">Esri, серая</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><a class="opt" href="3d.html" style="text-decoration:none;color:inherit;box-sizing:border-box"><span style="font-size:11px;font-weight:700;color:#fff;background:#4b2fd6;border-radius:99px;padding:2px 7px">3D</span>Район в 3D · тест</a><hr><h4>Тема</h4><button class="opt" data-theme-set="light">Светлая</button><button class="opt" data-theme-set="dark">Тёмная</button><button class="opt" data-theme-set="auto">Как в системе</button><hr><h4>Достопримечательности</h4>
     <div id="chips">
       <button class="chip" data-l="main" aria-pressed="true"><i style="background:var(--main)"></i>Главное</button>
-      <button class="chip" data-l="local" aria-pressed="true"><i style="background:var(--local)"></i>Локальное</button>
-      <button class="chip" data-l="food" aria-pressed="true"><i style="background:var(--food)"></i>Поесть</button>
+      <button class="chip" data-l="local" aria-pressed="false"><i style="background:var(--local)"></i>Локальное</button>
+      <button class="chip" data-l="food" aria-pressed="false"><i style="background:var(--food)"></i>Поесть</button>
     </div>
     <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="fogBtn">Туман</button><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © OpenStreetMap, OpenFreeMap, Esri · маршруты © OSRM / FOSSGIS</p>
   </div>
@@ -733,7 +733,7 @@ function g2w(la,lo){const g=w2g(la,lo);return[la*2-g[0],lo*2-g[1]]}
 // ---------- state ----------
 let me=P(23.1262,113.2628),target=null,follow=true,mode='sim',watchId=null,acc=0,base='soft';
 const reveal=new Set(),area=new Set(),visited=new Set();let pts=0;
-const layers={main:true,local:true,food:true};
+const layers={main:true,local:false,food:false};
 let tab='near',rankSeg='p',dirty=true,changed=false;
 const MSTORE='otkroy-gorod-gz-marks';let marks=[];try{marks=JSON.parse(localStorage.getItem(MSTORE)||'[]')}catch(e){}
 marks.forEach(m=>Object.assign(m,P(m.lat,m.lon)));
@@ -1638,7 +1638,15 @@ function handleExtra(t){
 let metro=null,metroBox=null,metroBusy=false,metroFail=0;
 const normCol=c=>{if(!c)return null;c=String(c).split(';')[0].trim();if(/^[0-9a-f]{6}$/i.test(c))return'#'+c;return c};
 const shortRef=(r,n)=>{r=String(r||'').replace(/号线|線|Line|线/gi,'').trim();if(!r&&n){const m=String(n).match(/(\d+|APM|THZ\d?)/i);r=m?m[1]:''}return r.slice(0,4)};
-async function metroLoad(){if(metroBusy||Date.now()-metroFail<60000)return;const c=fromM(map.getCenter());if(metroBox&&c[0]>metroBox[0]&&c[0]<metroBox[2]&&c[1]>metroBox[1]&&c[1]<metroBox[3])return;
+const MPACK_BB=[22.45,112.85,23.95,114.05];let mpackP=null;
+function metroPack(){if(!mpackP)mpackP=fetch('metro.json?v=1').then(r=>r.ok?r.json():null).catch(()=>null).then(d=>{if(!d)mpackP=null;return d});return mpackP}
+function metroFromPack(d){const ways=[];for(const [ref,enc] of d.ways){const Pp=decPl(enc).map(g=>P(g[0],g[1]));if(Pp.length<2)continue;let a=1e12,b=-1e12,cc=1e12,e=-1e12;for(const q2 of Pp){a=Math.min(a,q2.x);b=Math.max(b,q2.x);cc=Math.min(cc,q2.y);e=Math.max(e,q2.y)}ways.push({col:d.lines[ref]||'#2f6feb',ref,P:Pp,bb:[a,b,cc,e]})}
+ const st=d.st.map(([id,lat,lon,t,ls])=>{t=t||{};return Object.assign({id:'node/'+id,lay:'metro',lat,lon,tags:t,name:t['name:ru']||t['name:en']||t.name||'Метро',local:t.name||'',lines:(ls||[]).map(r=>({ref:r,col:d.lines[r]||'#2f6feb'}))},P(lat,lon))});
+ return{ways,st}}
+const inBB=(c,b)=>c[0]>b[0]&&c[0]<b[2]&&c[1]>b[1]&&c[1]<b[3];
+async function metroLoad(){if(metroBusy)return;const c=fromM(map.getCenter());if(metroBox&&inBB(c,metroBox))return;
+ if(inBB(c,MPACK_BB)){metroBusy=true;const d=await metroPack();metroBusy=false;if(d){metro=metroFromPack(d);metroBox=MPACK_BB;dirty=true;return}}
+ if(Date.now()-metroFail<60000)return;
  metroBusy=true;toast('<div>Загружаю схему метро…</div>');const bb=[c[0]-.3,c[1]-.35,c[0]+.3,c[1]+.35],q=bb.map(v=>v.toFixed(4)).join(',');
  const j1=await ovpFetch(`[out:json][timeout:80];rel["route"="subway"](${q});out geom;`,90000);
  const j2=j1?await ovpFetch(`[out:json][timeout:40];node["railway"="station"]["station"="subway"](${q});out;`,45000):null;
@@ -2321,7 +2329,7 @@ applyOvrAll();ratedBuild();
 setTimeout(()=>{ovrLoad();statsLoad();pubLoad()},900);
 setInterval(()=>{if(document.visibilityState==='visible'){statsLoad();pubLoad();if(user)sugLoad()}},180000);
 if(location.hostname==='test.local')window.__ogc={setStats:rows=>{pstats=new Map(rows.map(r=>[r.poi_id,r]));ratedBuild();mkReset()},setPub:rows=>{pubMarks=rows.map(r=>Object.assign({photos:[]},r,P(r.lat,r.lon)));ratedBuild();mkReset()},
- admin:v=>{isAdmin=v},sug:()=>sugLoad(),login:u=>{user=u;meUid=u?u.id:null},marks:()=>marks,cur:()=>cur,draft:()=>draft,moving:()=>!!moveMode,fog:()=>fogOn,rated:()=>RATED.length};
+ admin:v=>{isAdmin=v},sug:()=>sugLoad(),login:u=>{user=u;meUid=u?u.id:null},marks:()=>marks,cur:()=>cur,draft:()=>draft,moving:()=>!!moveMode,fog:()=>fogOn,rated:()=>RATED.length,metro:()=>metro?{w:metro.ways.length,s:metro.st.length,box:metroBox,s0:metro.st.find(x=>x.lines.length)}:null,view:(la,lo,z)=>map.setView([la,lo],z),layers:()=>Object.assign({},layers)};
 
 loadColors();try{buildBase()}catch(e){}revealAt(me);updateHUD();renderSheet();renderPop();renderOL();setTimeout(osmSchedule,1500);
 ogReady=true;try{resize()}catch(e){toast('<div>Карта не запустилась: '+esc(e.message)+'</div>')}
