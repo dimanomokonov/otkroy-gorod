@@ -1330,6 +1330,13 @@ const DIST={
 
 const POIS=[
  {id:'canton',cat:'main',e:'🗼',name:'Кантон-Тауэр',zh:'广州塔',lat:23.10902,lon:113.31915,d:'hz',pts:100,s:'Телебашня высотой 600 метров, открытая в 2010 году к Азиатским играм. Её «талию» образует перекрученная сетчатая оболочка, а по краю крыши ходит колесо обозрения с прозрачными кабинками.'},
+ {id:'huangpucun',cat:'main',e:'⚓',name:'Древний порт Хуанпу',zh:'黄埔古港',lat:23.08774,lon:113.38563,d:'hz',pts:60,s:'После 1757 года все иностранные корабли, шедшие торговать в Китай, вставали на якорь здесь. Сегодня это старая деревня с родовыми храмами, музеями и остатками гавани.'},
+ {id:'pazhouta',cat:'main',e:'🏯',name:'Пагода Пачжоу',zh:'琶洲塔',lat:23.10174,lon:113.37028,d:'hz',pts:60,s:'Минская пагода 1600 года высотой больше 50 метров. Веками она служила ориентиром кораблям, шедшим в порт Хуанпу.'},
+ {id:'haichuang',cat:'main',e:'🪷',name:'Храм Хайчуан',zh:'海幢寺',lat:23.10796,lon:113.25386,d:'hz',pts:50,s:'Один из «пяти великих монастырей» старого Гуанчжоу на южном берегу реки, со старыми деревьями и прудом с лотосами.'},
+ {id:'xiaozhou',cat:'main',e:'🛶',name:'Деревня Сяочжоу',zh:'小洲村',lat:23.06203,lon:113.35007,d:'hz',pts:50,s:'Старинная водная деревня с каналами и каменными мостиками, где в старых домах работают художники.'},
+ {id:'hzwet',cat:'main',e:'🦢',name:'Водно-болотный парк Хайчжу',zh:'海珠湿地',lat:23.06682,lon:113.32858,d:'hz',pts:60,s:'Около 1100 гектаров озёр, проток и садов личжи прямо посреди мегаполиса; здесь отмечено больше ста видов птиц.'},
+ {id:'taikoo',cat:'main',e:'🏭',name:'Причал Тайгуцан',zh:'太古仓',lat:23.09138,lon:113.24694,d:'hz',pts:40,s:'Кирпичные портовые склады британской компании Swire начала XX века на берегу Жемчужной реки, превращённые в квартал кафе и галерей.'},
+ {id:'artmus',cat:'main',e:'🎨',name:'Гуанчжоуский музей искусств',zh:'艺术博物院',lat:23.1037,lon:113.32074,d:'hz',pts:60,s:'Новое здание 2023 года в форме «цветка капока на воде» на южном берегу реки; внутри — линнаньская живопись и каллиграфия.'},
  {id:'chen',cat:'main',e:'🏯',name:'Храм предков семьи Чэнь',zh:'陈家祠',lat:23.1298,lon:113.2401,d:'ly',pts:80,s:'Построен в 1890-х годах на средства рода Чэнь со всей провинции как родовой храм и школа для молодёжи, готовившейся к экзаменам. Главное здесь — резьба по дереву и камню и керамические фигурки на коньках крыш. Сейчас это Музей народного искусства Гуандуна.'},
  {id:'shamian',cat:'main',e:'🌳',name:'Остров Шамянь',zh:'沙面',lat:23.1095,lon:113.2393,d:'ly',pts:80,s:'После Опиумных войн остров стал британской и французской концессией. Отсюда колониальные особняки, церкви и тенистые аллеи вековых баньянов — одно из самых спокойных мест в городе.'},
  {id:'zhenhai',cat:'main',e:'🏮',name:'Башня Чжэньхай',zh:'镇海楼',lat:23.1406,lon:113.2603,d:'yx',pts:70,s:'Пятиэтажная башня 1380 года, эпоха Мин. Сначала она звалась «Башней, откуда смотрят на море», а нынешнее имя переводится как «Башня, усмиряющая море». Сейчас внутри Музей Гуанчжоу.'},
@@ -1373,7 +1380,7 @@ const POIS=[
  {id:'gzjj',cat:'food',e:'🦆',name:'Гуанчжоу Цзюцзя',zh:'广州酒家',lat:23.1165,lon:113.2406,d:'ly',pts:30,s:'Классический ресторан кантонской кухни, открыт в 1935 году. После реконструкции в конце 2025 года внутри появился музей кантонской кухни. Фирменное блюдо — курица «Вэньчан».'}
 ];
 POIS.forEach(p=>{Object.assign(p,P(p.lat,p.lon));p.cur=true});
-const IC={"temple": "M4 9h16M6 9l6-5 6 5M7 9v10M17 9v10M5 19h14M10 19v-5h4v5", "tower": "M12 2v4M9 22l2-16h2l2 16M8.5 12h7M9.8 17h4.4", "columns": "M3 9l9-5 9 5M5 9v9M9.5 9v9M14.5 9v9M19 9v9M3 20h18", "church": "M12 2v5M10 4h4M6 21V11l6-4 6 4v10M10 21v-4h4v4", "tree": "M12 21v-5M6 16h12L12 4z", "bag": "M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0", "bridge": "M2 16h20M4 16c2-6 14-6 16 0M7.5 16v-3M12 16v-4.5M16.5 16v-3", "star": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z", "houses": "M3 21V10l5-4 5 4v11M13 21v-8l4-3 4 3v8M2 21h20", "opera": "M3 18c3-8 7-10 9-10s6 3 9 10zM2 18h20", "skyline": "M4 21V11h4v10M10 21V4h5v17M17 21V9h4v12M2 21h20", "search": "M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8", "arcade": "M3 20V9l9-5 9 5v11M7 20v-5a2 2 0 0 1 4 0v5M13 20v-5a2 2 0 0 1 4 0v5", "person": "M12 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM8 22l1-8-2-3 5-3 5 3-2 3 1 8", "lotus": "M12 20c-4 0-7-3-7-6 3 0 5 1 7 3 2-2 4-3 7-3 0 3-3 6-7 6zM12 17c-2-3-2-6 0-10 2 4 2 7 0 10z", "scroll": "M8 4h11v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-1h11v1a3 3 0 0 0 3 3M8 4a2 2 0 0 0-2 2v9M11 8h5M11 12h5", "boat": "M3 15h18l-3 5H6zM12 4v11M12 4l6 8h-6", "anchor": "M12 8v13M5 13a7 7 0 0 0 14 0M9 11h6M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "bowl": "M4 11h16a8 8 0 0 1-16 0zM9 7l1-3M13 7l1-3", "cup": "M6 8h12l-1.5 12h-9zM5 8h14M10 8V5a2 2 0 0 1 4 0v3", "mark": "M7 4h10v16l-5-3.5L7 20z", "check": "m5 12 5 5 9-10", "walk": "M13 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9 21l2.5-7L9 11l3-3 3 3 3 1M11.5 14 14 17v4", "x": "M6 6l12 12M18 6 6 18"};const ICM={"canton": "tower", "chen": "temple", "shamian": "tree", "zhenhai": "temple", "rams": "star", "sys": "columns", "cathedral": "church", "beijing": "bag", "liurong": "temple", "yongqing": "houses", "hualin": "temple", "renwei": "temple", "pantang": "houses", "shisanhang": "boat", "shangxiajiu": "arcade", "huacheng": "skyline", "opera": "opera", "gdmus": "columns", "gzlib": "scroll", "liede": "boat", "botan": "tree", "thpark": "tree", "bridge": "bridge", "nanyue": "columns", "guangxiao": "temple", "huaisheng": "tower", "dongshan": "houses", "nongjiang": "scroll", "lieshi": "star", "road": "search", "qilou": "arcade", "statues": "person", "dafo": "lotus", "wanmu": "scroll", "liwan": "boat", "tianzi": "anchor", "taotao": "bowl", "panxi": "bowl", "nanxin": "cup", "gzjj": "bowl"};POIS.forEach(p=>p.ic=ICM[p.id]||'star');
+const IC={"temple": "M4 9h16M6 9l6-5 6 5M7 9v10M17 9v10M5 19h14M10 19v-5h4v5", "tower": "M12 2v4M9 22l2-16h2l2 16M8.5 12h7M9.8 17h4.4", "columns": "M3 9l9-5 9 5M5 9v9M9.5 9v9M14.5 9v9M19 9v9M3 20h18", "church": "M12 2v5M10 4h4M6 21V11l6-4 6 4v10M10 21v-4h4v4", "tree": "M12 21v-5M6 16h12L12 4z", "bag": "M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0", "bridge": "M2 16h20M4 16c2-6 14-6 16 0M7.5 16v-3M12 16v-4.5M16.5 16v-3", "star": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z", "houses": "M3 21V10l5-4 5 4v11M13 21v-8l4-3 4 3v8M2 21h20", "opera": "M3 18c3-8 7-10 9-10s6 3 9 10zM2 18h20", "skyline": "M4 21V11h4v10M10 21V4h5v17M17 21V9h4v12M2 21h20", "search": "M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8", "arcade": "M3 20V9l9-5 9 5v11M7 20v-5a2 2 0 0 1 4 0v5M13 20v-5a2 2 0 0 1 4 0v5", "person": "M12 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM8 22l1-8-2-3 5-3 5 3-2 3 1 8", "lotus": "M12 20c-4 0-7-3-7-6 3 0 5 1 7 3 2-2 4-3 7-3 0 3-3 6-7 6zM12 17c-2-3-2-6 0-10 2 4 2 7 0 10z", "scroll": "M8 4h11v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-1h11v1a3 3 0 0 0 3 3M8 4a2 2 0 0 0-2 2v9M11 8h5M11 12h5", "boat": "M3 15h18l-3 5H6zM12 4v11M12 4l6 8h-6", "anchor": "M12 8v13M5 13a7 7 0 0 0 14 0M9 11h6M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "bowl": "M4 11h16a8 8 0 0 1-16 0zM9 7l1-3M13 7l1-3", "cup": "M6 8h12l-1.5 12h-9zM5 8h14M10 8V5a2 2 0 0 1 4 0v3", "mark": "M7 4h10v16l-5-3.5L7 20z", "check": "m5 12 5 5 9-10", "walk": "M13 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9 21l2.5-7L9 11l3-3 3 3 3 1M11.5 14 14 17v4", "x": "M6 6l12 12M18 6 6 18"};const ICM={"canton": "tower", "huangpucun": "anchor", "pazhouta": "tower", "haichuang": "lotus", "xiaozhou": "boat", "hzwet": "tree", "taikoo": "houses", "artmus": "lotus", "chen": "temple", "shamian": "tree", "zhenhai": "temple", "rams": "star", "sys": "columns", "cathedral": "church", "beijing": "bag", "liurong": "temple", "yongqing": "houses", "hualin": "temple", "renwei": "temple", "pantang": "houses", "shisanhang": "boat", "shangxiajiu": "arcade", "huacheng": "skyline", "opera": "opera", "gdmus": "columns", "gzlib": "scroll", "liede": "boat", "botan": "tree", "thpark": "tree", "bridge": "bridge", "nanyue": "columns", "guangxiao": "temple", "huaisheng": "tower", "dongshan": "houses", "nongjiang": "scroll", "lieshi": "star", "road": "search", "qilou": "arcade", "statues": "person", "dafo": "lotus", "wanmu": "scroll", "liwan": "boat", "tianzi": "anchor", "taotao": "bowl", "panxi": "bowl", "nanxin": "cup", "gzjj": "bowl"};POIS.forEach(p=>p.ic=ICM[p.id]||'star');
 Object.assign(IC,{plus:'M12 5v14M5 12h14',up:'M12 19V5M6 11l6-6 6 6'});
 Object.assign(IC,{bike:'M5.5 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18.5 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5.5 15l4-7h5l4 7M9.5 8l3 7h1M12.5 5h3',car:'M5 17h14v-5l-2-5H7l-2 5zM5 12h14M7.5 17v2M16.5 17v2',bus:'M6 17V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11zM6 12h12M8 17v2M16 17v2M9 14.5h.01M15 14.5h.01'});
 Object.assign(IC,{basket:'M4 10h16l-2 10H6zM8 10l4-6 4 6',shirt:'M8 4l4 2 4-2 4 4-3 3v9H7v-9L4 8z',cart:'M3 4h2l2 11h11l2-8H6M9 20h.01M17 20h.01',metro:'M7 17h10a2 2 0 0 0 2-2V6a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v9a2 2 0 0 0 2 2zM5 11h14M9 14h.01M15 14h.01M7 17l-2 3M17 17l2 3',pill:'M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7zM7 10l7 7',card:'M3 6h18v12H3zM3 10h18M7 15h3',exchange:'M7 7h13l-4-4M17 17H4l4 4',wc:'M7 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5 9h4v6H8v6H6v-6H5zM15 9h4l1 7h-2v5h-2v-5h-2z',cross:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',phone:'M7 2h10v20H7zM11 18h2',pin:'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',navi:'M19 5 5 11l6 2 2 6z'});
@@ -1399,13 +1406,13 @@ const MSTORE='otkroy-gorod-gz-marks';let marks=[];try{marks=JSON.parse(localStor
 marks.forEach(m=>Object.assign(m,P(m.lat,m.lon)));
 const MT={place:{e:'📍',n:'Место'},egg:{e:'✨',n:'Пасхалка'},food:{e:'🍜',n:'Еда'}};
 // ---- игра: состояние (объявлено заранее, чтобы было доступно при запуске) ----
-const DIARY_IDS=['canton','chen','shamian','zhenhai','rams','sys','cathedral','beijing','liurong','yongqing','hualin','renwei','pantang','shisanhang','shangxiajiu','huacheng','opera','gdmus','gzlib','liede','botan','thpark','bridge','nanyue','guangxiao','huaisheng','dongshan','nongjiang','lieshi','road','qilou','statues','dafo','wanmu','liwan','tianzi','taotao','panxi','nanxin','gzjj'];
-const DIARY_SET=new Set(DIARY_IDS),GKEY='og-game-v1',DIARY_V='5';
+const DIARY_IDS=['canton','huangpucun','pazhouta','haichuang','xiaozhou','hzwet','taikoo','artmus','chen','shamian','zhenhai','rams','sys','cathedral','beijing','liurong','yongqing','hualin','renwei','pantang','shisanhang','shangxiajiu','huacheng','opera','gdmus','gzlib','liede','botan','thpark','bridge','nanyue','guangxiao','huaisheng','dongshan','nongjiang','lieshi','road','qilou','statues','dafo','wanmu','liwan','tianzi','taotao','panxi','nanxin','gzjj'];
+const DIARY_SET=new Set(DIARY_IDS),GKEY='og-game-v1',DIARY_V='6';
 let G=null;try{G=JSON.parse(localStorage.getItem(GKEY)||'null')}catch(e){}
 G=Object.assign({rv:{},ach:{},look:{},st:{},seen:{},days:{},credit:{},rated:0,found:0,hid:0,tp:{},td:{},tasks:[],day:''},G||{});
 const GC={list:[],notes:{},at:0,busy:false};
 // радиус, в котором место засчитывается (м): у больших мест — по их размеру; туман от этого не меняется
-const GRAD={canton:250,chen:120,shamian:350,zhenhai:130,rams:130,sys:160,cathedral:110,beijing:220,liurong:110,yongqing:170,hualin:110,renwei:80,pantang:200,shisanhang:150,shangxiajiu:350,huacheng:300,opera:160,gdmus:130,gzlib:120,liede:220,botan:700,thpark:400,bridge:200,nanyue:140,guangxiao:130,huaisheng:90,dongshan:300,nongjiang:100,lieshi:250,road:70,qilou:220,statues:260,dafo:90,wanmu:80,liwan:250,tianzi:110,taotao:80,panxi:110,nanxin:80,gzjj:90};
+const GRAD={canton:250,huangpucun:300,pazhouta:120,haichuang:120,xiaozhou:350,hzwet:600,taikoo:200,artmus:150,chen:120,shamian:350,zhenhai:130,rams:130,sys:160,cathedral:110,beijing:220,liurong:110,yongqing:170,hualin:110,renwei:80,pantang:200,shisanhang:150,shangxiajiu:350,huacheng:300,opera:160,gdmus:130,gzlib:120,liede:220,botan:700,thpark:400,bridge:200,nanyue:140,guangxiao:130,huaisheng:90,dongshan:300,nongjiang:100,lieshi:250,road:70,qilou:220,statues:260,dafo:90,wanmu:80,liwan:250,tianzi:110,taotao:80,panxi:110,nanxin:80,gzjj:90};
 for(const p of POIS)if(GRAD[p.id])p.rad=GRAD[p.id];
 // очки дают только за достопримечательности (главные и тайные места) и за оценки/отзывы
 function gPtsOf(p){return p&&p.cat!=='food'?(p.pts||0):0}try{GC.notes=JSON.parse(localStorage.getItem('og-cnotes')||'{}')||{}}catch(e){}
@@ -2009,6 +2016,66 @@ const LMS=(()=>{const n=v=>+v.toFixed(2),M=(x,y)=>`M${n(x)} ${n(y)}`,Lt=(x,y)=>`
   for(const x of [5.4,14.6,23.8,33])h+=arch(x,13.2,4.4,9);
   h+=circ(20,6.6,1.4)+rect(3,24.6,34,.9);
   d+=hl(3,37,[23.4,25.8])+`M11.6 11V36.4M20.8 11V36.4M28.8 11V36.4`;
+  return{b,d,h}})();
+
+ // Древний порт Хуанпу: каменные ворота с навесной крышей и старинный трёхмачтовый парусник у пристани
+ S.huangpucun=(()=>{let b='',d='',h='';
+  b+=rect(2,14,18,20)+roof(0,22,14.4,4,18,9.6,1.3,1)+rect(0,33.6,24,2.8);
+  h+=arch(7,21,8,13);
+  b+=`M22 29.6H39.4L37 34H24Z`+rect(26.6,6,1,23.6)+rect(31.6,4,1,25.6)+rect(36.2,9,.9,20.6);
+  b+=`M27.6 8.4Q31 10 27.6 13.4ZM27.6 14.6Q31.4 16.6 27.6 20.6ZM32.6 6.4Q36.4 8.4 32.6 12.2ZM32.6 13.4Q37 15.6 32.6 20.4ZM32.6 21.4Q36.6 23.4 32.6 27.4ZM37.1 11Q39.8 12.8 37.1 16Z`;
+  b+=`M0 36.2Q5 35 10 36.2T20 36.2T30 36.2T40 36.2V38.2H0Z`;
+  d+=hl(2,20,[18,22,26,30])+`M24 29.6H38`;
+  return{b,d,h}})();
+
+ // Пагода Пачжоу: восьмигранная девятиярусная пагода на зелёном холмике у реки
+ S.pazhouta=(()=>{let b='',d='',h='';const N=9,y0=31,y1=4.6,w0=12.6,w1=6.4;
+  for(let i=0;i<N;i++){const t0=i/N,t1=(i+1)/N,ya=y0-(y0-y1)*t0,yb=y0-(y0-y1)*t1,wa=w0-(w0-w1)*t0,wb=w0-(w0-w1)*t1;
+   b+=poly([[20-wa/2,ya],[20-wb/2,yb+.8],[20+wb/2,yb+.8],[20+wa/2,ya]])+rect(20-wb/2-1.3,yb+.1,wb+2.6,1.1);
+   h+=arch(19.2,ya-(ya-yb)*.78,1.6,(ya-yb)*.5)}
+  b+=poly([[18.2,y1+.4],[20,1],[21.8,y1+.4]])+rect(19.6,-4,.8,5.2)+circ(20,-4.4,.9);
+  b+=`M2 36.4Q10 29.2 20 29.4Q30 29.2 38 36.4Z`+`M0 36.2Q5 35 10 36.2T20 36.2T30 36.2T40 36.2V38.2H0Z`;
+  return{b,d,h}})();
+
+ // Храм Хайчуан: зал с двойной кровлей над прудом с лотосами
+ S.haichuang=(()=>{let b='',d='',h='';
+  b+=rect(7,20,26,10)+roof(3,37,20.4,9.4,30.6,14.6,1.4,1)+rect(10.4,12.6,19.2,2.2)+roof(6.6,33.4,12.8,13,27,7.2,1.4,1)+rect(4,29.6,32,2);
+  b+=`M11.4 7.8Q10.6 5.4 12.6 5.6L13.2 7.2ZM28.6 7.8Q29.4 5.4 27.4 5.6L26.8 7.2Z`;
+  h+=rect(9.6,22.6,1.2,7)+rect(14,22.6,1.2,7)+rect(24.8,22.6,1.2,7)+rect(29.2,22.6,1.2,7)+rect(17.2,23,5.6,6.6);
+  b+=`M0 34Q5 32.8 10 34T20 34T30 34T40 34V38.2H0Z`+`M3 33A4.4 1.8 0 1 1 11.8 33Z`+`M28 33.4A4.4 1.8 0 1 1 36.8 33.4Z`+`M20 34L18.4 30.4Q20 31.6 21.6 30.4Z`+rect(19.7,31.6,.6,2.4);
+  return{b,d,h}})();
+
+ // Деревня Сяочжоу: горбатый каменный мостик над каналом и дом со стеной из устричных раковин
+ S.xiaozhou=(()=>{let b='',d='',h='';
+  b+=rect(2,12,16,17.6)+poly([[0,12.4],[10,5.4],[20,12.4]])+rect(24,16,14,13.6)+roof(22,40,16.4,26,36,11.4,1.2,.9);
+  h+=rect(6,19,4,5)+rect(12.4,19,3,5)+rect(28.6,21,5,8.6);
+  for(let r=0;r<4;r++)for(let c=0;c<5;c++)h+=circ(3.8+c*2.9+(r%2)*1.45,14.2+r*1.3+(r>1?4.6:0),.55);
+  b+=`M0 34.4Q5 33.2 10 34.4T20 34.4T30 34.4T40 34.4V38.2H0Z`+`M3 30.6Q20 18 37 30.6V33.4H33.4Q20 22.8 6.6 33.4H3Z`;
+  d+=`M8 29.2Q20 20.4 32 29.2`;
+  return{b,d,h}})();
+
+ // Водно-болотный парк Хайчжу: тростник, цапля и вдали — силуэт Кантон-Тауэр
+ S.hzwet=(()=>{let b='',d='',h='';
+  b+=`M28.6 30L29.6 12.4Q30.2 10.4 29.8 8.4L30.4 1.4L31 8.4Q30.6 10.4 31.2 12.4L32.2 30Z`+rect(30.3,-5,.4,6.6);
+  for(const [x,t,c] of [[2.6,8,-1.6],[5.4,4,.8],[8.2,11,-1.2],[11,6,1.4],[35.4,13,-.8],[38,9,1]])b+=`M${n(x-.6)} 36.4Q${n(x+c)} ${n((36.4+t)/2)} ${n(x+c*1.4)} ${n(t)}Q${n(x+c+.6)} ${n((36.4+t)/2)} ${n(x+.6)} 36.4Z`+`M${n(x+c*1.4-.9)} ${n(t)}h1.8v3.6h-1.8Z`;
+  b+=`M17 23.6Q20.4 20.4 23.6 22.6Q25.4 24.4 22.4 26.4Q19.4 27.6 16.4 25.6ZM21.8 22.2Q21.6 17.4 22.8 15.6Q24.6 14.4 25.6 15.8L28 15.4L25.4 16.8Q23.8 16.6 23.4 18.4Q23.2 20.6 23.6 22.6Z`+rect(19,26.4,.7,6.6)+rect(21.2,26,.7,7);
+  b+=`M0 33.4Q5 32.2 10 33.4T20 33.4T30 33.4T40 33.4V38.2H0Z`;
+  return{b,d,h}})();
+
+ // Причал Тайгуцан: краснокирпичные склады с двускатными крышами и портовый кран
+ S.taikoo=(()=>{let b='',d='',h='';
+  b+=poly([[1,31],[1,19],[9,13],[17,19],[17,31]])+poly([[15,31],[15,21],[22,15.6],[29,21],[29,31]]);
+  b+=rect(31.6,7,2.2,24)+poly([[29,7],[40,4.6],[40,6.4],[29,8.8]])+rect(30.8,4.2,4,3.4)+rect(37.8,6,.5,9)+rect(37.2,15,1.6,1.4);
+  h+=arch(6.2,22.4,5.6,8.6)+arch(19.6,23.6,4.8,7.4)+circ(9,17.6,1.2)+circ(22,19.4,1);
+  b+=rect(0,31,40,2.2)+`M0 35.6Q5 34.4 10 35.6T20 35.6T30 35.6T40 35.6V38.2H0Z`;
+  d+=hl(1,17,[26])+`M32.6 9L35.6 12M32.6 15L35.6 18M32.6 21L35.6 24`;
+  return{b,d,h}})();
+
+ // Музей искусств: здание-«цветок капока» из изогнутых светлых лепестков над водой
+ S.artmus=(()=>{let b='',d='',h='';
+  b+=`M20 30Q11.6 20 20 3Q28.4 20 20 30Z`+`M18.6 30Q6 26 5.4 11.4Q14.6 17 18.6 30Z`+`M21.4 30Q34 26 34.6 11.4Q25.4 17 21.4 30Z`+`M17.6 30.6Q3.4 31 0.6 22.4Q10.4 22.6 17.6 30.6Z`+`M22.4 30.6Q36.6 31 39.4 22.4Q29.6 22.6 22.4 30.6Z`;
+  b+=rect(4,30,32,2.2)+`M0 35Q5 33.8 10 35T20 35T30 35T40 35V38.2H0Z`;
+  d+=`M20 6V28M15.4 15Q20 13.4 24.6 15M14.4 21Q20 19 25.6 21M8.6 16Q12.6 21 17.4 28M31.4 16Q27.4 21 22.6 28`;
   return{b,d,h}})();
 
  return S})();
