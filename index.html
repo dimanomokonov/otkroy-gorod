@@ -796,6 +796,7 @@ button:focus-visible{outline:2px solid var(--me);outline-offset:2px}
 .ghost{width:100%;margin-top:14px;padding:12px;border-radius:14px;background:var(--soft);font-weight:700}
 .note{font-size:12.5px;color:var(--muted);margin:12px 4px 0}
 .ghost.fb{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;color:var(--vio);text-decoration:none;box-sizing:border-box;font-size:15px}
+.nick{margin:4px 0 14px}.nick label{display:block;font-size:12.5px;color:var(--muted);margin:0 4px 6px}.nick>div{display:flex;gap:8px}.nick input{flex:1;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:500 15px Rubik,sans-serif}.nick button{padding:0 16px;border-radius:12px;border:0;background:var(--vio);color:#fff;font:600 14px Rubik,sans-serif;cursor:pointer}.nick button:disabled{opacity:.6}
 .priv{margin:10px 2px 12px;font-size:13px;line-height:1.45;color:var(--muted)}
 .priv summary{cursor:pointer;font-weight:600;color:var(--ink);padding:8px 2px;list-style-position:inside}
 .priv p{margin:6px 2px 0}
@@ -2744,7 +2745,7 @@ async function saveReview(t){if(!rvDraft)return;if(!rvDraft.rating){toast('<div>
  t.disabled=true;t.textContent='Публикую…';
  try{let url=null;if(rvDraft.photo){const blob=await (await fetch(rvDraft.photo)).blob(),path=`${user.id}/${rvDraft.id.replace(/[^\w-]/g,'_')}-${Date.now()}.jpg`;
    const {error:ue}=await sb.storage.from('review-photos').upload(path,blob,{contentType:'image/jpeg'});if(ue)throw ue;url=sb.storage.from('review-photos').getPublicUrl(path).data.publicUrl}
-  const row={user_id:user.id,poi_id:rvDraft.id,rating:rvDraft.rating,text:$('rvText').value.trim()||null,author_name:(user.email||'').split('@')[0]};if(url)row.photo_path=url;
+  const row={user_id:user.id,poi_id:rvDraft.id,rating:rvDraft.rating,text:$('rvText').value.trim()||null,author_name:uname()};if(url)row.photo_path=url;
   {const pl=placeOf(rvDraft.id);if(pl){row.place_name=pl.name||null;row.lat=pl.lat;row.lon=pl.lon;row.kind=pl.kind||null}}
   const {error}=await sb.from('reviews').upsert(row,{onConflict:'user_id,poi_id'});if(error)throw error;
   const back=rvDraft.back;rvDraft=null;closeCard();gReview(row.poi_id,!!row.text);statsLoad();toast('<div><b>Спасибо!</b> Отзыв опубликован.</div>');if(back)setTimeout(back,250)}
@@ -2871,8 +2872,8 @@ function importMarks(txt){let o;try{o=JSON.parse(txt)}catch(e){return false}if(!
 function profileHTML(){const vs=POIS.filter(p=>visited.has(p.id)).length;
  let h=`<div class="pf"><span class="pf-av">${user&&user.email?esc(user.email[0].toUpperCase()):'?'}</span><span class="pf-t"><b>${user?esc(user.email||''):'Гость'}</b><span>${syncText()}</span></span></div>
  <div class="pc-stats" style="margin:12px 0"><div><b>${pts}</b><span>очков</span></div><div><b>${vs}/${POIS.length}</b><span>мест</span></div><div><b>${km(area.size)}</b><span>км² пройдено</span></div></div>`;
- h+=user?`<button class="ghost" data-syncnow>Синхронизировать сейчас</button><button class="ghost" data-logout>Выйти из аккаунта</button>`:`<button class="cta" data-login>Войти и сохранять в облако</button>`;
- return h+sugHTML()+`<p class="note">Рейтинг игроков появится, когда подключатся друзья.</p><a class="ghost fb" href="https://t.me/dimanomokonov" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 4.2 2.9 11.4c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.5-1.4ZM8.5 14.1l9.6-6.1c.5-.3.9-.1.5.2l-8 7.3-.3 3.4-1.8-4.8Z"/></svg>Написать автору в Telegram</a><details class="priv"><summary>Что мы храним</summary><p>Без входа всё хранится только на этом телефоне.</p><p>Если вы вошли, в облако сохраняются почта, открытые места, очки, открытые участки карты и ваши отметки — чтобы прогресс не терялся и переносился на другой телефон. Эти данные видите только вы.</p><p>Отзывы и фото к местам видят все игроки. Под ними показывается начало вашей почты — до знака @.</p><p>Мы не продаём данные и не передаём их третьим лицам. Чтобы удалить аккаунт, напишите автору.</p></details><button class="ghost" id="reset">Сбросить прогресс</button>`}
+ h+=user?`<div class="nick"><label for="nickIn">Имя под отзывами и тайниками</label><div><input id="nickIn" maxlength="24" autocomplete="nickname" placeholder="Путешественник" value="${esc(String((user.user_metadata||{}).nick||''))}"><button type="button" data-nick>Сохранить</button></div></div><button class="ghost" data-syncnow>Синхронизировать сейчас</button><button class="ghost" data-logout>Выйти из аккаунта</button>`:`<button class="cta" data-login>Войти и сохранять в облако</button>`;
+ return h+sugHTML()+`<p class="note">Рейтинг игроков появится, когда подключатся друзья.</p><a class="ghost fb" href="https://t.me/dimanomokonov" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 4.2 2.9 11.4c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.5-1.4ZM8.5 14.1l9.6-6.1c.5-.3.9-.1.5.2l-8 7.3-.3 3.4-1.8-4.8Z"/></svg>Написать автору в Telegram</a><details class="priv"><summary>Что мы храним</summary><p>Без входа всё хранится только на этом телефоне.</p><p>Если вы вошли, в облако сохраняются почта, открытые места, очки, открытые участки карты и ваши отметки — чтобы прогресс не терялся и переносился на другой телефон. Эти данные видите только вы.</p><p>Отзывы, фото к местам и тайники видят все игроки. Под ними показывается имя, которое вы укажете в профиле, — по умолчанию «Путешественник». Почту другие не видят.</p><p>Мы не продаём данные и не передаём их третьим лицам. Чтобы удалить аккаунт, напишите автору.</p></details><button class="ghost" id="reset">Сбросить прогресс</button>`}
 const SITE='https://dimanomokonov.github.io/otkroy-gorod/';
 const AUTHERR=m=>/invalid login/i.test(m)?'Неверная почта или пароль':/not confirmed/i.test(m)?'Сначала подтвердите почту по ссылке из письма':/already registered|already exists/i.test(m)?'Такой аккаунт уже есть — нажмите «Войти»':/password should be|at least/i.test(m)?'Пароль должен быть не короче 6 символов':/rate limit|too many/i.test(m)?'Слишком много попыток, подождите немного':m;
 function openLogin(step,email){$('card').classList.remove('place');const E=esc(email||'');
@@ -2963,7 +2964,14 @@ const fmtAvg=v=>(+v).toFixed(1).replace('.',',');
 const rateTxt=s=>s?`★ ${fmtAvg(s.avg)} · ${s.n}`:'';
 const rb=id=>{const s=pstats.get(id);return s?`<b class="rb">★${fmtAvg(s.avg)}</b>`:''};
 const hotc=id=>isPop(pstats.get(id))?' hot':'';
-const uname=()=>user?((user.email||'').split('@')[0]||'Путешественник'):'';
+const uname=()=>user?(String((user.user_metadata||{}).nick||'').trim()||'Путешественник'):'';
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-nick]');if(!b||!sb||!user)return;
+ const v=($('nickIn').value||'').replace(/\s+/g,' ').trim().slice(0,24);b.disabled=true;
+ try{const {data,error}=await sb.auth.updateUser({data:{nick:v}});if(error)throw error;if(data&&data.user)user=data.user;
+  const nm=uname();for(const t of ['reviews','marks','caches','suggestions']){try{await sb.from(t).update({author_name:nm}).eq('user_id',user.id)}catch(_){}}
+  toast(`<div>Готово: под вашими отзывами теперь <b>${esc(nm)}</b></div>`);renderSheet()}
+ catch(err){toast(`<div>Не получилось сохранить имя: ${esc(err.message||err)}</div>`)}finally{b.disabled=false}});
+
 const pubKey=q=>'mk:'+q.user_id+'/'+q.id;
 const myKey=q=>meUid?'mk:'+meUid+'/'+q.id:'';
 const ownerOf=k=>k&&k.startsWith('mk:')?k.slice(3).split('/')[0]:null;
