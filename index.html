@@ -795,6 +795,14 @@ button:focus-visible{outline:2px solid var(--me);outline-offset:2px}
 .row .sc{font-weight:800}
 .ghost{width:100%;margin-top:14px;padding:12px;border-radius:14px;background:var(--soft);font-weight:700}
 .note{font-size:12.5px;color:var(--muted);margin:12px 4px 0}
+.tr-sum{font:600 14px/1.3 Rubik,sans-serif;color:var(--ink);margin:2px 4px 8px}
+.tr-steps{list-style:none;margin:0 0 4px;padding:0 2px;display:flex;flex-direction:column;gap:9px;max-height:34vh;overflow:auto}
+.tr-steps li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.35;color:var(--ink)}
+.tr-i{flex:0 0 28px;height:28px;border-radius:9px;background:var(--soft);color:var(--vio);display:grid;place-items:center;font-weight:700}
+.trb{display:grid;place-items:center;min-width:28px;height:28px;border-radius:9px;color:#fff;font:700 12px/1 Rubik,sans-serif;font-style:normal;padding:0 4px;box-sizing:border-box}
+.tr-steps .zh,.tr-s{color:var(--muted);font-size:12.5px}
+
+#opt3d[hidden]{display:none!important}
 .ghost.fb{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;color:var(--vio);text-decoration:none;box-sizing:border-box;font-size:15px}
 .nick{margin:4px 0 14px}.nick label{display:block;font-size:12.5px;color:var(--muted);margin:0 4px 6px}.nick>div{display:flex;gap:8px}.nick input{flex:1;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:500 15px Rubik,sans-serif}.nick button{padding:0 16px;border-radius:12px;border:0;background:var(--vio);color:#fff;font:600 14px Rubik,sans-serif;cursor:pointer}.nick button:disabled{opacity:.6}
 .priv{margin:10px 2px 12px;font-size:13px;line-height:1.45;color:var(--muted)}
@@ -1441,13 +1449,13 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
   <div class="nudge glass" id="nudge" role="dialog" aria-label="Сохранить прогресс"></div>
   <input type="file" id="impFile" multiple accept=".gpx,.kml,.json,.xml,application/json,application/gpx+xml" hidden>
   <div class="pop glass" id="pop">
-    <h4>Карта</h4><button class="opt" data-base="soft">Своя карта</button><button class="opt" data-base="carto">Esri, серая</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><button class="opt" data-base="vector">Схема без улиц</button><a class="opt" href="3d.html" style="text-decoration:none;color:inherit;box-sizing:border-box"><span style="font-size:11px;font-weight:700;color:#fff;background:#4b2fd6;border-radius:99px;padding:2px 7px">3D</span>Район в 3D · тест</a><hr><h4>Тема</h4><button class="opt" data-theme-set="light">Светлая</button><button class="opt" data-theme-set="dark">Тёмная</button><button class="opt" data-theme-set="auto">Как в системе</button><hr><h4>Достопримечательности</h4>
+    <h4>Карта</h4><button class="opt" data-base="soft">Своя карта</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><a class="opt" id="opt3d" hidden href="3d.html" style="text-decoration:none;color:inherit;box-sizing:border-box"><span style="font-size:11px;font-weight:700;color:#fff;background:#4b2fd6;border-radius:99px;padding:2px 7px">3D</span>Район в 3D · тест</a><hr><h4>Тема</h4><button class="opt" data-theme-set="light">Светлая</button><button class="opt" data-theme-set="dark">Тёмная</button><button class="opt" data-theme-set="auto">Как в системе</button><hr><h4>Достопримечательности</h4>
     <div id="chips">
       <button class="chip" data-l="main" aria-pressed="true"><i style="background:var(--main)"></i>Главное</button>
       <button class="chip" data-l="local" aria-pressed="false"><i style="background:var(--local)"></i>Локальное</button>
       <button class="chip" data-l="food" aria-pressed="false"><i style="background:var(--food)"></i>Поесть</button>
     </div>
-    <hr><h4>Покупки и еда</h4><div class="olg"><button class="chip olc" data-ol="food" aria-pressed="false"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-ol="coffee" aria-pressed="false"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button><button class="chip olc" data-ol="markets" aria-pressed="false"><i style="background:#2fa84f"></i>Рынки</button><button class="chip olc" data-ol="clothes" aria-pressed="false"><i style="background:#7a5cff"></i>Одежда</button><button class="chip olc" data-ol="grocery" aria-pressed="false"><i style="background:#1e9e8a"></i>Продукты</button></div><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="atm" aria-pressed="false"><i style="background:#5f6b72"></i>Банкоматы</button><button class="chip olc" data-ol="exchange" aria-pressed="false"><i style="background:#b8860b"></i>Обмен</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="hospital" aria-pressed="false"><i style="background:#e5484d"></i>Больницы</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="fogBtn">Туман</button><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © OpenStreetMap, OpenFreeMap, Esri · маршруты © OSRM / FOSSGIS</p>
+    <hr><h4>Еда и покупки</h4><div class="olg"><button class="chip olc" data-uf="food" aria-pressed="true"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-uf="coffee" aria-pressed="true"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button></div><p class="note" style="margin:6px 6px 10px;font-size:11.5px">Еду и кофейни отмечают сами путешественники: создайте отметку «Еда» или «Кофейня» и сделайте её видимой всем.</p><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="fogBtn">Туман</button><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © OpenStreetMap, OpenFreeMap, Amap · маршруты © OSRM / FOSSGIS</p>
   </div>
   <button id="nearPill" style="display:none" hidden></button>
   <div class="rt" id="rt" aria-live="polite"></div>
@@ -1577,7 +1585,7 @@ const layers={main:true,local:false,food:false};
 let tab='near',rankSeg='p',dirty=true,changed=false;
 const MSTORE='otkroy-gorod-gz-marks';let marks=[];try{marks=JSON.parse(localStorage.getItem(MSTORE)||'[]')}catch(e){}
 marks.forEach(m=>Object.assign(m,P(m.lat,m.lon)));
-const MT={place:{e:'📍',n:'Место'},egg:{e:'✨',n:'Пасхалка'},food:{e:'🍜',n:'Еда'}};
+const MT={place:{e:'📍',n:'Место'},egg:{e:'✨',n:'Пасхалка'},food:{e:'🍜',n:'Еда'},coffee:{e:'☕',n:'Кофейня'}};
 // ---- игра: состояние (объявлено заранее, чтобы было доступно при запуске) ----
 const DIARY_IDS=['canton','huangpucun','pazhouta','haichuang','xiaozhou','hzwet','taikoo','artmus','chen','shamian','zhenhai','rams','sys','cathedral','beijing','liurong','yongqing','hualin','renwei','pantang','shisanhang','shangxiajiu','huacheng','opera','gdmus','gzlib','liede','botan','thpark','bridge','nanyue','guangxiao','huaisheng','dongshan','nongjiang','lieshi','road','qilou','statues','dafo','wanmu','liwan','tianzi','taotao','panxi','nanxin','gzjj'];
 const DIARY_SET=new Set(DIARY_IDS),GKEY='og-game-v1',DIARY_V='6';
@@ -1609,7 +1617,7 @@ function save(){try{localStorage.setItem(STORE,JSON.stringify({r:[...reveal],v:[
 const CH=32,chunks=new Map(),born=new Map(),discBorn=new Map(),DISC_R=1500;let areaReady=false;let quiet=false;
 // сохранённый прогресс загружаем здесь: addCell использует chunks, объявленные строкой выше
 try{const s=JSON.parse(localStorage.getItem(STORE)||'null');
- if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['soft','carto','vector','amap'].includes(s.b))base=s.b;if(base==='carto'){let m=null;try{m=localStorage.getItem('og-soft-v1')}catch(e){}if(!m){base='soft';try{localStorage.setItem('og-soft-v1','1')}catch(e){}}}}}catch(e){}
+ if(s){(s.r||[]).forEach(k=>addCell(k));(s.v||[]).forEach(v=>visited.add(v));pts=s.p||0;if(s.me)me=s.me;if(s.b&&['soft','amap'].includes(s.b))base=s.b;if(base==='carto'){let m=null;try{m=localStorage.getItem('og-soft-v1')}catch(e){}if(!m){base='soft';try{localStorage.setItem('og-soft-v1','1')}catch(e){}}}}}catch(e){}
 function addCell(k,t){if(reveal.has(k))return false;reveal.add(k);const[i,j]=k.split(',').map(Number);const cx=(i+.5)*CELL,cy=(j+.5)*CELL;
  const ck=Math.floor(i/CH)+','+Math.floor(j/CH);let a0=chunks.get(ck);if(!a0)chunks.set(ck,a0=[]);a0.push(i,j);if(t!==undefined)born.set(k,t);
  for(let a=Math.floor((cx-REVEAL)/ACELL);a<=Math.floor((cx+REVEAL)/ACELL);a++)for(let b=Math.floor((cy-REVEAL)/ACELL);b<=Math.floor((cy+REVEAL)/ACELL);b++){
@@ -1742,14 +1750,14 @@ function softLayer(){const S=isDark()?SOFT_PAL.dark:SOFT_PAL.light;let l;
  const attribution='© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openfreemap.org">OpenFreeMap</a>';
  if(softWorkerOk)l=new SoftWLayer({url:softUrl,pal:S,attribution});
  else{const R=softRules(S);l=protomapsL.leafletLayer({url:softUrl,maxDataZoom:14,backgroundColor:S.bg,paintRules:R.paint,labelRules:R.labels,devicePixelRatio:SOFT_DPR,updateWhenZooming:false,updateWhenIdle:true,attribution})}
- l._softDark=isDark();let n=0;l.on('tileerror',()=>{if(++n===8&&base==='soft')toast(`<div>Своя карта грузится плохо. Переключить на «${BN.carto}»?</div><button data-base="carto">Да</button>`)});return l}
+ l._softDark=isDark();let n=0;l.on('tileerror',()=>{if(++n===8&&base==='soft')toast(`<div>Своя карта грузится плохо. Переключить на «${BN.amap}»?</div><button data-base="amap">Да</button>`)});return l}
 // свежий адрес данных (OpenFreeMap раз в неделю выпускает новую версию)
 fetch(SOFT_TJ).then(r=>r.json()).then(j=>{const u=j&&j.tiles&&j.tiles[0];if(!u||u===softUrl)return;softUrl=u;try{localStorage.setItem('og-soft-url',u)}catch(e){}if(TILES.soft)softRebuild()}).catch(()=>{});
 function softRebuild(){const on=base==='soft'&&TILES.soft&&map.hasLayer(TILES.soft);if(TILES.soft&&map.hasLayer(TILES.soft))map.removeLayer(TILES.soft);TILES.soft=softLayer();if(on)TILES.soft.addTo(map)}
 TILES.soft=softLayer();
 if(TILES[base])TILES[base].addTo(map);
 map.setView(toM(...U(me)),16);
-['carto','amap'].forEach(k=>{let n=0;TILES[k].on('tileerror',()=>{if(++n===8&&base===k){const nx=k==='carto'?'amap':'vector';toast(`<div>Карта «${BN[k]}» грузится плохо. Переключить на «${BN[nx]}»?</div><button data-base="${nx}">Да</button>`)}})});
+['carto','amap'].forEach(k=>{let n=0;TILES[k].on('tileerror',()=>{if(++n===8&&base===k){const nx=k==='amap'?'soft':'amap';toast(`<div>Карта «${BN[k]}» грузится плохо. Переключить на «${BN[nx]}»?</div><button data-base="${nx}">Да</button>`)}})});
 // границы районов: OpenStreetMap, WGS-84. Общая граница двух районов хранится один раз (дуга), район — список дуг
 function decPl(s){const r=[];let i=0,la=0,lo=0;while(i<s.length){for(let k=0;k<2;k++){let b,sh=0,v=0;do{b=s.charCodeAt(i++)-63;v|=(b&31)<<sh;sh+=5}while(b>=32);const d=v&1?~(v>>1):v>>1;if(k)lo+=d;else la+=d}r.push([la/1e5,lo/1e5])}return r}
 const ARC=BND.a.map(s=>{const g=decPl(s);return{g,p:g.map(a=>P(a[0],a[1])),ds:[],closed:g.length>3&&g[0][0]===g[g.length-1][0]&&g[0][1]===g[g.length-1][1]}});
@@ -2275,7 +2283,7 @@ function mkSync(){if(!ogReady||map._animatingZoom)return;mkQ=false;mkT=performan
  if(OL.metro&&metro&&z>=12)for(const s2 of metro.st)add('m:'+s2.id,s2,'m'+s2.lines.map(l=>l.ref).join(','),()=>metroEl(s2));
  for(const p of POIS){if(!layers[p.cat]||(p.dyn&&z<14))continue;const v=visited.has(p.id);add('p:'+p.id,p,'p'+(v?1:0)+rb(p.id)+hotc(p.id),()=>poiEl(p,v))}
  for(const q of marks)add('k:'+q.id,q,'k'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(myKey(q))+hotc(myKey(q)),()=>markEl(q));
- if(z>=13)for(const q of pubMarks)add('u:'+q.user_id+'/'+q.id,q,'u'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(pubKey(q))+hotc(pubKey(q)),()=>pubEl(q));
+ if(z>=13)for(const q of pubMarks)if(ufShow(q))add('u:'+q.user_id+'/'+q.id,q,'u'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(pubKey(q))+hotc(pubKey(q)),()=>pubEl(q));
  for(const r of RATED){const hot=isPop(r.s);if(z<(hot?12:15))continue;add('r:'+r.id,r,'r'+rb(r.id)+hot,()=>ratedEl(r))}
  if(z>=13)for(const c of GC.list)add('c:'+c.id,c,'c'+(c.mine?2:c.found||GC.notes[c.id]?1:0),()=>cacheEl(c));
  const pd=pin||(route&&route.stops.length<2&&route.dest&&(route.dest.cat==='pin'||route.dest.cat==='osm')?route.dest:null);
@@ -2336,7 +2344,8 @@ function drawLinesSheet(g,A,bb,s){const X=A.X,Y=A.Y;g.lineCap=g.lineJoin='round'
  if(hd){path(true);g.lineWidth=7;g.strokeStyle=dk?'rgba(185,168,255,.13)':'rgba(75,47,214,.08)';g.stroke();g.lineWidth=2.2;g.strokeStyle=dk?'rgba(185,168,255,.78)':'rgba(75,47,214,.62)';g.stroke()}
  drawMetroLines(A,bb,s.z0);
  if(route&&route.pts&&route.pts.length>1){g.lineCap=g.lineJoin='round';g.beginPath();(route.proj?[route.proj,...route.pts.slice(route.idx+1)]:route.pts).forEach((q,i)=>{const sx=X(q.x,q.y),sy=Y(q.x,q.y);i?g.lineTo(sx,sy):g.moveTo(sx,sy)});
-  g.setLineDash(route.approx?[2,10]:[]);g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=9;g.stroke();g.strokeStyle=C.vio;g.lineWidth=5;g.stroke();g.setLineDash([])}}
+  g.setLineDash(route.approx?[2,10]:[]);g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=9;g.stroke();g.strokeStyle=C.vio;g.lineWidth=5;g.stroke();g.setLineDash([])}
+ if(route&&route.tr)trDraw(g,X,Y)}
 const fogS=mkSheet(1,drawFog),linesS=mkSheet(2,drawLinesSheet);
 
 // ---- «я» плавно переходит от одной отметки GPS к следующей; мелкое дрожание на месте гасится ----
@@ -2439,7 +2448,7 @@ function closeCard(){$('card').classList.remove('on');if(pin){pin=null;dirty=tru
 function openPanel(){closePops();$('sheet').classList.add('open');$('scrim').classList.add('on');renderSheet()}
 function closePanel(){$('sheet').classList.remove('open');if(!$('card').classList.contains('on'))$('scrim').classList.remove('on')}
 function closePops(){$('pop').classList.remove('on');if($('dpick').classList.contains('on'))togglePick(false)}
-function renderPop(){{const fb=$('fogBtn');if(fb)fb.classList.toggle('on',fogOn)}$('pop').querySelectorAll('[data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===base));$('pop').querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===theme))}
+function renderPop(){{const o=$('opt3d');if(o)o.hidden=!isAdmin}{const fb=$('fogBtn');if(fb)fb.classList.toggle('on',fogOn)}$('pop').querySelectorAll('[data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===base));$('pop').querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===theme))}
 function renderNear(){return;const el=$('nearPill'),c=POIS.filter(p=>layers[p.cat]&&!visited.has(p.id)).map(p=>({p,d:dist(me,p)})).sort((a,b)=>a.d-b.d)[0];
  if(!c){el.style.display='none';return}el.style.display='';el.dataset.open=c.p.id;el.innerHTML=`<span class="e">${c.p.e}</span><b>${c.p.name}</b><span>${walk(c.d)}</span>`}
 let tt=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),4200)}
@@ -2562,8 +2571,64 @@ if(document.fonts)document.fonts.ready.then(()=>{for(const s of sheets)s.need=tr
 
 // ================= МАРШРУТЫ =================
 let route=null,walkPath=null,rtSeq=0;
-const RMODES={walk:{n:'Пешком',ic:'walk',osrm:'routed-foot',v:80},bike:{n:'Велосипед',ic:'bike',osrm:'routed-bike',v:250},car:{n:'Авто',ic:'car',osrm:'routed-car',v:450},transit:{n:'Транспорт',ic:'bus'}};
+const RMODES={walk:{n:'Пешком',ic:'walk',osrm:'routed-foot',v:80},bike:{n:'Велосипед',ic:'bike',osrm:'routed-bike',v:250},car:{n:'Авто',ic:'car',osrm:'routed-car',v:450},transit:{n:'Метро',ic:'metro'}};
 const fdur=s=>{const m=Math.max(1,Math.round(s/60));return m<60?m+' мин':Math.floor(m/60)+' ч '+(m%60?m%60+' мин':'')};
+// ---- метро Гуанчжоу и Фошаня: маршрут считаем сами (схема в transit.json) ----
+let TR=null,trBusy=null;
+const TR_W=75,TR_ENTER=2.5,TR_WAIT=3,TR_XFER=5,TR_EXIT=1.5,TR_R=1800;
+const trRide=ln=>ln/1000+1.1;
+const trLn=L=>L==='GF'?'Линия Гуанфо':L==='F2'?'Фошань, линия 2':L==='F3'?'Фошань, линия 3':'Линия '+L;
+const trOst=n=>n%10===1&&n%100!==11?'остановка':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'остановки':'остановок';
+const trBadge=L=>`<i class="trb" style="background:${(TR&&TR.col[L])||'#2f6feb'}">${esc(L)}</i>`;
+function trLoad(){if(TR)return Promise.resolve(TR);if(trBusy)return trBusy;
+ trBusy=fetch('transit.json?v=1').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>{
+  const st=d.st.map(([la,lo,en,zh,ls])=>Object.assign({la,lo,en,zh,ls},P(la,lo))),adj=new Map();
+  for(const [a,b,L,ln,enc] of d.ed){const e={a,b,L,ln,enc,pts:null};for(const [u,v] of [[a,b],[b,a]]){const k=u+'|'+L;if(!adj.has(k))adj.set(k,[]);adj.get(k).push({v,e})}}
+  TR={st,adj,col:d.col};return TR}).catch(e=>{trBusy=null;throw e});return trBusy}
+function trEdgePts(e,fromA){if(!e.pts)e.pts=decPl(e.enc).map(g=>P(g[0],g[1]));return fromA?e.pts:e.pts.slice().reverse()}
+function trPlan(o,dd){const T=TR,wk=m=>m*1.3/TR_W,direct=wk(dist(o,dd));
+ const near=q=>{const r=[];T.st.forEach((s,i)=>{const m=dist(q,s);if(m<TR_R)r.push([i,wk(m)])});return r};
+ const so=near(o),sd=new Map(near(dd));if(!so.length||!sd.size)return{walk:true,far:true,direct};
+ const D=new Map(),PR=new Map(),Q=[],done=new Set();
+ const push=(k,c,p)=>{if(c<(D.has(k)?D.get(k):1e9)){D.set(k,c);PR.set(k,p);Q.push([c,k])}};
+ for(const [i,w] of so)for(const L of T.st[i].ls)push(i+'|'+L,w+TR_ENTER+TR_WAIT,null);
+ let best=direct,bk=null;
+ while(Q.length){let bi=0;for(let j=1;j<Q.length;j++)if(Q[j][0]<Q[bi][0])bi=j;const [c,k]=Q.splice(bi,1)[0];
+  if(done.has(k)||c>D.get(k))continue;done.add(k);if(c>=best)break;
+  const sp=k.indexOf('|'),i=+k.slice(0,sp),L=k.slice(sp+1);
+  if(sd.has(i)){const t=c+TR_EXIT+sd.get(i);if(t<best){best=t;bk=k}}
+  for(const {v,e} of T.adj.get(k)||[])push(v+'|'+L,c+trRide(e.ln),{k,e});
+  for(const L2 of T.st[i].ls)if(L2!==L)push(i+'|'+L2,c+TR_XFER,{k,x:1})}
+ if(!bk||best>direct-3)return{walk:true,direct};
+ const seq=[];for(let k=bk;k;){const p=PR.get(k);seq.unshift({k,p});k=p?p.k:null}
+ const sid=k=>+k.slice(0,k.indexOf('|')),lid=k=>k.slice(k.indexOf('|')+1),st=T.st;
+ const i0=sid(seq[0].k),legs=[{t:'walk',a:o,b:st[i0],to:i0,min:wk(dist(o,st[i0]))}];let ride=null,xf=0;
+ for(let n=1;n<seq.length;n++){const {k,p}=seq[n],i=sid(k),L=lid(k),pi=sid(p.k);
+  if(p.x){ride=null;xf++;legs.push({t:'xfer',L,at:i,min:TR_XFER});continue}
+  if(!ride){ride={t:'ride',L,from:pi,nx:i,to:i,last:pi,n:0,min:0,pts:[]};legs.push(ride)}
+  const seg=trEdgePts(p.e,p.e.a===pi);ride.pts.push(...(ride.pts.length?seg.slice(1):seg));ride.to=i;ride.last=pi;ride.n++;ride.min+=trRide(p.e.ln)}
+ for(const lg of legs){if(lg.t!=='ride')continue;let prev=lg.last,cur=lg.to,term=null;
+  for(let g=0;g<80;g++){const nb=(T.adj.get(cur+'|'+lg.L)||[]).map(x=>x.v).filter(v=>v!==prev);if(!nb.length){term=cur;break}if(nb.length>1)break;prev=cur;cur=nb[0]}
+  lg.term=term}
+ const iL=sid(seq[seq.length-1].k);legs.push({t:'walk',a:st[iL],b:dd,from:iL,min:wk(dist(st[iL],dd))});
+ const pts=[];for(const lg of legs){if(lg.t==='walk')pts.push({x:lg.a.x,y:lg.a.y},{x:lg.b.x,y:lg.b.y});else if(lg.t==='ride')pts.push(...lg.pts)}
+ return{walk:false,tot:best,direct,legs,pts,xf,walkMin:legs.filter(l=>l.t==='walk').reduce((a,l)=>a+l.min,0)}}
+function trDraw(g,X,Y){const T2=route&&route.tr;if(!T2||!T2.legs||!TR)return;g.lineCap=g.lineJoin='round';
+ for(const lg of T2.legs){if(lg.t==='xfer')continue;const pts=lg.t==='walk'?[lg.a,lg.b]:lg.pts;g.beginPath();pts.forEach((q,i)=>{const sx=X(q.x,q.y),sy=Y(q.x,q.y);i?g.lineTo(sx,sy):g.moveTo(sx,sy)});
+  if(lg.t==='walk'){g.setLineDash([.5,9]);g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=8;g.stroke();g.strokeStyle=C.vio;g.lineWidth=4.5;g.stroke();g.setLineDash([])}
+  else{g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=10;g.stroke();g.strokeStyle=TR.col[lg.L]||C.vio;g.lineWidth=6;g.stroke()}}
+ for(const lg of T2.legs)if(lg.t==='ride')for(const i of [lg.from,lg.to]){const s2=TR.st[i],sx=X(s2.x,s2.y),sy=Y(s2.x,s2.y);g.beginPath();g.arc(sx,sy,6,0,7);g.fillStyle='#fff';g.fill();g.lineWidth=3;g.strokeStyle=TR.col[lg.L]||C.vio;g.stroke()}}
+function trHTML(){if(!route||route.loading)return'';const T2=route.tr;
+ if(!T2)return`<p class="rt-note">Не удалось загрузить схему метро. Откройте маршрут в картах — кнопки ниже.</p>`;
+ if(T2.walk)return`<p class="rt-note">${T2.far?'Рядом нет станций метро.':'Метро здесь не сэкономит время.'} Пешком — около ${fdur(T2.direct*60)}.</p><div class="rt-acts"><button class="rt-main" data-rtmode="walk">${isvg('walk',18,2.4)}Идти пешком</button></div>`;
+ const nm=i=>{const s=TR.st[i];return`<b>${esc(s.en||s.zh)}</b>${s.zh&&s.en?` <span class="zh">${esc(s.zh)}</span>`:''}`};
+ const h=new Date(Date.now()+8*3600e3).getUTCHours(),night=h>=23||h<6;
+ let o=`<div class="tr-sum">≈ ${fdur(T2.tot*60)} · пешком ${fdur(T2.walkMin*60)} · ${T2.xf?'пересадок: '+T2.xf:'без пересадок'}</div><ol class="tr-steps">`;
+ for(const lg of T2.legs){
+  if(lg.t==='walk')o+=`<li><span class="tr-i">${isvg('walk',16,2.2)}</span><div>${lg.to!=null?`Пешком ${fdur(lg.min*60)} до станции ${nm(lg.to)}`:`Пешком ${fdur(lg.min*60)} от станции до места`}</div></li>`;
+  else if(lg.t==='ride')o+=`<li><span class="tr-i">${trBadge(lg.L)}</span><div>${trLn(lg.L)}${lg.term!=null&&lg.term!==lg.to?`, в сторону ${esc(TR.st[lg.term].en||TR.st[lg.term].zh)}`:''} — ${lg.n} ${trOst(lg.n)}, ${fdur(lg.min*60)}<br><span class="tr-s">Выходите на ${nm(lg.to)}${lg.term==null&&lg.n>1?` · следующая после посадки — ${esc(TR.st[lg.nx].en||TR.st[lg.nx].zh)}`:''}</span></div></li>`;
+  else o+=`<li><span class="tr-i">⇄</span><div>Пересадка на ${trLn(lg.L).replace('Линия','линию')} — около ${Math.round(lg.min)} мин</div></li>`}
+ return o+`</ol><p class="rt-note">${night?'<b>Сейчас метро, скорее всего, закрыто</b> — оно работает примерно с 6:00 до 23:00. ':''}Время примерное, с учётом досмотра и ожидания. Оплата — QR-кодом в Alipay или WeChat. Автобусы — в Amap.</p>`}
 // ---- маршрут через несколько мест: остановки, удобный порядок, ведение от точки к точке ----
 const RT_MAX=10;
 const mest=n=>n%10===1&&n%100!==11?'место':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'места':'мест';
@@ -2619,7 +2684,7 @@ function renderRoute(){if(!route)return;const left=rtLeft(),multi=route.stops.le
  $('rt').classList.remove('pick');const p=route.dest,L2=extLinks(),N=route.stops.length,k=N-left.length+1;
  $('rt').innerHTML=`<div class="rt-hd">${multi?`<span class="rt-ic rt-n">${k}</span>`:`<span class="rt-ic" style="background:${p.col||`var(${(CAT[p.cat]||CAT.main).c})`}">${isvg(p.ic||'pin',18,2.2)}</span>`}<span class="rt-t"><b>${multi?`${k} из ${N} · `:''}${esc(p.name)}</b><span id="rtInfo">${info}</span></span><button class="rt-x" data-rtclose aria-label="Закрыть маршрут">${isvg('x',18,2.4)}</button></div>
  <div class="rt-modes" role="tablist">${Object.entries(RMODES).map(([kk,v])=>`<button data-rtmode="${kk}" role="tab" aria-selected="${kk===m}" class="${kk===m?'on':''}">${isvg(v.ic,19,2)}<span>${v.n}</span></button>`).join('')}</div>
- ${m==='transit'?`<p class="rt-note">${multi?'Метро и автобусы лучше знают карты: откройте путь до следующего места.':'Метро и автобусы лучше всего знают карты: откройте маршрут одним нажатием.'}</p>`:''}
+ ${m==='transit'?trHTML():''}
  ${multi?stopsHTML():''}
  <div class="rt-acts">${mode==='sim'&&m!=='transit'&&route.pts?`<button class="rt-main" data-rtwalk>${isvg('walk',18,2.4)}Идти (демо)</button>`:''}
  <button class="rt-ext rt-plus" data-rtpick>${isvg('plus',16,2.6)}Место</button><a class="rt-ext" href="${L2.apple}" target="_blank" rel="noopener">Apple</a><a class="rt-ext" href="${L2.amap}" target="_blank" rel="noopener">Amap 高德</a><a class="rt-ext" href="${L2.google}" target="_blank" rel="noopener">Google</a></div>`;
@@ -2627,7 +2692,9 @@ function renderRoute(){if(!route)return;const left=rtLeft(),multi=route.stops.le
 async function calcRoute(re){if(!route||route.picking)return;const m=route.mode,left=rtLeft(),p=left[0],my=++rtSeq;if(!p)return;route.dest=p;
  if(!re){route.pts=null;route.dur=0;route.dist=0;route.idx=0;route.proj=null}route.approx=false;route.leg=0;route.legE=null;route.legD=null;route.remLeg=null;dirty=true;
  const chain=[me,...left];
- if(m==='transit'){route.loading=false;route.pts=left.length>1?chain.map(q=>({x:q.x,y:q.y})):null;route.approx=left.length>1;route.legE=left.length>1?left.map((_,i)=>i+1):null;route.remain=dist(me,p);renderRoute();if(!re)fitRoute(chain);return}
+ route.tr=null;
+ if(m==='transit'){route.pts=null;route.loading=true;renderRoute();let T2=null;try{await trLoad();T2=trPlan(me,p)}catch(e){T2=null}if(my!==rtSeq||!route)return;
+  route.tr=T2;route.loading=false;route.remain=dist(me,p);renderRoute();dirty=true;if(!re)fitRoute(T2&&T2.pts?T2.pts:chain);return}
  if(!re){route.loading=true;renderRoute()}
  try{const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),12000);
   const cs=chain.map(q=>{const a=U(q);return a[1].toFixed(6)+','+a[0].toFixed(6)}).join(';');
@@ -2643,7 +2710,7 @@ let navLast=0,navRecalc=0;
 function navInfo(){if(!route)return'';const n=rtLeft().length;
  if(route.picking)return n<2?'Нажмите на ещё одно место на карте или в списке':'Порядок подберу сам — самый короткий путь';
  const m=route.mode,multi=n>1;if(route.loading)return'Строю маршрут…';
- if(m==='transit'){const r=route.remain!=null?route.remain:dist(me,route.dest);return multi?`До этого места ${fmtD(r)} по прямой · дальше ещё ${n-1}`:`До цели ${fmtD(r)} по прямой`}
+ if(m==='transit'){const r=route.remain!=null?route.remain:dist(me,route.dest),T2=route.tr,tt=T2&&!T2.walk?`≈ ${fdur(T2.tot*60)} на метро · `:'';return multi?`${tt}до этого места ${fmtD(r)} по прямой · дальше ещё ${n-1}`:`${tt}до цели ${fmtD(r)} по прямой`}
  if(!route.dur)return'';const rem=route.remain!=null?route.remain:route.dist,sp=route.dist/Math.max(1,route.dur),ap=route.approx?' · примерно':'';
  if(!multi)return`Осталось ${fmtD(rem)} · ${fdur(rem/sp)}${ap}`;
  const lg=route.remLeg!=null?route.remLeg:(route.legD&&route.legD[route.leg]?route.legD[route.leg].d:rem);
@@ -2657,7 +2724,7 @@ function navTick(){if(!route||route.loading||route.picking)return;const now=Date
  route.idx=bi;route.proj=bp;let rl=dist(bp,pts[bi+1]||bp);for(let i=bi+1;i<s1;i++)rl+=dist(pts[i],pts[i+1]);let rem=rl;for(let i=s1;i<pts.length-1;i++)rem+=dist(pts[i],pts[i+1]);
  route.remLeg=rl+Math.min(best,45);route.remain=rem+Math.min(best,45);
  const el=$('rtInfo');if(el)el.textContent=navInfo();dirty=true}
-function fitRoute(pts){try{const b=L.latLngBounds(pts.map(q=>toM(...U(q))));follow=false;zStop();map.flyToBounds(b,{paddingTopLeft:[40,80],paddingBottomRight:[40,rtLeft().length>1?330:230],maxZoom:17,duration:.7})}catch(e){}}
+function fitRoute(pts){try{const b=L.latLngBounds(pts.map(q=>toM(...U(q))));follow=false;zStop();map.flyToBounds(b,{paddingTopLeft:[40,80],paddingBottomRight:[40,Math.min(innerHeight*.72,Math.max(rtLeft().length>1?330:230,(($('rt')||{}).offsetHeight||0)+30))],maxZoom:17,duration:.7})}catch(e){}}
 function rtDestOf(key){if(!key)return null;if(key.startsWith('poi:'))return POIS.find(q=>q.id===key.slice(4))||null;
  if(key==='cur')return cur?destOf(cur):null;if(key==='osm')return curOsm?osmDest(curOsm):null;
  if(key==='pin'&&pin){const a=U(pin);return{id:'pin:'+Math.round(pin.x)+','+Math.round(pin.y),name:'Точка на карте',zh:'',lat:a[0],lon:a[1],x:pin.x,y:pin.y,cat:'pin',ic:'pin'}}return null}
@@ -2682,13 +2749,18 @@ function handleRoute(t){
  return false}
 
 // ================= РАЗДЕЛЫ КАРТЫ (OpenStreetMap), ТОЧКИ, ФОТО, ОТЗЫВЫ =================
-const OLAY={"food": {"n": "Еда", "ic": "bowl", "col": "#ff8a3d", "q": ["[\"amenity\"~\"^(restaurant|fast_food|food_court)$\"]"]}, "coffee": {"n": "Кофейни", "ic": "cup", "col": "#8a5a3c", "q": ["[\"amenity\"=\"cafe\"]"]}, "malls": {"n": "ТЦ", "ic": "bag", "col": "#e0569b", "q": ["[\"shop\"~\"^(mall|department_store)$\"]"]}, "markets": {"n": "Рынки", "ic": "basket", "col": "#2fa84f", "q": ["[\"amenity\"=\"marketplace\"]"]}, "clothes": {"n": "Одежда", "ic": "shirt", "col": "#7a5cff", "q": ["[\"shop\"~\"^(clothes|shoes|boutique)$\"]"]}, "grocery": {"n": "Продукты", "ic": "cart", "col": "#1e9e8a", "q": ["[\"shop\"~\"^(supermarket|convenience)$\"]"]}, "metro": {"n": "Метро", "ic": "metro", "col": "#2f6feb", "q": ["[\"railway\"=\"station\"][\"station\"=\"subway\"]", "[\"public_transport\"=\"station\"][\"subway\"=\"yes\"]"]}, "pharmacy": {"n": "Аптеки", "ic": "pill", "col": "#18c29c", "q": ["[\"amenity\"=\"pharmacy\"]"]}, "atm": {"n": "Банкоматы", "ic": "card", "col": "#5f6b72", "q": ["[\"amenity\"~\"^(atm|bank)$\"]"]}, "exchange": {"n": "Обмен валют", "ic": "exchange", "col": "#b8860b", "q": ["[\"amenity\"=\"bureau_de_change\"]"]}, "toilets": {"n": "Туалеты", "ic": "wc", "col": "#3aa0c8", "q": ["[\"amenity\"=\"toilets\"]"]}, "hospital": {"n": "Больницы", "ic": "cross", "col": "#e5484d", "q": ["[\"amenity\"~\"^(hospital|clinic)$\"]"]}, "sim": {"n": "Связь и SIM", "ic": "phone", "col": "#6b6490", "q": ["[\"shop\"=\"mobile_phone\"]"]}};
-let OL={};try{OL=JSON.parse(localStorage.getItem('og-ol')||'{}')}catch(e){}
+const OLAY={"malls": {"n": "ТЦ", "ic": "bag", "col": "#e0569b", "q": ["[\"shop\"~\"^(mall|department_store)$\"]"]}, "metro": {"n": "Метро", "ic": "metro", "col": "#2f6feb", "q": ["[\"railway\"=\"station\"][\"station\"=\"subway\"]", "[\"public_transport\"=\"station\"][\"subway\"=\"yes\"]"]}, "pharmacy": {"n": "Аптеки", "ic": "pill", "col": "#18c29c", "q": ["[\"amenity\"=\"pharmacy\"]"]}, "toilets": {"n": "Туалеты", "ic": "wc", "col": "#3aa0c8", "q": ["[\"amenity\"=\"toilets\"]"]}, "sim": {"n": "Связь и SIM", "ic": "phone", "col": "#6b6490", "q": ["[\"shop\"=\"mobile_phone\"]"]}};
+let OL={};try{OL=JSON.parse(localStorage.getItem('og-ol')||'{}')}catch(e){}for(const k in OL)if(!OLAY[k])delete OL[k];
+// еда и кофейни — только отметки путешественников
+let UF={food:true,coffee:true};try{Object.assign(UF,JSON.parse(localStorage.getItem('og-uf')||'{}'))}catch(e){}
+const ufShow=q=>!(q.type==='food'&&!UF.food)&&!(q.type==='coffee'&&!UF.coffee);
+document.addEventListener('click',e=>{const b=e.target.closest('[data-uf]');if(!b)return;const k=b.dataset.uf;UF[k]=!UF[k];try{localStorage.setItem('og-uf',JSON.stringify(UF))}catch(_){}
+ b.setAttribute('aria-pressed',UF[k]);dirty=true});
 const OVP=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
 let ovpChain=Promise.resolve();
 function ovpFetch(ql,ms){const run=async()=>{for(const u of OVP){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms||20000);try{const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(ql),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctl.signal});clearTimeout(to);if(r.ok)return await r.json()}catch(e){clearTimeout(to)}}return null};const p=ovpChain.then(run,run);ovpChain=p.catch(()=>{});return p}
 const osmData={},osmBox={};let osmT=0,osmBusy=false,osmWarn=false,pin=null,rvDraft=null;
-function renderOL(){document.querySelectorAll('[data-ol]').forEach(b=>b.setAttribute('aria-pressed',!!OL[b.dataset.ol]))}
+function renderOL(){document.querySelectorAll('[data-ol]').forEach(b=>b.setAttribute('aria-pressed',!!OL[b.dataset.ol]));document.querySelectorAll('[data-uf]').forEach(b=>b.setAttribute('aria-pressed',!!UF[b.dataset.uf]))}
 function osmSchedule(){clearTimeout(osmT);osmT=setTimeout(osmRefresh,700)}
 async function osmRefresh(){if(OL.metro)metroLoad();const act=Object.keys(OLAY).filter(k=>OL[k]&&k!=='metro');if(!act.length||osmBusy)return;
  if(map.getZoom()<14){if(!osmWarn){osmWarn=true;toast('<div>Приблизьте карту, чтобы увидеть выбранные разделы</div>')}return}
@@ -3474,7 +3546,7 @@ window.__ogGps=()=>startGps(true);nudgeSoon(9000);try{if(window.__ogGpsWant)star
 let last=performance.now(),fogSL='',linesSL='',mkSL='';
 const fogSig=()=>reveal.size+'|'+visited.size+'|'+base+'|'+isDark()+'|'+fogOn;
 const _ids=new WeakMap();let _idn=0;const oid=o=>{if(!o||typeof o!=='object')return 0;let v=_ids.get(o);if(!v){v=++_idn;_ids.set(o,v)}return v};
-const linesSig=()=>(route?[oid(route),oid(route.pts),route.idx,route.proj?Math.round(route.proj.x)+','+Math.round(route.proj.y):'',route.approx?1:0,route.stops?route.stops.length:0,route.leg||0,route.picking?1:0].join(','):'-')+'|'+(OL.metro?1:0)+'|'+oid(metro)+'|'+base+'|'+hereD();
+const linesSig=()=>(route?[oid(route),oid(route.pts),oid(route.tr),route.idx,route.proj?Math.round(route.proj.x)+','+Math.round(route.proj.y):'',route.approx?1:0,route.stops?route.stops.length:0,route.leg||0,route.picking?1:0].join(','):'-')+'|'+(OL.metro?1:0)+'|'+oid(metro)+'|'+base+'|'+hereD();
 let drawFails=0,onbSkip=0;(function loop(t){if(window.__ogOnb&&++onbSkip>90){last=t;requestAnimationFrame(loop);return}const dt=Math.min(.05,Math.max(0,(t-last)/1000));last=t;
  try{step(dt);meTick(t);followTick(dt);if(fmOn&&(t-fmT>300||t-fmLast>1000)){fmLast=t;if(t-fmT>300)fmOn=false;map.fire('moveend')}
   const fs=fogSig();if(fs!==fogSL){fogSL=fs;fogS.need=true}if(born.size||discBorn.size)fogS.need=true;
