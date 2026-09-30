@@ -795,12 +795,26 @@ button:focus-visible{outline:2px solid var(--me);outline-offset:2px}
 .row .sc{font-weight:800}
 .ghost{width:100%;margin-top:14px;padding:12px;border-radius:14px;background:var(--soft);font-weight:700}
 .note{font-size:12.5px;color:var(--muted);margin:12px 4px 0}
-.tr-sum{font:600 14px/1.3 Rubik,sans-serif;color:var(--ink);margin:2px 4px 8px}
-.tr-steps{list-style:none;margin:0 0 4px;padding:0 2px;display:flex;flex-direction:column;gap:9px;max-height:34vh;overflow:auto}
-.tr-steps li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.35;color:var(--ink)}
-.tr-i{flex:0 0 28px;height:28px;border-radius:9px;background:var(--soft);color:var(--vio);display:grid;place-items:center;font-weight:700}
+.tr-sum{font:600 14px/1.3 Rubik,sans-serif;color:var(--ink);margin:2px 4px 8px}.tr-ld{font-weight:400;color:var(--muted);font-size:12.5px}
+.tr-legs{display:flex;flex-direction:column;gap:6px;margin:0 0 4px;max-height:38vh;overflow:auto;overscroll-behavior:contain;padding:1px}
+.tr-card{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:var(--soft);font-size:13.5px;line-height:1.35;color:var(--ink)}
+.tr-ride{background:color-mix(in srgb,var(--c) 9%,var(--panel));box-shadow:inset 3px 0 0 var(--c),inset 0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent)}
+.tr-b{flex:1;min-width:0}.tr-h{font-weight:600}.tr-m{font-weight:400;color:var(--muted)}.tr-dir{font-weight:500;color:var(--muted)}
+.tr-i{flex:0 0 28px;height:28px;border-radius:9px;background:var(--panel);color:var(--vio);display:grid;place-items:center;font-weight:700}
 .trb{display:grid;place-items:center;min-width:28px;height:28px;border-radius:9px;color:#fff;font:700 12px/1 Rubik,sans-serif;font-style:normal;padding:0 4px;box-sizing:border-box}
-.tr-steps .zh,.tr-s{color:var(--muted);font-size:12.5px}
+.tr-s,.tr-card .zh{color:var(--muted);font-size:12.5px}.tr-s b,.tr-out b{color:var(--ink)}
+.tr-ex{display:inline-block;min-width:18px;padding:1px 6px;border-radius:6px;background:var(--vio);color:#fff!important;font-size:12px;text-align:center}
+.tr-out{margin-top:6px;font-size:13px}
+.tr-stops{margin-top:6px}.tr-stops summary{cursor:pointer;color:var(--vio);font-size:12.5px;font-weight:600;list-style:none}.tr-stops summary::-webkit-details-marker{display:none}
+.tr-stops summary::after{content:' ▾'}.tr-stops[open] summary::after{content:' ▴'}
+.tr-stops ol{list-style:none;margin:6px 0 0;padding:0 0 0 14px;border-left:3px solid var(--c);display:flex;flex-direction:column;gap:5px}
+.tr-stops li{font-size:12.5px;color:var(--muted);position:relative}.tr-stops li::before{content:'';position:absolute;left:-20.5px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--panel);border:2px solid var(--c)}
+.tr-stops li.on{color:var(--ink)}.tr-stops li.on::before{background:var(--c)}.tr-exs{font-size:11.5px;color:var(--vio);font-weight:600}
+.tr-xf{display:flex;justify-content:center;position:relative;margin:2px 0}.tr-xf::before{content:'';position:absolute;left:26px;right:26px;top:50%;border-top:1.5px dashed var(--line)}
+.tr-xf span{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:12.5px;font-weight:600;color:var(--ink)}
+.rt.min .rt-hd{margin-bottom:0}
+.tr-chain{display:flex;align-items:center;gap:5px;flex-wrap:wrap;width:100%;margin-top:8px;padding:8px 10px;border:0;border-radius:12px;background:var(--soft);color:var(--ink);font:600 13px Rubik,sans-serif;cursor:pointer;text-align:left}
+.tr-chain .trb{min-width:22px;height:22px;border-radius:7px;font-size:11px}.tr-cw{display:inline-flex;align-items:center;gap:2px;color:var(--vio)}.tr-ca{color:var(--muted)}.tr-ct{margin-left:auto}
 
 #opt3d[hidden]{display:none!important}
 .ghost.fb{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;color:var(--vio);text-decoration:none;box-sizing:border-box;font-size:15px}
@@ -2573,18 +2587,22 @@ if(document.fonts)document.fonts.ready.then(()=>{for(const s of sheets)s.need=tr
 let route=null,walkPath=null,rtSeq=0;
 const RMODES={walk:{n:'Пешком',ic:'walk',osrm:'routed-foot',v:80},bike:{n:'Велосипед',ic:'bike',osrm:'routed-bike',v:250},car:{n:'Авто',ic:'car',osrm:'routed-car',v:450},transit:{n:'Метро',ic:'metro'}};
 const fdur=s=>{const m=Math.max(1,Math.round(s/60));return m<60?m+' мин':Math.floor(m/60)+' ч '+(m%60?m%60+' мин':'')};
-// ---- метро Гуанчжоу и Фошаня: маршрут считаем сами (схема в transit.json) ----
-let TR=null,trBusy=null;
+// ---- метро Гуанчжоу и Фошаня: маршрут считаем сами (схема transit.json, выходы exits.json) ----
+let TR=null,trBusy=null,TRX=null,trxBusy=null;
 const TR_W=75,TR_ENTER=2.5,TR_WAIT=3,TR_XFER=5,TR_EXIT=1.5,TR_R=1800;
 const trRide=ln=>ln/1000+1.1;
 const trLn=L=>L==='GF'?'Линия Гуанфо':L==='F2'?'Фошань, линия 2':L==='F3'?'Фошань, линия 3':'Линия '+L;
 const trOst=n=>n%10===1&&n%100!==11?'остановка':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'остановки':'остановок';
 const trBadge=L=>`<i class="trb" style="background:${(TR&&TR.col[L])||'#2f6feb'}">${esc(L)}</i>`;
+const trNm=i=>{const s=TR.st[i];return`<b>${esc(s.en||s.zh)}</b>${s.zh&&s.en?` <span class="zh">${esc(s.zh)}</span>`:''}`};
+const trNm0=i=>esc(TR.st[i].en||TR.st[i].zh);
 function trLoad(){if(TR)return Promise.resolve(TR);if(trBusy)return trBusy;
  trBusy=fetch('transit.json?v=1').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>{
   const st=d.st.map(([la,lo,en,zh,ls])=>Object.assign({la,lo,en,zh,ls},P(la,lo))),adj=new Map();
   for(const [a,b,L,ln,enc] of d.ed){const e={a,b,L,ln,enc,pts:null};for(const [u,v] of [[a,b],[b,a]]){const k=u+'|'+L;if(!adj.has(k))adj.set(k,[]);adj.get(k).push({v,e})}}
   TR={st,adj,col:d.col};return TR}).catch(e=>{trBusy=null;throw e});return trBusy}
+function trExits(){if(TRX)return Promise.resolve(TRX);if(trxBusy)return trxBusy;
+ trxBusy=fetch('exits.json?v=1').then(r=>r.ok?r.json():{x:{}}).then(d=>{TRX=d.x||{};return TRX}).catch(()=>{trxBusy=null;return {}});return trxBusy}
 function trEdgePts(e,fromA){if(!e.pts)e.pts=decPl(e.enc).map(g=>P(g[0],g[1]));return fromA?e.pts:e.pts.slice().reverse()}
 function trPlan(o,dd){const T=TR,wk=m=>m*1.3/TR_W,direct=wk(dist(o,dd));
  const near=q=>{const r=[];T.st.forEach((s,i)=>{const m=dist(q,s);if(m<TR_R)r.push([i,wk(m)])});return r};
@@ -2602,33 +2620,63 @@ function trPlan(o,dd){const T=TR,wk=m=>m*1.3/TR_W,direct=wk(dist(o,dd));
  if(!bk||best>direct-3)return{walk:true,direct};
  const seq=[];for(let k=bk;k;){const p=PR.get(k);seq.unshift({k,p});k=p?p.k:null}
  const sid=k=>+k.slice(0,k.indexOf('|')),lid=k=>k.slice(k.indexOf('|')+1),st=T.st;
- const i0=sid(seq[0].k),legs=[{t:'walk',a:o,b:st[i0],to:i0,min:wk(dist(o,st[i0]))}];let ride=null,xf=0;
+ const i0=sid(seq[0].k),legs=[{t:'walk',a:o,b:st[i0],to:i0,min:wk(dist(o,st[i0])),d:dist(o,st[i0])*1.3}];let ride=null,xf=0;
  for(let n=1;n<seq.length;n++){const {k,p}=seq[n],i=sid(k),L=lid(k),pi=sid(p.k);
   if(p.x){ride=null;xf++;legs.push({t:'xfer',L,at:i,min:TR_XFER});continue}
-  if(!ride){ride={t:'ride',L,from:pi,nx:i,to:i,last:pi,n:0,min:0,pts:[]};legs.push(ride)}
-  const seg=trEdgePts(p.e,p.e.a===pi);ride.pts.push(...(ride.pts.length?seg.slice(1):seg));ride.to=i;ride.last=pi;ride.n++;ride.min+=trRide(p.e.ln)}
+  if(!ride){ride={t:'ride',L,from:pi,nx:i,to:i,last:pi,n:0,min:0,pts:[],sts:[pi]};legs.push(ride)}
+  const seg=trEdgePts(p.e,p.e.a===pi);ride.pts.push(...(ride.pts.length?seg.slice(1):seg));ride.to=i;ride.last=pi;ride.n++;ride.min+=trRide(p.e.ln);ride.sts.push(i)}
  for(const lg of legs){if(lg.t!=='ride')continue;let prev=lg.last,cur=lg.to,term=null;
   for(let g=0;g<80;g++){const nb=(T.adj.get(cur+'|'+lg.L)||[]).map(x=>x.v).filter(v=>v!==prev);if(!nb.length){term=cur;break}if(nb.length>1)break;prev=cur;cur=nb[0]}
   lg.term=term}
- const iL=sid(seq[seq.length-1].k);legs.push({t:'walk',a:st[iL],b:dd,from:iL,min:wk(dist(st[iL],dd))});
- const pts=[];for(const lg of legs){if(lg.t==='walk')pts.push({x:lg.a.x,y:lg.a.y},{x:lg.b.x,y:lg.b.y});else if(lg.t==='ride')pts.push(...lg.pts)}
- return{walk:false,tot:best,direct,legs,pts,xf,walkMin:legs.filter(l=>l.t==='walk').reduce((a,l)=>a+l.min,0)}}
+ const iL=sid(seq[seq.length-1].k);legs.push({t:'walk',a:st[iL],b:dd,from:iL,min:wk(dist(st[iL],dd)),d:dist(st[iL],dd)*1.3});
+ const T2={walk:false,tot:best,direct,legs,xf};trPts(T2);return T2}
+function trPts(T2){const pts=[];let w=0;for(const lg of T2.legs){if(lg.t==='walk'){pts.push(...(lg.pts||[lg.a,lg.b]).map(q=>({x:q.x,y:q.y})));w+=lg.min}else if(lg.t==='ride')pts.push(...lg.pts)}T2.pts=pts;T2.walkMin=w}
+// пешие участки — по улицам (OSRM), вход и выход — ближайшие к началу и к цели
+async function trFoot(a,b){try{const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),10000),A=U(a),B=U(b);
+ const r=await fetch(`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${A[1].toFixed(6)},${A[0].toFixed(6)};${B[1].toFixed(6)},${B[0].toFixed(6)}?overview=full&geometries=geojson`,{signal:ctl.signal});clearTimeout(to);
+ const j=await r.json();if(j.code!=='Ok'||!j.routes||!j.routes[0])return null;const rt=j.routes[0];return{pts:rt.geometry.coordinates.map(c=>P(c[1],c[0])),d:rt.distance}}catch(e){return null}}
+async function trRefine(T2,my){const X=await trExits();if(my!==rtSeq||!route||route.tr!==T2)return;
+ const jobs=[];
+ for(const lg of T2.legs){if(lg.t!=='walk')continue;const si=lg.to!=null?lg.to:lg.from,s=TR.st[si],far=lg.to!=null?lg.a:lg.b;
+  let ex=null,bd=1e18;for(const [ref,dx,dy] of X[si]||[]){const q={x:s.x+dx,y:s.y-dy},d=dist(q,far);if(d<bd){bd=d;ex={ref,x:q.x,y:q.y}}}
+  lg.ex=ex;const A=lg.to!=null?lg.a:(ex||s),B=lg.to!=null?(ex||s):lg.b;
+  jobs.push(trFoot(A,B).then(r=>{const nm=r?r.d/TR_W:dist(A,B)*1.3/TR_W;T2.tot+=nm-lg.min;lg.min=nm;lg.d=r?r.d:dist(A,B)*1.3;lg.pts=r?r.pts:[A,B]}))}
+ await Promise.all(jobs);if(my!==rtSeq||!route||route.tr!==T2)return;
+ const ri=T2.legs.filter(l=>l.t==='ride');if(ri.length){const w0=T2.legs[0],wl=T2.legs[T2.legs.length-1];ri[0].inEx=w0.ex&&w0.ex.ref;ri[ri.length-1].outEx=wl.ex&&wl.ex.ref}
+ trPts(T2);T2.fine=true;route.tr=Object.assign({},T2);renderRoute();dirty=true}
 function trDraw(g,X,Y){const T2=route&&route.tr;if(!T2||!T2.legs||!TR)return;g.lineCap=g.lineJoin='round';
- for(const lg of T2.legs){if(lg.t==='xfer')continue;const pts=lg.t==='walk'?[lg.a,lg.b]:lg.pts;g.beginPath();pts.forEach((q,i)=>{const sx=X(q.x,q.y),sy=Y(q.x,q.y);i?g.lineTo(sx,sy):g.moveTo(sx,sy)});
+ for(const lg of T2.legs){if(lg.t==='xfer')continue;const pts=lg.t==='walk'?(lg.pts||[lg.a,lg.b]):lg.pts;g.beginPath();pts.forEach((q,i)=>{const sx=X(q.x,q.y),sy=Y(q.x,q.y);i?g.lineTo(sx,sy):g.moveTo(sx,sy)});
   if(lg.t==='walk'){g.setLineDash([.5,9]);g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=8;g.stroke();g.strokeStyle=C.vio;g.lineWidth=4.5;g.stroke();g.setLineDash([])}
   else{g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=10;g.stroke();g.strokeStyle=TR.col[lg.L]||C.vio;g.lineWidth=6;g.stroke()}}
- for(const lg of T2.legs)if(lg.t==='ride')for(const i of [lg.from,lg.to]){const s2=TR.st[i],sx=X(s2.x,s2.y),sy=Y(s2.x,s2.y);g.beginPath();g.arc(sx,sy,6,0,7);g.fillStyle='#fff';g.fill();g.lineWidth=3;g.strokeStyle=TR.col[lg.L]||C.vio;g.stroke()}}
+ for(const lg of T2.legs)if(lg.t==='ride')for(const i of [lg.from,lg.to]){const s2=TR.st[i],sx=X(s2.x,s2.y),sy=Y(s2.x,s2.y);g.beginPath();g.arc(sx,sy,6,0,7);g.fillStyle='#fff';g.fill();g.lineWidth=3;g.strokeStyle=TR.col[lg.L]||C.vio;g.stroke()}
+ g.font='700 11px Rubik,system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';
+ for(const lg of T2.legs)if(lg.t==='walk'&&lg.ex){const sx=X(lg.ex.x,lg.ex.y),sy=Y(lg.ex.x,lg.ex.y),w=Math.max(18,g.measureText(lg.ex.ref).width+10);
+  g.beginPath();if(g.roundRect)g.roundRect(sx-w/2,sy-9,w,18,6);else g.rect(sx-w/2,sy-9,w,18);g.fillStyle=C.vio;g.fill();g.lineWidth=2;g.strokeStyle='#fff';g.stroke();g.fillStyle='#fff';g.fillText(lg.ex.ref,sx,sy+.5)}}
+const trM=m=>fdur(m*60),trD=d=>d!=null?' · '+fmtD(d):'';
 function trHTML(){if(!route||route.loading)return'';const T2=route.tr;
  if(!T2)return`<p class="rt-note">Не удалось загрузить схему метро. Откройте маршрут в картах — кнопки ниже.</p>`;
- if(T2.walk)return`<p class="rt-note">${T2.far?'Рядом нет станций метро.':'Метро здесь не сэкономит время.'} Пешком — около ${fdur(T2.direct*60)}.</p><div class="rt-acts"><button class="rt-main" data-rtmode="walk">${isvg('walk',18,2.4)}Идти пешком</button></div>`;
- const nm=i=>{const s=TR.st[i];return`<b>${esc(s.en||s.zh)}</b>${s.zh&&s.en?` <span class="zh">${esc(s.zh)}</span>`:''}`};
- const h=new Date(Date.now()+8*3600e3).getUTCHours(),night=h>=23||h<6;
- let o=`<div class="tr-sum">≈ ${fdur(T2.tot*60)} · пешком ${fdur(T2.walkMin*60)} · ${T2.xf?'пересадок: '+T2.xf:'без пересадок'}</div><ol class="tr-steps">`;
- for(const lg of T2.legs){
-  if(lg.t==='walk')o+=`<li><span class="tr-i">${isvg('walk',16,2.2)}</span><div>${lg.to!=null?`Пешком ${fdur(lg.min*60)} до станции ${nm(lg.to)}`:`Пешком ${fdur(lg.min*60)} от станции до места`}</div></li>`;
-  else if(lg.t==='ride')o+=`<li><span class="tr-i">${trBadge(lg.L)}</span><div>${trLn(lg.L)}${lg.term!=null&&lg.term!==lg.to?`, в сторону ${esc(TR.st[lg.term].en||TR.st[lg.term].zh)}`:''} — ${lg.n} ${trOst(lg.n)}, ${fdur(lg.min*60)}<br><span class="tr-s">Выходите на ${nm(lg.to)}${lg.term==null&&lg.n>1?` · следующая после посадки — ${esc(TR.st[lg.nx].en||TR.st[lg.nx].zh)}`:''}</span></div></li>`;
-  else o+=`<li><span class="tr-i">⇄</span><div>Пересадка на ${trLn(lg.L).replace('Линия','линию')} — около ${Math.round(lg.min)} мин</div></li>`}
- return o+`</ol><p class="rt-note">${night?'<b>Сейчас метро, скорее всего, закрыто</b> — оно работает примерно с 6:00 до 23:00. ':''}Время примерное, с учётом досмотра и ожидания. Оплата — QR-кодом в Alipay или WeChat. Автобусы — в Amap.</p>`}
+ if(T2.walk)return`<p class="rt-note">${T2.far?'Рядом нет станций метро.':'Метро здесь не сэкономит время.'} Пешком — около ${trM(T2.direct)}.</p><div class="rt-acts"><button class="rt-main" data-rtmode="walk">${isvg('walk',18,2.4)}Идти пешком</button></div>`;
+ const h=new Date(Date.now()+8*3600e3).getUTCHours(),night=h>=23||h<6,L=T2.legs,rides=L.filter(l=>l.t==='ride'),lastRide=rides[rides.length-1];
+ let o=`<div class="tr-sum">≈ ${trM(T2.tot)} · пешком ${trM(T2.walkMin)} · ${T2.xf?(T2.xf===1?'1 пересадка':'пересадок: '+T2.xf):'без пересадок'}${T2.fine?'':' <span class="tr-ld">уточняю путь…</span>'}</div><div class="tr-legs">`;
+ for(const lg of L){
+  if(lg.t==='walk'){const first=lg.to!=null;
+   o+=`<div class="tr-card tr-walk"><span class="tr-i">${isvg('walk',17,2.2)}</span><div class="tr-b"><div class="tr-h">Пешком ${trM(lg.min)}<span class="tr-m">${trD(lg.d)}</span></div><div class="tr-s">${first?`до станции ${trNm(lg.to)}${lg.ex?` · вход <b class="tr-ex">${esc(lg.ex.ref)}</b>`:''}`:`от ${lg.ex?`выхода <b class="tr-ex">${esc(lg.ex.ref)}</b>`:'станции'} до места`}</div></div></div>`}
+  else if(lg.t==='ride'){const col=TR.col[lg.L]||'#2f6feb',mid=lg.sts.slice(1,-1);
+   o+=`<div class="tr-card tr-ride" style="--c:${col}"><span class="tr-i">${trBadge(lg.L)}</span><div class="tr-b"><div class="tr-h">${trLn(lg.L)}${lg.term!=null&&lg.term!==lg.to?` <span class="tr-dir">→ ${trNm0(lg.term)}</span>`:''}</div>
+    <div class="tr-s">${lg.n} ${trOst(lg.n)} · ${trM(lg.min)}${lg.term==null&&lg.n>1?` · следующая — ${trNm0(lg.nx)}`:''}</div>
+    <details class="tr-stops"><summary>${mid.length?`Показать остановки (${lg.n+1})`:'Станции'}</summary><ol>${lg.sts.map((si,k)=>`<li class="${k===0||k===lg.sts.length-1?'on':''}">${trNm(si)}${k===0&&lg.inEx?` <span class="tr-exs">вход ${esc(lg.inEx)}</span>`:''}${k===lg.sts.length-1&&lg===lastRide&&lg.outEx?` <span class="tr-exs">выход ${esc(lg.outEx)}</span>`:''}</li>`).join('')}</ol></details>
+    <div class="tr-out">${lg===lastRide?`Выходите на ${trNm(lg.to)}${lg.outEx?` · выход <b class="tr-ex">${esc(lg.outEx)}</b>`:''}`:`Выходите на ${trNm(lg.to)} — здесь пересадка`}</div></div></div>`}
+  else o+=`<div class="tr-xf"><span>⇄ Пересадка на ${trLn(lg.L).replace('Линия','линию')} · около ${Math.round(lg.min)} мин</span></div>`}
+ return o+`</div><p class="rt-note">${night?'<b>Сейчас метро, скорее всего, закрыто</b> — оно работает примерно с 6:00 до 23:00. ':''}Время примерное, с учётом досмотра и ожидания. Оплата — QR-кодом в Alipay или WeChat. Автобусы — в Amap.</p>`}
+function trChain(){const T2=route.tr;return`<button class="tr-chain" data-rtmin type="button">${T2.legs.map(lg=>lg.t==='walk'?`<span class="tr-cw">${isvg('walk',14,2.4)}${Math.max(1,Math.round(lg.min))}</span>`:lg.t==='ride'?trBadge(lg.L):'').filter(Boolean).join('<span class="tr-ca">›</span>')}<span class="tr-ct">≈ ${trM(T2.tot)}</span></button>`}
+// свернуть и развернуть панель маршрута
+{const _rr=renderRoute;renderRoute=function(){_rr();const el=$('rt');if(!route||route.picking){el.classList.remove('min');return}
+ const hd=el.querySelector('.rt-hd'),x=hd&&hd.querySelector('[data-rtclose]');
+ if(x&&!hd.querySelector('.rt-mn'))x.insertAdjacentHTML('beforebegin',`<button class="rt-x rt-mn" data-rtmin aria-label="${route.min?'Развернуть маршрут':'Свернуть маршрут'}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${route.min?'M6 15l6-6 6 6':'M6 9l6 6 6-6'}"/></svg></button>`);
+ el.classList.toggle('min',!!route.min);
+ if(route.min&&hd){el.innerHTML='';el.append(hd);if(route.mode==='transit'&&route.tr&&!route.tr.walk&&route.tr.legs)el.insertAdjacentHTML('beforeend',trChain())}}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rtmin]');if(!b||!route)return;e.stopPropagation();route.min=!route.min;renderRoute();
+ setTimeout(()=>{const T2=route&&route.tr;fitRoute(T2&&T2.pts?T2.pts:route&&route.pts?route.pts:[me,route.dest])},60)},true);
 // ---- маршрут через несколько мест: остановки, удобный порядок, ведение от точки к точке ----
 const RT_MAX=10;
 const mest=n=>n%10===1&&n%100!==11?'место':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'места':'мест';
@@ -2694,7 +2742,7 @@ async function calcRoute(re){if(!route||route.picking)return;const m=route.mode,
  const chain=[me,...left];
  route.tr=null;
  if(m==='transit'){route.pts=null;route.loading=true;renderRoute();let T2=null;try{await trLoad();T2=trPlan(me,p)}catch(e){T2=null}if(my!==rtSeq||!route)return;
-  route.tr=T2;route.loading=false;route.remain=dist(me,p);renderRoute();dirty=true;if(!re)fitRoute(T2&&T2.pts?T2.pts:chain);return}
+  route.tr=T2;route.loading=false;route.remain=dist(me,p);renderRoute();dirty=true;if(!re)fitRoute(T2&&T2.pts?T2.pts:chain);if(T2&&!T2.walk)trRefine(T2,my);return}
  if(!re){route.loading=true;renderRoute()}
  try{const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),12000);
   const cs=chain.map(q=>{const a=U(q);return a[1].toFixed(6)+','+a[0].toFixed(6)}).join(';');
