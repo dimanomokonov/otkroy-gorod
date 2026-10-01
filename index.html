@@ -1466,10 +1466,11 @@ body{font-family:Rubik,system-ui,-apple-system,sans-serif}
     <h4>Карта</h4><button class="opt" data-base="soft">Своя карта</button><button class="opt" data-base="amap">Amap 高德, для Китая</button><a class="opt" id="opt3d" hidden href="3d.html" style="text-decoration:none;color:inherit;box-sizing:border-box"><span style="font-size:11px;font-weight:700;color:#fff;background:#4b2fd6;border-radius:99px;padding:2px 7px">3D</span>Район в 3D · тест</a><hr><h4>Тема</h4><button class="opt" data-theme-set="light">Светлая</button><button class="opt" data-theme-set="dark">Тёмная</button><button class="opt" data-theme-set="auto">Как в системе</button><hr><h4>Достопримечательности</h4>
     <div id="chips">
       <button class="chip" data-l="main" aria-pressed="true"><i style="background:var(--main)"></i>Главное</button>
+      <button class="chip" data-l="more" aria-pressed="false"><i style="background:var(--main);opacity:.45"></i>Ещё места</button>
       <button class="chip" data-l="local" aria-pressed="false"><i style="background:var(--local)"></i>Локальное</button>
       <button class="chip" data-l="food" aria-pressed="false"><i style="background:var(--food)"></i>Поесть</button>
     </div>
-    <hr><h4>Еда и покупки</h4><div class="olg"><button class="chip olc" data-uf="food" aria-pressed="true"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-uf="coffee" aria-pressed="true"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button></div><p class="note" style="margin:6px 6px 10px;font-size:11.5px">Еду и кофейни отмечают сами путешественники: создайте отметку «Еда» или «Кофейня» и сделайте её видимой всем.</p><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="fogBtn">Туман</button><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © OpenStreetMap, OpenFreeMap, Amap · маршруты © OSRM / FOSSGIS</p>
+    <p class="note" style="margin:6px 6px 10px;font-size:11.5px">«Ещё места» спрятаны, чтобы не загромождать карту. Они откроются сами, когда окажетесь рядом.</p><hr><h4>Еда и покупки</h4><div class="olg"><button class="chip olc" data-uf="food" aria-pressed="true"><i style="background:#ff8a3d"></i>Еда</button><button class="chip olc" data-uf="coffee" aria-pressed="true"><i style="background:#8a5a3c"></i>Кофейни</button><button class="chip olc" data-ol="malls" aria-pressed="false"><i style="background:#e0569b"></i>ТЦ</button></div><p class="note" style="margin:6px 6px 10px;font-size:11.5px">Еду и кофейни отмечают сами путешественники: создайте отметку «Еда» или «Кофейня» и сделайте её видимой всем.</p><h4>Путешественнику</h4><div class="olg"><button class="chip olc" data-ol="metro" aria-pressed="false"><i style="background:#2f6feb"></i>Метро</button><button class="chip olc" data-ol="pharmacy" aria-pressed="false"><i style="background:#18c29c"></i>Аптеки</button><button class="chip olc" data-ol="toilets" aria-pressed="false"><i style="background:#3aa0c8"></i>Туалеты</button><button class="chip olc" data-ol="sim" aria-pressed="false"><i style="background:#6b6490"></i>SIM-карты</button></div><hr><button class="opt" id="fogBtn">Туман</button><button class="opt" id="gpsBtn">GPS</button><button class="opt" id="wakeBtn">Не гасить экран</button><button class="opt" id="bgBtn">Фоновый GPS (Overland)</button><p class="note" style="margin:8px 6px 0;font-size:11px">Карта © OpenStreetMap, OpenFreeMap, Amap · маршруты © OSRM / FOSSGIS</p>
   </div>
   <button id="nearPill" style="display:none" hidden></button>
   <div class="rt" id="rt" aria-live="polite"></div>
@@ -1595,7 +1596,10 @@ function g2w(la,lo){const g=w2g(la,lo);return[la*2-g[0],lo*2-g[1]]}
 // ---------- state ----------
 let me=P(23.1262,113.2628),target=null,follow=true,mode='sim',watchId=null,acc=0,base='soft';
 const reveal=new Set(),area=new Set(),visited=new Set();let pts=0;
-const layers={main:true,local:false,food:false};
+const layers={main:true,more:false,local:false,food:false};
+// на карте по умолчанию — только самое главное; остальные места открываются сами, когда окажешься рядом
+const TOP=new Set(["canton", "chen", "shamian", "yongqing", "beijing", "zhenhai", "sys", "nanyue", "cathedral", "guangxiao", "huacheng", "botan"]);
+const shown=p=>!!layers[p.cat]&&(p.cat!=='main'||TOP.has(p.id)||layers.more||visited.has(p.id));
 let tab='near',rankSeg='p',dirty=true,changed=false;
 const MSTORE='otkroy-gorod-gz-marks';let marks=[];try{marks=JSON.parse(localStorage.getItem(MSTORE)||'[]')}catch(e){}
 marks.forEach(m=>Object.assign(m,P(m.lat,m.lon)));
@@ -2295,7 +2299,7 @@ function mkSync(){if(!ogReady||map._animatingZoom)return;mkQ=false;mkT=performan
  const add=(id,o,sig,mk)=>{if(inb(o))want.set(id,{o,sig,mk})};
  if(z>=14)for(const k in OLAY){if(!OL[k]||!osmData[k])continue;for(const it of osmData[k])add('o:'+it.id,it,'o'+k+rb('osm:'+it.id)+hotc('osm:'+it.id),()=>osmEl(k,it))}
  if(OL.metro&&metro&&z>=12)for(const s2 of metro.st)add('m:'+s2.id,s2,'m'+s2.lines.map(l=>l.ref).join(','),()=>metroEl(s2));
- for(const p of POIS){if(!layers[p.cat]||(p.dyn&&z<14))continue;const v=visited.has(p.id);add('p:'+p.id,p,'p'+(v?1:0)+rb(p.id)+hotc(p.id),()=>poiEl(p,v))}
+ for(const p of POIS){if(!shown(p)||(p.dyn&&z<14))continue;const v=visited.has(p.id);add('p:'+p.id,p,'p'+(v?1:0)+rb(p.id)+hotc(p.id),()=>poiEl(p,v))}
  for(const q of marks)add('k:'+q.id,q,'k'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(myKey(q))+hotc(myKey(q)),()=>markEl(q));
  if(z>=13)for(const q of pubMarks)if(ufShow(q))add('u:'+q.user_id+'/'+q.id,q,'u'+q.name+q.x.toFixed(1)+','+q.y.toFixed(1)+rb(pubKey(q))+hotc(pubKey(q)),()=>pubEl(q));
  for(const r of RATED){const hot=isPop(r.s);if(z<(hot?12:15))continue;add('r:'+r.id,r,'r'+rb(r.id)+hot,()=>ratedEl(r))}
@@ -2383,7 +2387,7 @@ function step(dt){if(!target)return;const d=dist(me,target);const mv=Math.min(d,
 function checkDiscover(at){at=at||me;for(const p of POIS){if(!visited.has(p.id)&&dist(at,p)<=(p.rad||DISCOVER)){visited.add(p.id);qVisit(p.id);nudgeSoon();if(p.cur&&p.cat==='main')discBorn.set(p.id,performance.now());gStamp(p,true);if(route&&route.dest&&route.dest.id===p.id)rtArrive(at,true);pts+=p.pts;changed=true;updateHUD();renderSheet();
  toast(`<span class="tic" style="background:var(${CAT[p.cat].c})">${isvg(p.ic,18,2.2)}</span><div><b>${p.name}</b><br>${gPtsOf(p)?'+'+gPtsOf(p)+' очков':'Печать в дневнике'}${p.cur&&p.cat==='main'?' · открыто 1,5 км вокруг':''}</div>${DIARY_SET.has(p.id)?`<button data-dpage="${p.id}">Дневник</button>`:`<button data-open="${p.id}">Читать</button>`}`);save()}}
  rtArrive(at)}
-function tap(x,y){if(moveMode)return;if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!layers[p.cat]||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
+function tap(x,y){if(moveMode)return;if($('dpick').classList.contains('on')||$('pop').classList.contains('on')){closePops();return}let best=null,bd=26;for(const p of POIS){if(!shown(p)||(p.dyn&&map.getZoom()<14))continue;const s=S(p),lm=LANDMK[p.id],d=lm?Math.hypot(s.x-x,s.y+lm.dy-y)*26/lm.r:Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=p}}
  for(const q of marks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
  if(map.getZoom()>=13)for(const q of pubMarks){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
  if(map.getZoom()>=13)for(const q of GC.list){const s=S(q),d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;best=q}}
@@ -2435,7 +2439,7 @@ const walk=m=>Math.max(1,Math.round(m/80))+' мин';
 
 function renderSheet(){const b=$('body');let h='';
  if(tab==='mine'){h=mineHTML()}
- else if(tab==='near'){h+=hotHTML();const list=POIS.filter(p=>layers[p.cat]).map(p=>({p,d:dist(me,p)})).sort((a,c)=>a.d-c.d).slice(0,14);
+ else if(tab==='near'){h+=hotHTML();const list=POIS.filter(shown).map(p=>({p,d:dist(me,p)})).sort((a,c)=>a.d-c.d).slice(0,14);
   list.forEach(({p,d})=>{const v=visited.has(p.id),hidden=false;
    h+=`<button class="item" data-open="${p.id}"><span class="dot" style="color:var(${CAT[p.cat].c})">${isvg(p.ic,20,2)}</span><span class="t"><b>${hidden?'Неизвестная находка':p.name}</b><span>${fmtD(d)}, ${walk(d)} пешком${DIST[p.d]?' · '+DIST[p.d].n:''}</span></span>${v?'<span class="tag ok">✓</span>':gPtsOf(p)?`<span class="tag">+${gPtsOf(p)}</span>`:''}</button>`});
   if(!list.length)h='<p class="note">Все слои скрыты. Включите «Главное», «Локальное» или «Поесть» над картой.</p>'}
@@ -2463,7 +2467,7 @@ function openPanel(){closePops();$('sheet').classList.add('open');$('scrim').cla
 function closePanel(){$('sheet').classList.remove('open');if(!$('card').classList.contains('on'))$('scrim').classList.remove('on')}
 function closePops(){$('pop').classList.remove('on');if($('dpick').classList.contains('on'))togglePick(false)}
 function renderPop(){{const o=$('opt3d');if(o)o.hidden=!isAdmin}{const fb=$('fogBtn');if(fb)fb.classList.toggle('on',fogOn)}$('pop').querySelectorAll('[data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===base));$('pop').querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===theme))}
-function renderNear(){return;const el=$('nearPill'),c=POIS.filter(p=>layers[p.cat]&&!visited.has(p.id)).map(p=>({p,d:dist(me,p)})).sort((a,b)=>a.d-b.d)[0];
+function renderNear(){return;const el=$('nearPill'),c=POIS.filter(p=>shown(p)&&!visited.has(p.id)).map(p=>({p,d:dist(me,p)})).sort((a,b)=>a.d-b.d)[0];
  if(!c){el.style.display='none';return}el.style.display='';el.dataset.open=c.p.id;el.innerHTML=`<span class="e">${c.p.e}</span><b>${c.p.name}</b><span>${walk(c.d)}</span>`}
 let tt=0;function toast(h){const t=$('toast');t.innerHTML=h;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),4200)}
 
