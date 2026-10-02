@@ -795,6 +795,15 @@ button:focus-visible{outline:2px solid var(--me);outline-offset:2px}
 .row .sc{font-weight:800}
 .ghost{width:100%;margin-top:14px;padding:12px;border-radius:14px;background:var(--soft);font-weight:700}
 .note{font-size:12.5px;color:var(--muted);margin:12px 4px 0}
+.ml-ph img{height:auto!important;aspect-ratio:3/2}
+.ml-new{align-self:flex-start;display:inline-block;background:#c8f43c;color:#1b1238;font:600 12.5px Rubik,sans-serif;border-radius:99px;padding:6px 12px;margin:2px 0 -2px}
+.ml-hl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ml-hl li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.4;color:var(--ink)}
+.ml-hl li svg{flex:0 0 22px;height:22px;padding:3.5px;box-sizing:border-box;border-radius:50%;background:color-mix(in srgb,#e0569b 16%,transparent);color:#e0569b}
+.ml-metro{display:none;align-items:center;gap:9px;padding:11px 13px;border-radius:14px;background:var(--soft);font-size:13.5px;color:var(--ink)}
+.ml-metro.on{display:flex}.ml-metro>svg{flex:none;color:var(--vio)}.ml-metro>span:first-of-type{flex:1;min-width:0}
+.ml-ln{display:flex;gap:4px}.ml-ln .trb{min-width:24px;height:24px;border-radius:8px;font-size:11px}
+
 .osm-desc{margin:4px 2px 12px;font-size:14.5px;line-height:1.5;color:var(--ink)}.meta .osm-new{background:#c8f43c;color:#1b1238;font-weight:600}
 .tr-sum{font:600 14px/1.3 Rubik,sans-serif;color:var(--ink);margin:2px 4px 8px}.tr-ld{font-weight:400;color:var(--muted);font-size:12.5px}
 .tr-legs{display:flex;flex-direction:column;gap:6px;margin:0 0 4px;max-height:38vh;overflow:auto;overscroll-behavior:contain;padding:1px}
@@ -2278,6 +2287,63 @@ const LMS=(()=>{const n=v=>+v.toFixed(2),M=(x,y)=>`M${n(x)} ${n(y)}`,Lt=(x,y)=>`
   d+=`M20 6V28M15.4 15Q20 13.4 24.6 15M14.4 21Q20 19 25.6 21M8.6 16Q12.6 21 17.4 28M31.4 16Q27.4 21 22.6 28`;
   return{b,d,h}})();
 
+ // ---- лучшие торговые центры ----
+ // Тайкухуэй: две башни над низким подиумом с овальным световым фонарём
+ S.mtaikoohui=(()=>{let b='',d='',h='';
+  b+=rect(6,5,9,22)+rect(25,9,9,18)+`M2 36.4V28Q2 25.4 5 25.4H35Q38 25.4 38 28V36.4Z`+rect(0,36.4,40,1.8);
+  h+=`M13 31A7 2.6 0 0 1 27 31A7 2.6 0 0 1 13 31Z`+rect(5,33.4,3,3)+rect(32,33.4,3,3);
+  d+=vl(8,13,6,25,2.5)+vl(27,32,10,25,2.5)+hl(6,15,[10,15,20])+hl(25,34,[14,19]);
+  return{b,d,h}})();
+ // Parc Central: волнистая белая кровля «две рыбы» на опорах-деревьях
+ S.mparc=(()=>{let b='',d='',h='';
+  b+=`M0 20Q7 9 15 15Q19 18 23 14Q31 7 40 15V19Q31 11.6 24 17.6Q19 22 14 18.6Q7 13.6 0 24Z`;
+  for(const x of [7,16,25,34])b+=`M${x-.6} 36.4V26L${x-3} 20H${x-1.6}L${x} 24L${x+1.6} 20H${x+3}L${x+.6} 26V36.4Z`;
+  b+=rect(3,29,34,7.4)+rect(0,36.4,40,1.8);
+  h+=rect(9.6,31,4,3.4)+rect(18.6,31,4,3.4)+rect(27.6,31,4,3.4);
+  d+=hl(3,37,[30]);
+  return{b,d,h}})();
+ // Grandview: большой корпус с окном океанариума и белухой
+ S.mgrandview=(()=>{let b='',d='',h='';
+  b+=`M2 36.4V13Q2 8 7 8H33Q38 8 38 13V36.4Z`+rect(0,36.4,40,1.8);
+  h+=`M6 13V31H34V13Z`+`M9 22Q15 15.6 24 18.6Q27.6 17 31 15.4Q30 19 31.4 23Q28 21.6 25 22Q17 27 9 22Z`;
+  return{b,d,h}})();
+ // K11: ступенчатая башня CTF и стеклянный подиум
+ S.mk11=(()=>{let b='',d='',h='';
+  b+=poly([[15,36.4],[15,24],[16,24],[16,14],[17.2,14],[17.2,6],[20,1],[22.8,6],[22.8,14],[24,14],[24,24],[25,24],[25,36.4]]);
+  b+=rect(4,28,32,8.4)+rect(0,36.4,40,1.8);
+  h+=rect(6,30,7,4.4)+rect(27,30,7,4.4)+rect(18,31,4,5.4);
+  d+=vl(18,22,7,27,2)+hl(15,25,[14,24]);
+  return{b,d,h}})();
+ // Площадь Кантон-Тауэр: башня с «талией» и её отражение в зеркальном бассейне
+ S.mtowerplaza=(()=>{let b='',d='',h='';
+  b+=rect(19.6,0,.8,6)+`M17.2 6H22.8L21.2 17L23.6 29H16.4L18.8 17Z`;
+  b+=`M2 32Q20 25.4 38 32Q20 38.6 2 32Z`+rect(0,36.6,40,1.6);
+  h+=`M18.2 30.4H21.8L21 34.6H19Z`;
+  d+=`M17.6 9L22 14M22.4 9L18 14M18.8 19L22.4 26M21.2 19L17.6 26`+hl(8,14,[32])+hl(26,32,[32]);
+  return{b,d,h}})();
+ // Тайгули: кирпичные склады с двускатными крышами и баньян
+ S.mtaikooli=(()=>{let b='',d='',h='';
+  b+=poly([[1,36.4],[1,20],[9,12],[17,20],[17,36.4]])+poly([[15,36.4],[15,22],[22.6,14.6],[30,22],[30,36.4]]);
+  b+=circ(33.4,16,5.4)+circ(29.6,19,3.4)+rect(32.8,20,1.4,16.4)+rect(0,36.4,40,1.8);
+  h+=arch(4,24,3,8)+arch(11,24,3,8)+arch(18.4,25,3,7.4)+arch(24.4,25,3,7.4)+circ(9,17.6,1.1)+circ(22.6,19.6,1);
+  d+=hl(1,17,[22])+hl(15,30,[23.4]);
+  return{b,d,h}})();
+ // Ваньсянчэн: башня, ступени террас к реке и волна
+ S.mmixc=(()=>{let b='',d='',h='';
+  b+=rect(27,3,8,31)+poly([[2,34],[2,29],[7,29],[7,25],[12,25],[12,21],[18,21],[18,17],[27,17],[27,34]]);
+  b+=`M0 34.6Q5 32.6 10 34.6T20 34.6T30 34.6T40 34.6V38.2H0Z`;
+  h+=rect(4,30.4,22,1.4)+rect(9,26.4,17,1.4)+rect(14,22.4,12,1.4)+rect(20,18.6,6,1.2);
+  d+=vl(29,33,5,33,2)+hl(27,35,[9,15,21,27]);
+  return{b,d,h}})();
+ // Пивзавод 1985: цех с арками, труба, чаны и ящики на крыше
+ S.mbeer1985=(()=>{let b='',d='',h='';
+  b+=rect(2,20,22,16.4)+rect(4,5,3,15)+rect(3.4,4,4.2,1.6);
+  b+=rect(10,16.4,4,3.6)+rect(14.6,14,4,6)+rect(19.2,17,3.6,3);
+  b+=`M26 36.4V14Q26 10 29 10Q32 10 32 14V36.4Z`+`M33 36.4V18Q33 14.6 35.5 14.6Q38 14.6 38 18V36.4Z`+rect(0,36.4,40,1.8);
+  for(const x of [4.4,9.6,14.8,20])h+=arch(x,24,3,7);
+  h+=rect(4,33,18,1);
+  d+=hl(26,32,[18,26])+hl(33,38,[22,29])+`M14.6 17H18.6M10 18.2H14`;
+  return{b,d,h}})();
  return S})();
 function lmPin(id,v){const S=LMS[id],u='lm'+id+(v?'v':'u'),col=v?'#4b2fd6':'#fff',fg=v?'#fff':'#4b2fd6';
  return `<svg viewBox="-3 -12 46 67" width="46" height="67"><defs><clipPath id="${u}c"><path d="${S.b}"/></clipPath><filter id="${u}s" x="-30%" y="-20%" width="160%" height="150%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#1b1238" flood-opacity=".25"/></filter></defs>`+
@@ -2291,7 +2357,8 @@ function lmSvg(id,v){const k=id+(v?1:0);return LMC[k]||(LMC[k]=LANDMK[id].svg(v)
 function poiEl(p,v){const lm=LANDMK[p.id];if(lm)return mkEl('poi land l15'+hotc(p.id),45,`<div style="position:absolute;left:${-lm.ax}px;top:${-lm.ay}px;width:${lm.w}px;height:${lm.h}px">${lmSvg(p.id,v)}</div><span class="lb" style="left:${lm.lx}px;top:${lm.ly}px">${esc(p.name)}${rb(p.id)}</span>`);const r=p.cat==='main'?13:11,c=(CAT[p.cat]||CAT.main).c;return mkEl('poi '+(v?'v ':'')+(p.cat==='main'?'l15':'l16')+hotc(p.id),p.cat==='main'?40:30,
  `<div class="pm" style="--c:var(${c});width:${2*r}px;height:${2*r}px;left:${-r}px;top:${-r}px">${isvg(p.ic,Math.round(r*1.12),2.3)}</div>${v?`<i class="bd" style="left:${r*.78-6}px;top:${-r*.78-6}px"></i>`:''}<span class="lb" style="left:${r+5}px">${esc(p.name)}${rb(p.id)}</span>`)}
 function markEl(q){return mkEl('mark l16'+hotc(myKey(q)),50,`<div class="pm" style="--c:var(--mine);width:20px;height:20px;left:-10px;top:-10px;background:var(--mine);border-color:#fff;color:#fff">${isvg('mark',11,2.3)}</div><span class="lb" style="left:15px">${esc(q.name)}${rb(myKey(q))}</span>`)}
-function osmEl(k,it){const L0=OLAY[k],id='osm:'+it.id;return mkEl('osm l17'+hotc(id),10,`<div class="pm" style="--c:${L0.col}">${isvg(L0.ic,11,2.3)}</div>${it.name!==L0.n||pstats.has(id)?`<span class="lb">${esc(it.name)}${rb(id)}</span>`:''}`)}
+const mallPin=id=>lmPin(id,0).replace(/#4b2fd6/g,'#e0569b').replace(/lm'?/,'lm');
+function osmEl(k,it){const L0=OLAY[k],id='osm:'+it.id;if(it.img&&LMS[it.img])return mkEl('osm land l15'+hotc(id),44,`<div style="position:absolute;left:-23px;top:-63px;width:46px;height:67px">${mallPin(it.img)}</div><span class="lb" style="left:24px;top:-26.5px">${esc(it.name)}${rb(id)}</span>`);return mkEl('osm l17'+hotc(id),10,`<div class="pm" style="--c:${L0.col}">${isvg(L0.ic,11,2.3)}</div>${it.name!==L0.n||pstats.has(id)?`<span class="lb">${esc(it.name)}${rb(id)}</span>`:''}`)}
 function metroEl(s2){const ls=s2.lines.length?s2.lines.slice(0,3):[{ref:'M',col:'#2f6feb'}],n=ls.length;
  return mkEl('met l155',20,ls.map((l,i)=>`<i class="mc" style="--i:${i-(n-1)/2};background:${l.col}"><b class="${l.ref.length>2?'s':''}">${esc(l.ref)}</b></i>`).join('')+`<span class="lb">${esc(s2.name)}</span>`)}
 function pinEl(pd){return mkEl('pin',60,`<svg width="24" height="28" viewBox="-12 -13 24 28" style="position:absolute;left:-12px;top:-28px;overflow:visible;filter:drop-shadow(0 2px 3px rgba(27,18,56,.3))"><path d="M0 15C-12 2 -10 -12 0 -12C10 -12 12 2 0 15Z" fill="${pd.col||C.vio||'#4b2fd6'}"/><circle cx="0" cy="-2" r="4.5" fill="#fff"/></svg>`)}
@@ -2395,7 +2462,7 @@ function tap(x,y){if(moveMode)return;if($('dpick').classList.contains('on')||$('
  if(best){best.cache?openCache(best):best.user_id?openPub(best):best.type&&best.t?openMark(best):openCard(best);return}
  {const z=map.getZoom();let br=null,bdr=22;for(const r of RATED){if(z<(isPop(r.s)?12:15))continue;const s=S(r),d=Math.hypot(s.x-x,s.y-y);if(d<bdr){bdr=d;br=r}}if(br){openRated(br);return}}
  if(OL.metro&&metro&&map.getZoom()>=12){let bm=null,bdm=22;for(const it of metro.st){const s=S(it),d=Math.hypot(s.x-x,s.y-y);if(d<bdm){bdm=d;bm=it}}if(bm){openOsm(bm);return}}
- {const zz=map.getZoom();let bo=null,bdo=20;for(const k in OLAY){if(!OL[k]||!osmData[k]||zz<(OLAY[k].st?12:14))continue;for(const it of osmData[k]){const s=S(it),d=Math.hypot(s.x-x,s.y-y);if(d<bdo){bdo=d;bo=it}}}if(bo){openOsm(bo);return}}
+ {const zz=map.getZoom();let bo=null,bdo=20;for(const k in OLAY){if(!OL[k]||!osmData[k]||zz<(OLAY[k].st?12:14))continue;for(const it of osmData[k]){const s=S(it),d=it.img?Math.hypot(s.x-x,s.y-27-y)*20/30:Math.hypot(s.x-x,s.y-y);if(d<bdo){bdo=d;bo=it}}}if(bo){openOsm(bo);return}}
  if(route){return}
  if(mode==='gps'){const ll=fromM(map.containerPointToLatLng([x,y]));openPin(P(ll[0],ll[1]));return}
  if(mode==='sim'){const ll=fromM(map.containerPointToLatLng([x,y]));target=P(ll[0],ll[1]);follow=true;dirty=true;hideHint()}}
@@ -2803,7 +2870,7 @@ function handleRoute(t){
 
 // ================= РАЗДЕЛЫ КАРТЫ (OpenStreetMap), ТОЧКИ, ФОТО, ОТЗЫВЫ =================
 const OLAY={"malls": {"n": "ТЦ", "ic": "bag", "col": "#e0569b", "q": [], "st": 1}, "metro": {"n": "Метро", "ic": "metro", "col": "#2f6feb", "q": ["[\"railway\"=\"station\"][\"station\"=\"subway\"]", "[\"public_transport\"=\"station\"][\"subway\"=\"yes\"]"]}, "pharmacy": {"n": "Аптеки", "ic": "pill", "col": "#18c29c", "q": ["[\"amenity\"=\"pharmacy\"]"]}, "toilets": {"n": "Туалеты", "ic": "wc", "col": "#3aa0c8", "q": ["[\"amenity\"=\"toilets\"]"]}, "sim": {"n": "Связь и SIM", "ic": "phone", "col": "#6b6490", "q": ["[\"shop\"=\"mobile_phone\"]"]}};
-const MALLS=[{"id": "mall/taikoohui", "lay": "malls", "lat": 23.13692, "lon": 113.32712, "name": "Тайкухуэй", "local": "太古汇", "note": "", "desc": "Главный люкс города: Chanel, Louis Vuitton, Hermès и ещё почти две сотни брендов. Овальный атриум со стеклянным мостом, сад с ресторанами на террасе и книжный магазин Fangsuo.", "tags": {}}, {"id": "mall/parc", "lay": "malls", "lat": 23.13482, "lon": 113.31926, "name": "Parc Central", "local": "天环广场", "note": "", "desc": "Архитектура в форме двух рыб и зелёный сад в утопленном дворе под открытым небом. Международные марки, Apple Store, кофейни и места для отдыха.", "tags": {}}, {"id": "mall/grandview", "lay": "malls", "lat": 23.13464, "lon": 113.3216, "name": "Grandview Mall", "local": "正佳广场", "note": "", "desc": "Один из крупнейших ТЦ Китая и почти парк развлечений: полярный океанариум, тропический лес, музей естествознания, планетарий и каток прямо внутри.", "tags": {}}, {"id": "mall/k11", "lay": "malls", "lat": 23.12055, "lon": 113.32088, "name": "K11", "local": "广州K11购物艺术中心", "note": "", "desc": "ТЦ-галерея в основании небоскрёба CTF высотой 530 метров: выставки современного искусства, городская ферма и терраса с видом на Чжуцзян Нью-Таун.", "tags": {}}, {"id": "mall/towerplaza", "lay": "malls", "lat": 23.10688, "lon": 113.31909, "name": "Площадь Кантон-Тауэр", "local": "广州塔广场", "note": "Открыт в декабре 2024", "desc": "Новый комплекс у подножия башни: зеркальный бассейн, в котором отражается Кантон-Тауэр, галерея по кругу, восемь ресторанов из гида Мишлен и театр.", "tags": {}}, {"id": "mall/taikooli", "lay": "malls", "lat": 23.09358, "lon": 113.241, "name": "Тайгули у Байэтаня", "local": "聚龙湾太古里", "note": "Новинка: открыт 28 сентября 2026", "desc": "Открытый квартал в старых складах на берегу Байэтаня, среди вековых баньянов. Около сотни магазинов и ресторанов, гулять здесь интереснее, чем ходить по этажам.", "tags": {}}, {"id": "mall/mixc", "lay": "malls", "lat": 23.10548, "lon": 113.23082, "name": "Ваньсянчэн Байэтань", "local": "白鹅潭万象城", "note": "Новинка: открытие 30 сентября 2026", "desc": "Первый Ваньсянчэн в Гуанчжоу: большой ТЦ на берегу реки под 250-метровой башней, с катком и кинотеатром IMAX.", "tags": {}}, {"id": "mall/beer1985", "lay": "malls", "lat": 23.109, "lon": 113.3365, "name": "Пивзавод 1985", "local": "啤酒厂1985", "note": "Новинка: открыт 23 сентября 2026", "desc": "Бывший цех пивзавода «Чжуцзян» на набережной Пачжоу. Сохранили чаны, трубы и линии розлива, в пол вмонтированы осколки пивных бутылок. Рестораны, бары и террасы с видом на реку.", "tags": {}}];
+const MALLS=[{"id": "mall/taikoohui", "lay": "malls", "lat": 23.13692, "lon": 113.32712, "name": "Тайкухуэй", "local": "太古汇", "note": "", "desc": "Главный люкс города: Chanel, Louis Vuitton, Hermès и ещё почти две сотни брендов. Овальный атриум со стеклянным мостом, сад с ресторанами на террасе и книжный магазин Fangsuo.", "tags": {}, "img": "mtaikoohui", "hl": ["Овальный атриум со стеклянным мостом под крышей", "Сад с ресторанами на террасе третьего этажа", "Большой книжный магазин Fangsuo"]}, {"id": "mall/parc", "lay": "malls", "lat": 23.13482, "lon": 113.31926, "name": "Parc Central", "local": "天环广场", "note": "", "desc": "Архитектура в форме двух рыб и зелёный сад в утопленном дворе под открытым небом. Международные марки, Apple Store, кофейни и места для отдыха.", "tags": {}, "img": "mparc", "hl": ["Кровля в виде двух рыб на опорах-«деревьях»", "Утопленный сад под открытым небом", "Apple Store и флагманские магазины"]}, {"id": "mall/grandview", "lay": "malls", "lat": 23.13464, "lon": 113.3216, "name": "Grandview Mall", "local": "正佳广场", "note": "", "desc": "Один из крупнейших ТЦ Китая и почти парк развлечений: полярный океанариум, тропический лес, музей естествознания, планетарий и каток прямо внутри.", "tags": {}, "img": "mgrandview", "hl": ["Полярный океанариум с белухами", "Тропический лес и музей естествознания", "Каток и планетарий"]}, {"id": "mall/k11", "lay": "malls", "lat": 23.12055, "lon": 113.32088, "name": "K11", "local": "广州K11购物艺术中心", "note": "", "desc": "ТЦ-галерея в основании небоскрёба CTF высотой 530 метров: выставки современного искусства, городская ферма и терраса с видом на Чжуцзян Нью-Таун.", "tags": {}, "img": "mk11", "hl": ["Выставки современного искусства прямо среди магазинов", "Городская ферма", "Терраса с видом на Чжуцзян Нью-Таун"]}, {"id": "mall/towerplaza", "lay": "malls", "lat": 23.10688, "lon": 113.31909, "name": "Площадь Кантон-Тауэр", "local": "广州塔广场", "note": "Открыт в декабре 2024", "desc": "Новый комплекс у подножия башни: зеркальный бассейн, в котором отражается Кантон-Тауэр, галерея по кругу, восемь ресторанов из гида Мишлен и театр.", "tags": {}, "img": "mtowerplaza", "hl": ["Зеркальный бассейн с отражением башни", "Восемь ресторанов из гида Мишлен", "Театр на 800 мест"]}, {"id": "mall/taikooli", "lay": "malls", "lat": 23.09358, "lon": 113.241, "name": "Тайгули у Байэтаня", "local": "聚龙湾太古里", "note": "Новинка: открыт 28 сентября 2026", "desc": "Открытый квартал в старых складах на берегу Байэтаня, среди вековых баньянов. Около сотни магазинов и ресторанов, гулять здесь интереснее, чем ходить по этажам.", "tags": {}, "img": "mtaikooli", "hl": ["Красные кирпичные склады и вековые баньяны", "Открытые улочки вместо этажей", "Набережная Байэтаня"]}, {"id": "mall/mixc", "lay": "malls", "lat": 23.10548, "lon": 113.23082, "name": "Ваньсянчэн Байэтань", "local": "白鹅潭万象城", "note": "Новинка: открытие 30 сентября 2026", "desc": "Первый Ваньсянчэн в Гуанчжоу: большой ТЦ на берегу реки под 250-метровой башней, с катком и кинотеатром IMAX.", "tags": {}, "img": "mmixc", "hl": ["Террасы с видом на реку", "Каток и кинотеатр IMAX", "Башня высотой 250 метров"]}, {"id": "mall/beer1985", "lay": "malls", "lat": 23.109, "lon": 113.3365, "name": "Пивзавод 1985", "local": "啤酒厂1985", "note": "Новинка: открыт 23 сентября 2026", "desc": "Бывший цех пивзавода «Чжуцзян» на набережной Пачжоу. Сохранили чаны, трубы и линии розлива, в пол вмонтированы осколки пивных бутылок. Рестораны, бары и террасы с видом на реку.", "tags": {}, "img": "mbeer1985", "hl": ["Сохранённые бродильные чаны и трубопроводы", "Пол с осколками пивных бутылок", "Бары и террасы на набережной"]}];
 let OL={};try{OL=JSON.parse(localStorage.getItem('og-ol')||'{}')}catch(e){}for(const k in OL)if(!OLAY[k])delete OL[k];
 setTimeout(()=>{osmData.malls=MALLS.map(m=>Object.assign({},m,P(m.lat,m.lon)));dirty=true},0);
 // еда и кофейни — только отметки путешественников
@@ -2830,7 +2897,20 @@ async function osmRefresh(){if(OL.metro)metroLoad();const act=Object.keys(OLAY).
   osmData[k].forEach(it=>applyOvrTo(it,'osm:'+it.id));osmBox[k]=bb;dirty=true}}finally{osmBusy=false;ratedBuild()}}
 map.on('moveend',osmSchedule);
 function osmDest(it){const L0=OLAY[it.lay];return{id:'osm:'+it.id,name:it.name,zh:it.local&&it.local!==it.name?it.local:'',lat:it.lat,lon:it.lon,x:it.x,y:it.y,cat:'osm',ic:L0.ic,col:L0.col}}
-function openOsm(it){const L0=it.lines&&it.lines.length?Object.assign({},OLAY[it.lay],{col:it.lines[0].col}):OLAY[it.lay],t=it.tags,d=dist(me,it),addr=[t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' ');
+function openMall(it){const d=dist(me,it),dc=distAt(it.lat,it.lon),dl=DIST[dc]||{n:'Гуанчжоу'};curOsm=it;cur={kind:'osm',obj:it,key:'osm:'+it.id};
+ $('card').innerHTML=`<div class="pc-top"><svg class="rings" width="340" height="340" viewBox="0 0 340 340" aria-hidden="true"><circle cx="170" cy="170" r="70"></circle><circle cx="170" cy="170" r="110"></circle><circle cx="170" cy="170" r="150"></circle></svg>
+ <div class="pc-bar"><button class="pc-x" data-close aria-label="Закрыть">${isvg('x',20,2.4)}</button><span class="pc-tag" style="background:#e0569b">${isvg('bag',14,2.4)}Торговый центр</span></div>
+ <h2>${esc(it.name)}</h2><div class="pc-sub">${esc(it.local||'')} · ${dl.n} · ${walk(d)} пешком</div></div>
+ <div class="pc-body"><div class="pc-photo on ml-ph"><img src="ill/${it.img}.svg?v=1" alt="${esc(it.name)}" loading="lazy"></div>
+ ${it.note?`<div class="ml-new">${esc(it.note)}</div>`:''}<p class="pc-story">${esc(it.desc||'')}</p>
+ <ul class="ml-hl">${(it.hl||[]).map(t=>`<li>${isvg('check',15,2.8)}<span>${esc(t)}</span></li>`).join('')}</ul>
+ <div class="ml-metro" id="mlMetro" data-id="${esc(it.id)}"></div>
+ <button class="pc-cta" data-osm="route">${isvg('walk',22,2.4)}Погнали · ${walk(d)}</button>
+ <div class="acts"><button class="ghost" data-osm="mark">Поставить метку</button><button class="ghost" data-cur="suggest">${isAdmin?'Изменить место':'Предложить правку'}</button></div>${reviewsBlock('osm:'+it.id,it.name)}</div>`;
+ $('card').classList.add('place','on');$('scrim').classList.add('on');loadReviews('osm:'+it.id);
+ trLoad().then(T=>{const el=$('mlMetro');if(!el||el.dataset.id!==it.id)return;let bi=-1,bd=1e18;T.st.forEach((s2,i)=>{const m=dist(it,s2);if(m<bd){bd=m;bi=i}});if(bi<0||bd>2500)return;const s2=T.st[bi];
+  el.innerHTML=`${isvg('metro',17,2.1)}<span>Метро <b>${esc(s2.en||s2.zh)}</b>${s2.zh&&s2.en?' '+esc(s2.zh):''} · ${fmtD(bd)}</span><span class="ml-ln">${s2.ls.slice(0,4).map(trBadge).join('')}</span>`;el.classList.add('on')}).catch(()=>{})}
+function openOsm(it){if(it.img){openMall(it);return}const L0=it.lines&&it.lines.length?Object.assign({},OLAY[it.lay],{col:it.lines[0].col}):OLAY[it.lay],t=it.tags,d=dist(me,it),addr=[t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' ');
  $('card').classList.remove('place');curOsm=it;cur={kind:'osm',obj:it,key:'osm:'+it.id};
  $('card').innerHTML=`<button class="close" data-close aria-label="Закрыть">×</button><div class="hd"><span class="big" style="background:${L0.col};color:#fff">${isvg(L0.ic,28,2)}</span><div><h2>${esc(it.name)}</h2><div class="zh">${esc(L0.n)}${it.local&&it.local!==it.name?' · '+esc(it.local):''}</div></div></div>${it.lines&&it.lines.length?`<div class="meta">${it.lines.map(l=>`<span style="background:${l.col};color:#fff">Линия ${esc(l.ref)}</span>`).join('')}</div>`:''}
  <div class="meta"><span>${fmtD(d)}, ${walk(d)}</span>${t.opening_hours?`<span>${esc(t.opening_hours)}</span>`:''}${t.cuisine?`<span>${esc(t.cuisine.replace(/;/g,', '))}</span>`:''}${addr?`<span>${esc(addr)}</span>`:''}${it.note?`<span class="osm-new">${esc(it.note)}</span>`:''}</div>${it.desc?`<p class="osm-desc">${esc(it.desc)}</p>`:''}
